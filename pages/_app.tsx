@@ -5,7 +5,7 @@ import Link from 'next/link'
 import { useRouter } from 'next/router'
 import styles from '../styles/_app.module.css'
 import { Dropdown, Input, Image, Icon, DropdownItemProps } from 'semantic-ui-react'
-import { AppProps } from 'next/dist/next-server/lib/router/router'
+import App, { AppContext, AppProps } from 'next/app'
 import { useState } from 'react'
 import { ContactModal } from '../components/contact-modal'
 import firebase from 'firebase'
@@ -17,13 +17,16 @@ import { FirebaseAppProvider } from '../lib/firebase-context'
 import { CooperationContactModal } from '../components/cooperation-modal'
 import { stores } from '../lib'
 
-MyApp.getInitialProps = async () => {
+type AppOwnProps = { stores: stores.Store[] }
+
+MyApp.getInitialProps = async (context: AppContext) => {
+  const ctx = await App.getInitialProps(context)
   const allStores = await stores.getAll()
 
-  return { stores: allStores }
+  return {...ctx, stores: allStores }
 }
 
-function MyApp(appProps: AppProps) {
+function MyApp(appProps: AppProps & AppOwnProps) {
   const [searchTerm, setSearchTerm] = useState<string>('')
 
   const router = useRouter()
