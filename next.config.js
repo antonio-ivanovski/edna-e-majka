@@ -2,6 +2,7 @@ const { PHASE_PRODUCTION_SERVER } = require('next/constants')
 
 module.exports = (phase, { defaultConfig }) => {
   return {
+    webpack5: false,
     ...defaultConfig,
     images: {
       domains: ['firebasestorage.googleapis.com']
