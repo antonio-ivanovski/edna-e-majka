@@ -22,6 +22,7 @@ import { categories, products } from '../../../lib'
 import { v4 as uuid } from 'uuid'
 import { useAuth } from '../../../lib/firebase-auth-context'
 import Resizer from 'react-image-file-resizer'
+import { useFilePicker } from '../../../components/utils'
 
 const ManageStoreProducts = () => {
   const { user } = useAuth()
@@ -117,40 +118,53 @@ const ManageStoreProducts = () => {
   )
 }
 
+type ProductFormData = {
+  title: string
+  description: string
+  images: (File | string)[]
+  variants: { title: string; price: string }[]
+  categories: string[]
+}
+
 const ProductForm = (props: { storeId: string; product?: products.Product }) => {
   const [allCategories, setAllCategories] = useState<categories.Category[] | 'loading'>('loading')
   const [submitStatus, setSubmitStatus] = useState<'loading' | 'success' | null>(null)
   const [error, setError] = useState<Error | null>(null)
+
   const firebaseApp = useFirebaseApp()
 
   useEffect(() => {
     categories.getAll(firebaseApp).then(setAllCategories)
   }, [])
 
-  const { register, control, errors, handleSubmit, reset } = useForm({
+  const { control, errors, handleSubmit, reset, watch } = useForm<ProductFormData>({
     reValidateMode: 'onChange',
     defaultValues: {
       title: props.product?.title ?? '',
       description: props.product?.description ?? '',
-      images: new DataTransfer().files,
-      variants: props.product?.variants ?? [{ title: '', price: undefined }],
+      images: props.product?.images ?? [],
+      variants: props.product?.variants.map((v) => ({ title: v.title, price: v.price.toString() })) ?? [
+        { title: '', price: '' }
+      ],
       categories: props.product?.categories?.map((c) => c.id) ?? []
     }
   })
+
   const { fields, append, remove } = useFieldArray<products.ProductVariant>({
     control,
     name: 'variants'
   })
 
-  if (allCategories === 'loading') return <Loader active content="Се вчитува..." />
+  const triggerFilePicker = useFilePicker({ accept: '.png, .jpg, .jpeg', multiple: true })
 
-  const onSubmit = async (data: {
-    title: string
-    description: string
-    images: File[]
-    variants: { title: string; price: string }[]
-    categories: string[]
-  }) => {
+  if (allCategories === 'loading') {
+    return <Loader active content="Се вчитува..." />
+  }
+  if (submitStatus === 'success') {
+    return <Message success header={`Успешно ${props.product ? 'изменување' : 'креирање'} на производот.`} />
+  }
+
+  const onSubmit = async (data: ProductFormData) => {
     setSubmitStatus('loading')
     const firestore = firebaseApp.firestore()
     const storage = firebaseApp.storage()
@@ -158,17 +172,21 @@ const ProductForm = (props: { storeId: string; product?: products.Product }) => 
     const productRef = firestore.collection('products').doc(props.product?.id)
 
     try {
-      const images: string[] = data.images.length > 0 ? [] : props.product?.images ?? []
+      const productImages: string[] = []
       for (const image of data.images) {
-        const compressedImage = await new Promise<Blob>((resolve) =>
-          Resizer.imageFileResizer(image, 1200, 1200, 'JPEG', 95, 0, (blob) => resolve(blob as Blob), 'blob')
-        )
+        if (typeof image === 'string') {
+          productImages.push(image)
+        } else {
+          const compressedImage = await new Promise<Blob>((resolve) =>
+            Resizer.imageFileResizer(image, 1200, 1200, 'JPEG', 95, 0, (blob) => resolve(blob as Blob), 'blob')
+          )
 
-        const uploadTask = await storage
-          .ref(`storesAssets/${props.storeId}/${productRef.id}/${uuid()}`)
-          .put(compressedImage)
-        const downloadUrl = await uploadTask.ref.getDownloadURL()
-        images.push(downloadUrl)
+          const uploadTask = await storage
+            .ref(`storesAssets/${props.storeId}/${productRef.id}/${uuid()}`)
+            .put(compressedImage)
+          const downloadUrl = await uploadTask.ref.getDownloadURL()
+          productImages.push(downloadUrl)
+        }
       }
 
       if (props.product) {
@@ -177,7 +195,7 @@ const ProductForm = (props: { storeId: string; product?: products.Product }) => 
           description: data.description,
           variants: [...data.variants],
           categories: data.categories.map((id) => allCategories.find((c) => c.id === id)),
-          images
+          images: productImages
         })
       } else {
         await productRef.set({
@@ -187,7 +205,7 @@ const ProductForm = (props: { storeId: string; product?: products.Product }) => 
           description: data.description,
           variants: [...data.variants],
           categories: data.categories.map((id) => allCategories.find((c) => c.id === id)),
-          images
+          images: productImages
         })
       }
 
@@ -242,18 +260,12 @@ const ProductForm = (props: { storeId: string; product?: products.Product }) => 
   ))
 
   return (
-    <Form
-      loading={submitStatus === 'loading'}
-      success={submitStatus === 'success'}
-      error={!!error}
-      onSubmit={handleSubmit(onSubmit)}
-    >
+    <Form loading={submitStatus === 'loading'} error={!!error} onSubmit={handleSubmit(onSubmit)}>
       <Message
         error
         header={`Грешка при ${props.product ? 'измена' : 'креирање'} на производ. Обидете се повторно`}
         content={error?.message}
       />
-      <Message success header={`Успешно ${props.product ? 'изменување' : 'креирање'} на производот.`} />
       <Controller
         name="title"
         control={control}
@@ -284,16 +296,53 @@ const ProductForm = (props: { storeId: string; product?: products.Product }) => 
           />
         )}
       />
-      <Form.Field error={errors.images?.message != null}>
-        <label>Слики од производот</label>
-        <input
-          type="file"
-          multiple
-          name="images"
-          accept=".png, .jpg, .jpeg"
-          ref={register({ required: !props.product })}
-        />
-      </Form.Field>
+      <Controller
+        name="images"
+        control={control}
+        rules={{ validate: (value: any[]) => value.length > 0 }}
+        render={({ value, onChange }: { value: ProductFormData['images']; onChange: any }) => (
+          <Form.Field error={errors.images != null}>
+            <label>Слики од производот</label>
+            {value.length === 0 ? (
+              <p>Нема прикачени слики</p>
+            ) : (
+              <Image.Group size="small">
+                {value.map((image, index) => (
+                  <Image
+                    key={index}
+                    bordered
+                    spaced
+                    src={typeof image === 'string' ? image : URL.createObjectURL(image)}
+                    label={{
+                      as: 'a',
+                      corner: 'right',
+                      icon: 'trash',
+                      color: 'red',
+                      onClick: () => onChange([...value.slice(0, index), ...value.slice(index + 1, value.length)])
+                    }}
+                  />
+                ))}
+              </Image.Group>
+            )}
+            <Button
+              onClick={(e) => {
+                e.preventDefault()
+                if (value.length < 4) {
+                  triggerFilePicker((files) => onChange([...value, ...files].slice(0, 4)))
+                } else {
+                  alert('Дозволено е прикачување најмногу 4 слики по производ.')
+                }
+              }}
+              content="Прикачи слики"
+              color="green"
+              icon="image"
+              labelPosition="left"
+              size="mini"
+            />
+          </Form.Field>
+        )}
+      />
+
       <Controller
         name="categories"
         control={control}

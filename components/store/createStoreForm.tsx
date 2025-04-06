@@ -177,9 +177,9 @@ const CreateStoreForm = (props: { onSuccess: () => void; store?: stores.Store })
           />
         )}
       />
-      <Form.Field>
+      <Form.Field error={errors.avatar?.message != null}>
         <label>Малечка слика за продавницата</label>
-        <input type="file" name="avatar" accept=".png, .jpg, .jpeg" ref={register} />
+        <input type="file" name="avatar" accept=".png, .jpg, .jpeg" ref={register({ required: !props.store })} />
       </Form.Field>
       <Controller
         name="description"
