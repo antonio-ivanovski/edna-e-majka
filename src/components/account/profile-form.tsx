@@ -1,21 +1,20 @@
-import { zodResolver } from '@hookform/resolvers/zod'
 import { useRouter } from '@tanstack/react-router'
 import { useRef, useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { toast } from 'sonner'
-import { z } from 'zod'
 
 import { Button } from '#/components/ui/button'
 import { Field, Input } from '#/components/ui/field'
 import { Message } from '#/components/ui/message'
+import { Schema } from 'effect'
+import { Profile } from '#/api/schemas'
+import { effectResolver } from '#/lib/effect-resolver'
 import { deleteUserAvatar, uploadUserAvatar } from '#/lib/uploads'
+
+type ProfileValues = Schema.Schema.Type<typeof Profile>
 import { updateAccount } from '#/server/functions/account'
 
-const profileSchema = z.object({
-  name: z.string().trim().min(2, 'Внесете име.').max(120),
-})
 
-type ProfileValues = z.infer<typeof profileSchema>
 
 /** The name and the picture on the account. */
 export function AccountProfileForm({ name, image }: { name: string; image: string | null }) {
@@ -29,7 +28,7 @@ export function AccountProfileForm({ name, image }: { name: string; image: strin
     handleSubmit,
     formState: { errors, isSubmitting },
   } = useForm<ProfileValues>({
-    resolver: zodResolver(profileSchema),
+    resolver: effectResolver(Profile),
     defaultValues: { name },
   })
 
