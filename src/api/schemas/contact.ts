@@ -18,5 +18,5 @@ export const CooperationMessage = Schema.Struct({
   website: Schema.optional(Schema.Trim.pipe(Schema.check(Schema.isMaxLength(300)))),
   message: Schema.optional(Schema.Trim.pipe(Schema.check(Schema.isMaxLength(4000)))),
   honeypot: Schema.String.pipe(Schema.check(Schema.isMaxLength(0))).pipe(Schema.withDecodingDefault(Effect.succeed(''))),
-  startedAt: Schema.NumberFromString,
+  startedAt: Schema.Number,
 })
