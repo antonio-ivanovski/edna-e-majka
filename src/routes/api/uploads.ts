@@ -12,8 +12,9 @@ import {
   selectOwnedProductRow,
   selectOwnerStoreById,
 } from '#/server/queries/manage'
+import { Effect } from 'effect'
 import { runEffect } from '#/server/runtime'
-import { getViewer } from '#/server/viewer'
+import { Session } from '#/server/services/session'
 
 /**
  * Uploads for product photos and the shop avatar.
@@ -57,7 +58,7 @@ export const Route = createFileRoute('/api/uploads')({
   server: {
     handlers: {
       POST: async ({ request }) => {
-        const viewer = await getViewer()
+        const viewer = await runEffect(Effect.gen(function* () { const s = yield* Session; return yield* s.getViewer() }))
 
         if (!viewer) {
           return json(NOT_SIGNED_IN, 401)
@@ -199,7 +200,7 @@ export const Route = createFileRoute('/api/uploads')({
       },
 
       PATCH: async ({ request }) => {
-        const viewer = await getViewer()
+        const viewer = await runEffect(Effect.gen(function* () { const s = yield* Session; return yield* s.getViewer() }))
 
         if (!viewer) {
           return json(NOT_SIGNED_IN, 401)
@@ -256,7 +257,7 @@ export const Route = createFileRoute('/api/uploads')({
       },
 
       DELETE: async ({ request }) => {
-        const viewer = await getViewer()
+        const viewer = await runEffect(Effect.gen(function* () { const s = yield* Session; return yield* s.getViewer() }))
 
         if (!viewer) {
           return json(NOT_SIGNED_IN, 401)
