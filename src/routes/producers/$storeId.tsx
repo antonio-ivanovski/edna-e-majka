@@ -8,14 +8,14 @@ import { Breadcrumbs } from '#/components/ui/breadcrumbs'
 import { Panel } from '#/components/ui/panel'
 import { imageUrl } from '#/lib/images'
 import type { ProductSort, SortDirection } from '#/lib/schemas'
-import { parseProductSearch, resolveProductSearch } from '#/lib/search-params'
+import { toValidator, ProductSearch } from '#/api/schemas'
 import { listProducts } from '#/server/functions/products'
 import { getStore } from '#/server/functions/stores'
 import { PRODUCT_PAGE_SIZE } from '#/lib/pagination'
 
 export const Route = createFileRoute('/producers/$storeId')({
-  validateSearch: parseProductSearch,
-  loaderDeps: ({ search }) => resolveProductSearch(search),
+  validateSearch: toValidator(ProductSearch),
+  loaderDeps: ({ search }) => search,
   loader: async ({ params, deps }) => {
     const store = await getStore({ data: { storeId: params.storeId } })
 

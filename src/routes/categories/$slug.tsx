@@ -5,13 +5,13 @@ import { CatalogueList } from '#/components/catalogue/catalogue-list'
 import { Breadcrumbs } from '#/components/ui/breadcrumbs'
 import { findCategory } from '#/lib/categories'
 import type { ProductSort, SortDirection } from '#/lib/schemas'
-import { parseProductSearch, resolveProductSearch } from '#/lib/search-params'
+import { toValidator, ProductSearch } from '#/api/schemas'
 import { listProducts } from '#/server/functions/products'
 import { PRODUCT_PAGE_SIZE } from '#/lib/pagination'
 
 export const Route = createFileRoute('/categories/$slug')({
-  validateSearch: parseProductSearch,
-  loaderDeps: ({ search }) => resolveProductSearch(search),
+  validateSearch: toValidator(ProductSearch),
+  loaderDeps: ({ search }) => search,
   loader: async ({ params, deps }) => {
     const category = findCategory(params.slug)
 

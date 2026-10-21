@@ -5,16 +5,13 @@ import { CatalogueList } from '#/components/catalogue/catalogue-list'
 import { EmptyState } from '#/components/ui/empty-state'
 import { MIN_SEARCH_LENGTH } from '#/lib/schemas'
 import type { ProductSort, SortDirection } from '#/lib/schemas'
-import { parseSearchPage, resolveProductSearch, type SearchPageSearch } from '#/lib/search-params'
+import { toValidator, SearchPageSearch } from '#/api/schemas'
 import { listProducts } from '#/server/functions/products'
 import { PRODUCT_PAGE_SIZE } from '#/lib/pagination'
 
 export const Route = createFileRoute('/search')({
-  validateSearch: parseSearchPage,
-  loaderDeps: ({ search }: { search: SearchPageSearch }) => ({
-    ...resolveProductSearch(search),
-    query: search.q,
-  }),
+  validateSearch: toValidator(SearchPageSearch),
+  loaderDeps: ({ search }) => ({ ...search, query: search.q }),
   loader: async ({ deps }) => {
     const query = deps.query ?? ''
 
