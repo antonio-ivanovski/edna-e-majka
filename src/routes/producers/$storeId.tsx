@@ -9,22 +9,24 @@ import { Panel } from '#/components/ui/panel'
 import { imageUrl } from '#/lib/images'
 import type { ProductSort, SortDirection } from '#/api/schemas'
 import { toValidator, ProductSearch } from '#/api/schemas'
-import { listProducts } from '#/server/functions/products'
-import { getStore } from '#/server/functions/stores'
+import { productQueries } from '#/lib/queries/products'
+import { storeQueries } from '#/lib/queries/stores'
 import { PRODUCT_PAGE_SIZE } from '#/lib/pagination'
 
 export const Route = createFileRoute('/producers/$storeId')({
   validateSearch: toValidator(ProductSearch),
   loaderDeps: ({ search }) => search,
-  loader: async ({ params, deps }) => {
-    const store = await getStore({ data: { storeId: params.storeId } })
+  loader: async ({ context: { queryClient }, params, deps }) => {
+    const store = await queryClient.ensureQueryData(storeQueries.detail(params.storeId))
 
     // One address per shop: the slug.
     if (store.slug && params.storeId !== store.slug) {
       throw redirect({ to: '/producers/$storeId', params: { storeId: store.slug } })
     }
 
-    const page = await listProducts({ data: { ...deps, page: String(deps.page), storeId: store.id } })
+    const page = await queryClient.ensureQueryData(
+      productQueries.list({ ...deps, page: deps.page, storeId: store.id }),
+    )
 
     return { store, params: deps, page }
   },
