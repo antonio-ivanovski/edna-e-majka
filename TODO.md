@@ -18,14 +18,14 @@ paying for this rewrite twice.
 
 Goal: one typed contract layer, Effect everywhere on the server, one client cache.
 
-- [ ] **T0-01** Effect 4 foundation. Add `effect@4.0.5` (exact pin). Add the
+- [x] **T0-01** Effect 4 foundation. Add `effect@4.0.5` (exact pin). Add the
   "Learning more about Effect" section to `AGENTS.md` and read
   `node_modules/effect/AGENTS.md` before writing any Effect code. Blockers: none.
-- [ ] **T0-02** Effect services and layers. `Db` (Drizzle over D1, kept as the
+- [x] **T0-02** Effect services and layers. `Db` (Drizzle over D1, kept as the
   query layer), `Env`, `Session`/`Viewer` (Better Auth), `Assets` (R2), `Mailer`
   (Cloudflare Email), `RateLimiter`, `AppConfig`. One `AppLayer` built with
   `Layer.mergeAll`; every service is a `Context.Service` + `Layer`. Blockers: T0-01.
-- [ ] **T0-03** Typed domain errors. `NotFound`, `NotAllowed`, `NotSignedIn`,
+- [x] **T0-03** Typed domain errors. `NotFound`, `NotAllowed`, `NotSignedIn`,
   `Invalid`, `RateLimited`, `Storage` as `Schema.TaggedError`. Replace
   `src/lib/action.ts` (`ActionResult`, `NOT_SIGNED_IN`, `NOT_ALLOWED`) with
   `Effect.Result` + tagged errors. Blockers: T0-01.
@@ -68,7 +68,7 @@ Goal: one typed contract layer, Effect everywhere on the server, one client cach
   `/rss.xml`, `/sitemap.xml`, `/api/auth/$` keep their shape but build their
   payloads from typed Effect data (Effect Schema for sitemap/feed entries, the
   `Assets` service for R2). Blockers: T0-06.
-- [ ] **T0-11** TanStack Query as the single client cache. Install
+- [x] **T0-11** TanStack Query as the single client cache. Install
   `@tanstack/react-query`; create the `QueryClient` in `src/router.tsx` and
   pass it through router `context`; `defaultPreloadStaleTime: 0` so Query owns
   freshness; `@tanstack/react-router-ssr-query` for SSR dehydrate/hydrate.
