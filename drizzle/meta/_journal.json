@@ -1,0 +1,13 @@
+{
+  "version": "7",
+  "dialect": "sqlite",
+  "entries": [
+    {
+      "idx": 0,
+      "version": "6",
+      "when": 1792596502975,
+      "tag": "0000_sweet_titania",
+      "breakpoints": true
+    }
+  ]
+}
