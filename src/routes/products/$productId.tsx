@@ -3,6 +3,7 @@ import { Info } from 'lucide-react'
 
 import { ProducerContacts } from '#/components/catalogue/producer-contacts'
 import { Avatar } from '#/components/ui/avatar'
+import { Breadcrumbs } from '#/components/ui/breadcrumbs'
 import { Label } from '#/components/ui/label'
 import { Popover } from '#/components/ui/popover'
 import { Statistic, StatisticGroup } from '#/components/ui/statistic'
@@ -48,6 +49,13 @@ function ProductPage() {
 
   return (
     <div className="flex flex-col gap-6 p-2.5">
+      <Breadcrumbs
+        items={[
+          { label: 'Почетна', to: '/' },
+          { label: 'Производи', to: '/' },
+          { label: product.title },
+        ]}
+      />
       {product.images.length > 0 ? (
         <div className="flex flex-wrap gap-3">
           {product.images.map((image, index) => (

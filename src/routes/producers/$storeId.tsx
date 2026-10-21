@@ -3,6 +3,7 @@ import { createFileRoute } from '@tanstack/react-router'
 import { CatalogueList } from '#/components/catalogue/catalogue-list'
 import { ProducerContacts } from '#/components/catalogue/producer-contacts'
 import { Avatar } from '#/components/ui/avatar'
+import { Breadcrumbs } from '#/components/ui/breadcrumbs'
 import { Panel } from '#/components/ui/panel'
 import { imageUrl } from '#/lib/images'
 import { parseProductSearch, resolveProductSearch } from '#/lib/search-params'
@@ -39,6 +40,13 @@ function ProducerPage() {
 
   return (
     <div>
+      <Breadcrumbs
+        items={[
+          { label: 'Почетна', to: '/' },
+          { label: 'Производители', to: '/producers' },
+          { label: store.name },
+        ]}
+      />
       <Panel className="m-2.5">
         <div className="flex flex-col gap-3">
           <div className="flex items-center gap-2.5">

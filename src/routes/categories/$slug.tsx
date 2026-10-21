@@ -1,6 +1,7 @@
 import { createFileRoute, notFound } from '@tanstack/react-router'
 
 import { CatalogueList } from '#/components/catalogue/catalogue-list'
+import { Breadcrumbs } from '#/components/ui/breadcrumbs'
 import { findCategory } from '#/lib/categories'
 import { parseProductSearch, resolveProductSearch } from '#/lib/search-params'
 import { listProducts } from '#/server/functions/products'
@@ -37,6 +38,9 @@ function CategoryPage() {
 
   return (
     <div>
+      <Breadcrumbs
+        items={[{ label: 'Почетна', to: '/' }, { label: 'Категории' }, { label: category.title }]}
+      />
       <div className="flex items-center gap-3 px-4 pt-6">
         <img src={category.icon} alt="" width={48} height={48} className="size-12" />
         <h1 className="font-display text-3xl font-semibold">{category.title}</h1>
