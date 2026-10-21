@@ -16,13 +16,13 @@ import {
 } from '#/components/ui/table'
 import { formatCount, formatDate } from '#/lib/format'
 import { imageUrl } from '#/lib/images'
-import { getManageHome } from '#/server/functions/manage'
+import { manageQueries } from '#/lib/queries/manage'
 import { requireViewer } from '#/server/functions/session'
 import type { OwnerProduct, OwnerStore } from '#/server/queries/manage'
 
 export const Route = createFileRoute('/manage/')({
   beforeLoad: () => requireViewer(),
-  loader: () => getManageHome(),
+  loader: ({ context: { queryClient } }) => queryClient.ensureQueryData(manageQueries.home()),
   head: () => ({
     meta: [{ title: 'Менаџирај | ЕДНА Е МАЈКА' }, { name: 'robots', content: 'noindex' }],
   }),
