@@ -6,26 +6,24 @@ import { EmptyState } from '#/components/ui/empty-state'
 import { MIN_SEARCH_LENGTH } from '#/api/schemas'
 import type { ProductSort, SortDirection } from '#/api/schemas'
 import { toValidator, SearchPageSearch } from '#/api/schemas'
-import { listProducts } from '#/server/functions/products'
+import { productQueries } from '#/lib/queries/products'
 import { PRODUCT_PAGE_SIZE } from '#/lib/pagination'
 
 export const Route = createFileRoute('/search')({
   validateSearch: toValidator(SearchPageSearch),
   loaderDeps: ({ search }) => ({ ...search, query: search.q }),
-  loader: async ({ deps }) => {
+  loader: async ({ context: { queryClient }, deps }) => {
     const query = deps.query ?? ''
 
     if (query.length < MIN_SEARCH_LENGTH) {
       return { query, params: deps, page: { items: [], total: 0 } }
     }
 
-    return {
-      query,
-      params: deps,
-      page: await listProducts({
-        data: { sort: deps.sort, direction: deps.direction, page: String(deps.page), query },
-      }),
-    }
+    const page = await queryClient.ensureQueryData(
+      productQueries.list({ sort: deps.sort, direction: deps.direction, page: deps.page, query }),
+    )
+
+    return { query, params: deps, page }
   },
   head: ({ loaderData }) => ({
     meta: [
