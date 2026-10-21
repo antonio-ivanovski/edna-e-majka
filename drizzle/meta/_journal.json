@@ -15,6 +15,13 @@
       "when": 1792604459716,
       "tag": "0001_narrow_millenium_guard",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "6",
+      "when": 1792604513285,
+      "tag": "0002_many_red_ghost",
+      "breakpoints": true
     }
   ]
 }

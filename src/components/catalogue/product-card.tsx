@@ -32,6 +32,11 @@ export function ProductCard({ product }: { product: ProductSummary }) {
               <ImageIcon aria-hidden="true" className="size-8" />
             </div>
           )}
+          {product.availability === 'out_of_stock' ? (
+            <span className="absolute top-2 right-2 rounded bg-black/70 px-2 py-1 text-xs font-bold text-white">
+              Нема на залиха
+            </span>
+          ) : null}
         </div>
 
         <div className="border-t border-line px-4 py-4">

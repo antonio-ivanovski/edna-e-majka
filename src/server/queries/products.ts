@@ -31,6 +31,7 @@ export type ProductSummary = {
   id: string
   title: string
   description: string
+  availability: 'in_stock' | 'out_of_stock' | 'on_order'
   createdAt: Date
   /** First image by position, or null while a listing has no photo yet. */
   image: ProductImage | null
@@ -67,6 +68,7 @@ const productColumns = {
   title: product.title,
   description: product.description,
   createdAt: product.createdAt,
+  availability: product.availability,
   storeId: sql<string>`${store.id}`.as('store_id'),
   storeName: sql<string>`${store.name}`.as('store_name'),
   storeAvatarKey: sql<string | null>`${store.avatarKey}`.as('store_avatar_key'),
@@ -223,6 +225,7 @@ export async function selectProductSummaries(
         id: row.id,
         title: row.title,
         description: row.description,
+        availability: row.availability,
         createdAt: row.createdAt,
         image: images[0] ?? null,
         variants: variantRows
@@ -298,6 +301,7 @@ export async function selectProductDetail(productId: string): Promise<ProductDet
     id: row.id,
     title: row.title,
     description: row.description,
+    availability: row.availability,
     createdAt: row.createdAt,
     image: imageRows[0] ?? null,
     images: imageRows,

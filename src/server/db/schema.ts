@@ -69,6 +69,9 @@ export const product = sqliteTable(
     status: text('status', { enum: ['published', 'archived'] })
       .notNull()
       .default('published'),
+    availability: text('availability', { enum: ['in_stock', 'out_of_stock', 'on_order'] })
+      .notNull()
+      .default('in_stock'),
     archivedAt: integer('archived_at', { mode: 'timestamp_ms' }),
     archivedBy: text('archived_by').references(() => user.id, { onDelete: 'set null' }),
     ...timestamps,

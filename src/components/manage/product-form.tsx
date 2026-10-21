@@ -6,7 +6,7 @@ import { useFieldArray, useForm } from 'react-hook-form'
 import { toast } from 'sonner'
 
 import { Button } from '#/components/ui/button'
-import { Field, Input, Textarea } from '#/components/ui/field'
+import { Field, Input, Select, Textarea } from '#/components/ui/field'
 import { Message } from '#/components/ui/message'
 import { CATEGORIES, type CategorySlug } from '#/lib/categories'
 import { imageUrl } from '#/lib/images'
@@ -55,6 +55,7 @@ export function ProductForm({
       description: product?.description ?? '',
       // Written by us, validated on the way in, so the slugs are categories.
       categories: (product?.categories ?? []) as CategorySlug[],
+      availability: product?.availability ?? 'in_stock',
       variants: product?.variants.length
         ? product.variants.map((variant) => ({
             title: variant.title,
@@ -130,6 +131,7 @@ export function ProductForm({
         title: values.title,
         description: values.description,
         categories: values.categories,
+        availability: values.availability,
         variants: values.variants.map((variant) => ({
           title: variant.title,
           price: Number(variant.price),
@@ -194,6 +196,18 @@ export function ProductForm({
             </label>
           ))}
         </div>
+      </Field>
+
+      <Field label="Достапност" htmlFor="product-availability" error={errors.availability?.message}>
+        <Select
+          id="product-availability"
+          aria-invalid={Boolean(errors.availability)}
+          {...register('availability')}
+        >
+          <option value="in_stock">На залиха</option>
+          <option value="on_order">По нарачка</option>
+          <option value="out_of_stock">Нема на залиха</option>
+        </Select>
       </Field>
 
       <fieldset className="mb-6">

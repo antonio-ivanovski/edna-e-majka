@@ -28,7 +28,7 @@ Legend: `[ ]` todo, `[x]` done. **Blockers** = dependencies on other items or pr
 - [ ] **T1-16** Search autocomplete / suggestions + recent searches. Blockers: search endpoint.
 - [ ] **T1-17** Advanced filters (price range, has-image, multi-category; region deferred). Blockers: T1-05 (region field) for region filter.
 - [ ] **T1-18** Structured product attributes per category (weight, origin, allergens, etc.) with category-specific schemas. Blockers: category constants restructure + DB migration.
-- [ ] **T1-19** Availability/stock status (in stock / out of stock / on order). Blockers: none.
+- [x] **T1-19** Availability/stock status (in stock / out of stock / on order). Blockers: none.
 - [ ] **T1-20** Featured/pinned products (admin toggle + home/producer display). Blockers: admin UI + query.
 
 ## Tier 2 — Trust, safety, compliance (production blockers)

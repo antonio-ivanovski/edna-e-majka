@@ -5,6 +5,8 @@ import { categorySlugSchema } from './categories'
 /** Shown in the "Подредување" menu. */
 export const productSortSchema = z.enum(['newest', 'alpha', 'price'])
 
+export const productAvailabilitySchema = z.enum(['in_stock', 'out_of_stock', 'on_order'])
+
 export type ProductSort = z.infer<typeof productSortSchema>
 
 export const sortDirectionSchema = z.enum(['asc', 'desc'])
@@ -84,6 +86,7 @@ export const productFormSchema = z.object({
   title: z.string().trim().min(3, 'Внесете наслов на производот.').max(160),
   description: z.string().trim().min(10, 'Опишете го производот.').max(4000),
   categories: z.array(categorySlugSchema).min(1, 'Изберете барем една категорија.'),
+  availability: productAvailabilitySchema.default('in_stock'),
   variants: z
     .array(
       z.object({
@@ -109,6 +112,7 @@ export const productFormValuesSchema = z.object({
   title: z.string().trim().min(3, 'Внесете наслов на производот.').max(160),
   description: z.string().trim().min(10, 'Опишете го производот.').max(4000),
   categories: z.array(categorySlugSchema).min(1, 'Изберете барем една категорија.'),
+  availability: productAvailabilitySchema,
   variants: z
     .array(
       z.object({

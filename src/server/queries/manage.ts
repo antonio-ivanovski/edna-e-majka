@@ -65,6 +65,7 @@ export type OwnerProductDetail = {
   title: string
   description: string
   status: ProductStatus
+  availability: 'in_stock' | 'out_of_stock' | 'on_order'
   categories: string[]
   variants: { id: string; title: string; price: number }[]
   images: OwnerProductImage[]
@@ -182,6 +183,7 @@ export async function selectOwnerProduct(
         title: product.title,
         description: product.description,
         status: product.status,
+        availability: product.availability,
       })
       .from(product)
       .where(and(eq(product.id, productId), eq(product.storeId, storeId)))

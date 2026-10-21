@@ -216,7 +216,7 @@ export const saveProduct = createServerFn({ method: 'POST' })
 
       await db
         .update(product)
-        .set({ title: data.title, description: data.description, searchText })
+        .set({ title: data.title, description: data.description, searchText, availability: data.availability })
         .where(eq(product.id, productId))
     } else {
       await db.insert(product).values({
@@ -225,6 +225,7 @@ export const saveProduct = createServerFn({ method: 'POST' })
         title: data.title,
         description: data.description,
         searchText,
+        availability: data.availability,
       })
     }
 

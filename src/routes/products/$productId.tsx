@@ -102,6 +102,15 @@ function ProductPage() {
         ) : null}
 
         <h1 className="mt-3 font-display text-3xl leading-tight font-semibold">{product.title}</h1>
+        {product.availability === 'out_of_stock' ? (
+          <p className="mt-2 inline-block rounded bg-danger/10 px-2 py-1 text-sm font-semibold text-danger">
+            Нема на залиха
+          </p>
+        ) : product.availability === 'on_order' ? (
+          <p className="mt-2 inline-block rounded bg-black/5 px-2 py-1 text-sm font-semibold text-black/60">
+            По нарачка
+          </p>
+        ) : null}
 
         <div className="mt-3 flex flex-wrap items-center gap-2">
           <Link

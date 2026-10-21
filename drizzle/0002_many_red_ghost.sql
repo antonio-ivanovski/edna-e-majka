@@ -1,0 +1,1 @@
+ALTER TABLE `product` ADD `availability` text DEFAULT 'in_stock' NOT NULL;
