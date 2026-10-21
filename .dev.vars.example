@@ -1,0 +1,20 @@
+# Local development secrets. Copy to `.dev.vars` (git-ignored) and fill in.
+# `wrangler dev` / `vite dev` read this file; production values are set with
+# `wrangler secret put <NAME>`.
+
+# Better Auth — generate with: openssl rand -base64 32
+BETTER_AUTH_SECRET=""
+
+# Public origin used for auth links and absolute URLs.
+BETTER_AUTH_URL="http://localhost:3000"
+
+# Bootstrap admin account (magic-link sign-in only, no password).
+ADMIN_EMAIL=""
+
+# Google sign-in. Leave empty to hide the Google button entirely.
+GOOGLE_CLIENT_ID=""
+GOOGLE_CLIENT_SECRET=""
+
+# Outbound mail identity (Cloudflare Email Service `EMAIL` binding).
+EMAIL_FROM="noreply@ednaemajka.antonio.mk"
+EMAIL_FROM_NAME="Една е Мајка"

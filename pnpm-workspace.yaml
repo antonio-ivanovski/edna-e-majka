@@ -1,0 +1,10 @@
+onlyBuiltDependencies:
+  - esbuild
+  - sharp
+  - workerd
+
+# Packages published within pnpm's default `minimumReleaseAge` window that this
+# project pins deliberately. Reviewed and approved; everything else must age.
+minimumReleaseAgeExclude:
+  - lucide-react@1.61.0
+  - vite@8.3.5
