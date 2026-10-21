@@ -13,7 +13,7 @@ import { eq, sql } from 'drizzle-orm'
 import type { ActionResult } from '#/lib/action'
 import { toValidator, AdminMessage, AdminMessageHandled, AdminMessageList, AdminProductList, AdminStoreDetails, AdminStoreList, AdminStoreStatus, AdminTransferStore, AdminUserList, AdminUserRole, ProductDelete, ProductForm, ProductStatusSchema as ProductStatus, StoreId } from '#/api/schemas'
 import { buildSearchText } from '#/lib/translit'
-import { optionalText } from '#/lib/text'
+
 
 import { user } from '../db/auth-schema'
 import { getDb } from '../db/client'
@@ -21,6 +21,7 @@ import { contactMessage, product, productCategory, productVariant, store } from 
 import { withAdmin } from '../middleware'
 import { runEffect } from '../runtime'
 import { deleteProductCascade, deleteStoreCascade } from '../product-writes'
+import { setStoreStatus as setStoreStatusEffect, updateStoreDetails as updateStoreDetailsEffect } from '../writes'
 import {
   selectAdminMessages,
   selectAdminProductRow,
@@ -76,29 +77,12 @@ export const setStoreStatus = createServerFn({ method: 'POST' })
   .middleware([withAdmin])
   .validator(toValidator(AdminStoreStatus))
   .handler(async ({ context, data }): Promise<ActionResult> => {
-    const db = getDb()
-
-    const rows = await db
-      .select({ id: store.id })
-      .from(store)
-      .where(eq(store.id, data.storeId))
-      .limit(1)
-
-    if (!rows[0]) {
-      return { ok: false, message: 'Продавницата не е најдена.' }
+    try {
+      await runEffect(setStoreStatusEffect(data.storeId, data.status, data.note, { kind: 'admin', id: context.admin.id }))
+      return { ok: true, data: null }
+    } catch (e) {
+      return { ok: false, message: (e as Error).message || 'Грешка.' }
     }
-
-    await db
-      .update(store)
-      .set({
-        status: data.status,
-        ...(data.note === undefined ? {} : { statusNote: data.note || null }),
-        reviewedBy: context.admin.id,
-        reviewedAt: new Date(),
-      })
-      .where(eq(store.id, data.storeId))
-
-    return { ok: true, data: null }
   })
 
 /** An admin may correct the details of any shop; ownership stays where it is. */
@@ -106,31 +90,12 @@ export const adminUpdateStore = createServerFn({ method: 'POST' })
   .middleware([withAdmin])
   .validator(toValidator(AdminStoreDetails))
   .handler(async ({ data }): Promise<ActionResult> => {
-    const rows = await getDb()
-      .select({ id: store.id })
-      .from(store)
-      .where(eq(store.id, data.storeId))
-      .limit(1)
-
-    if (!rows[0]) {
-      return { ok: false, message: 'Продавницата не е најдена.' }
+    try {
+      await runEffect(updateStoreDetailsEffect(data.storeId, data, { kind: 'admin', id: 'admin' }))
+      return { ok: true, data: null }
+    } catch (e) {
+      return { ok: false, message: (e as Error).message || 'Грешка.' }
     }
-
-    await getDb()
-      .update(store)
-      .set({
-        name: data.name,
-        description: data.description,
-        email: data.email,
-        phone: data.phone,
-        facebook: optionalText(data.facebook),
-        instagram: optionalText(data.instagram),
-        city: optionalText(data.city),
-        hours: optionalText(data.hours),
-      })
-      .where(eq(store.id, data.storeId))
-
-    return { ok: true, data: null }
   })
 
 /**

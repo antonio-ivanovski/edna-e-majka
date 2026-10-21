@@ -16,6 +16,7 @@ import { reviewShopApplication } from '../moderation'
 import { selectAdminProductRow } from '../queries/admin'
 import { selectOwnedProductRow, selectOwnerProduct, selectOwnerProducts, selectOwnerStore, selectOwnerStoreById } from '../queries/manage'
 import { deleteProductCascade, deleteStoreCascade } from '../product-writes'
+import { updateStoreDetails as updateStoreDetailsEffect } from '../writes'
 import { claimProductSlug, claimStoreSlug } from '../slug'
 import { runEffect } from '../runtime'
 
@@ -107,18 +108,12 @@ export const updateStore = createServerFn({ method: 'POST' })
   .handler(async ({ context, data }): Promise<ActionResult> => {
     const viewer = context.viewer
     if (!viewer) return NOT_SIGNED_IN
-    if (!(await runEffect(selectOwnerStoreById(data.storeId, viewer.id)))) return NOT_ALLOWED
-    await getDb().update(store).set({
-      name: data.name,
-      description: data.description,
-      email: data.email,
-      phone: data.phone,
-      facebook: optionalText(data.facebook),
-      instagram: optionalText(data.instagram),
-      city: optionalText(data.city),
-      hours: optionalText(data.hours),
-    }).where(eq(store.id, data.storeId))
-    return { ok: true, data: null }
+    try {
+      await runEffect(updateStoreDetailsEffect(data.storeId, data, { kind: 'owner', id: viewer.id }))
+      return { ok: true, data: null }
+    } catch (e) {
+      return { ok: false, message: (e as Error).message || 'Немате дозвола за оваа акција.' }
+    }
   })
 
 export const saveProduct = createServerFn({ method: 'POST' })
