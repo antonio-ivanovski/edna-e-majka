@@ -38,7 +38,7 @@ Goal: one typed contract layer, Effect everywhere on the server, one client cach
   is checked at compile time. Delete the hand-written parsers in
   `src/lib/search-params.ts` and `src/lib/admin-search.ts` along with their
   duplicated enums and `pageSchema`. Blockers: T0-04.
-- [ ] **T0-06** Effect everywhere on the server. Every query in
+- [x] **T0-06** Effect everywhere on the server. Every query in
   `src/server/queries/*` and every write in `src/server/functions/*` returns an
   `Effect`: `Effect.fn`/`Effect.fnUntraced` for named operations, `Effect.gen`
   for orchestration, `Effect.tryPromise` around Drizzle/Better Auth/R2 (never

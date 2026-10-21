@@ -26,6 +26,7 @@ export class Db extends Context.Service<Db, {
               ? new DatabaseError({ message: 'Грешка при пристап до базата.', cause: e })
               : e,
           ),
+          Effect.withSpan('db.run'),
         ),
     })
   })
