@@ -1,18 +1,18 @@
-import { zodResolver } from '@hookform/resolvers/zod'
 import { useState } from 'react'
 import { useForm } from 'react-hook-form'
-import { z } from 'zod'
 
+import { Schema } from 'effect'
 import { Button } from '#/components/ui/button'
 import { Field, Input } from '#/components/ui/field'
 import { Message } from '#/components/ui/message'
+import { effectResolver } from '#/lib/effect-resolver'
 import { authClient } from '#/lib/auth-client'
 
-const emailSchema = z.object({
-  email: z.email('Ве молиме внесете валидна е-маил адреса.'),
+const emailSchema = Schema.Struct({
+  email: Schema.String.pipe(Schema.check(Schema.isPattern(/^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/))),
 })
 
-type EmailValues = z.infer<typeof emailSchema>
+type EmailValues = Schema.Schema.Type<typeof emailSchema>
 
 /**
  * Passwordless sign-in: one address, one link. The same form serves the header
@@ -33,7 +33,7 @@ export function SignInForm({
     register,
     handleSubmit,
     formState: { errors, isSubmitting },
-  } = useForm<EmailValues>({ resolver: zodResolver(emailSchema), defaultValues: { email: '' } })
+  } = useForm<EmailValues>({ resolver: effectResolver(emailSchema), defaultValues: { email: '' } })
 
   const onSubmit = handleSubmit(async ({ email }) => {
     setError('')
