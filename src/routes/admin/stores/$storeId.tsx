@@ -1,5 +1,6 @@
 import { Link, createFileRoute } from '@tanstack/react-router'
 
+import { AdminDeleteStoreButton } from '#/components/admin/delete-store-button'
 import { AdminProductRow } from '#/components/admin/product-row'
 import { AdminStoreForm } from '#/components/admin/store-form'
 import { StoreStatusForm } from '#/components/admin/store-status-form'
@@ -81,6 +82,10 @@ function AdminStorePage() {
       </Panel>
 
       <TransferOwnerForm store={store} />
+
+      <div className="border-t border-line pt-5">
+        <AdminDeleteStoreButton storeId={store.id} storeName={store.name} />
+      </div>
 
       <section>
         <h2 className="mb-3 font-display text-xl font-semibold">Производи</h2>

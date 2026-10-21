@@ -1,5 +1,6 @@
 import { Link, createFileRoute } from '@tanstack/react-router'
 
+import { DeleteStoreButton } from '#/components/manage/delete-store-button'
 import { StoreStatusLabel } from '#/components/manage/status-label'
 import { StoreAvatarField, StoreCoverField, StoreForm } from '#/components/manage/store-form'
 import { Button } from '#/components/ui/button'
@@ -37,12 +38,14 @@ function EditStorePage() {
 
       <StoreForm store={store} />
 
-      <div className="mt-8 border-t border-line pt-5">
+      <div className="mt-8 flex flex-wrap items-center gap-4 border-t border-line pt-5">
         <Button asChild variant="outline">
           <Link to="/manage/$storeId/products" params={{ storeId: store.id }}>
             Производи на продавницата
           </Link>
         </Button>
+
+        <DeleteStoreButton storeId={store.id} storeName={store.name} />
       </div>
     </div>
   )

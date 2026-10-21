@@ -31,7 +31,7 @@ import { user } from '../db/auth-schema'
 import { getDb } from '../db/client'
 import { contactMessage, product, productCategory, productVariant, store } from '../db/schema'
 import { withAdmin } from '../middleware'
-import { deleteProductCascade } from '../product-writes'
+import { deleteProductCascade, deleteStoreCascade } from '../product-writes'
 import {
   selectAdminMessages,
   selectAdminProductRow,
@@ -170,10 +170,32 @@ export const adminUpdateStore = createServerFn({ method: 'POST' })
   })
 
 /**
+ * Removes a shop with everything that belonged to it: the listings, the photos,
+ * the logo and the cover.
+ */
+export const adminDeleteStore = createServerFn({ method: 'POST' })
+  .middleware([withAdmin])
+  .validator(storeIdSchema)
+  .handler(async ({ data }): Promise<ActionResult> => {
+    const rows = await getDb()
+      .select({ id: store.id })
+      .from(store)
+      .where(eq(store.id, data.storeId))
+      .limit(1)
+
+    if (!rows[0]) {
+      return { ok: false, message: 'Продавницата не е најдена.' }
+    }
+
+    await deleteStoreCascade(data.storeId)
+
+    return { ok: true, data: null }
+  })
+
+/**
  * Moves a shop to another account, for the cases the platform cannot solve by
  * itself. One shop per person still holds: the target must not have one.
- */
-export const transferStoreOwner = createServerFn({ method: 'POST' })
+ */ export const transferStoreOwner = createServerFn({ method: 'POST' })
   .middleware([withAdmin])
   .validator(adminTransferStoreSchema)
   .handler(async ({ data }): Promise<ActionResult> => {

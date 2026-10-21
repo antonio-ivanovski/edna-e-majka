@@ -40,7 +40,7 @@ import {
   selectOwnerStore,
   selectOwnerStoreById,
 } from '../queries/manage'
-import { deleteProductCascade } from '../product-writes'
+import { deleteProductCascade, deleteStoreCascade } from '../product-writes'
 import { claimProductSlug, claimStoreSlug } from '../slug'
 
 /** No session, no page: the router turns this into the sign-in redirect. */
@@ -308,6 +308,29 @@ export const deleteProduct = createServerFn({ method: 'POST' })
     }
 
     await deleteProductCascade(data.productId)
+
+    return { ok: true, data: null }
+  })
+
+/**
+ * The owner closes their own shop for good. The listings, their photos and the
+ * shop's own files go with it.
+ */
+export const deleteStore = createServerFn({ method: 'POST' })
+  .middleware([withViewer])
+  .validator(storeIdSchema)
+  .handler(async ({ context, data }): Promise<ActionResult> => {
+    const viewer = context.viewer
+
+    if (!viewer) {
+      return NOT_SIGNED_IN
+    }
+
+    if (!(await selectOwnerStoreById(data.storeId, viewer.id))) {
+      return NOT_ALLOWED
+    }
+
+    await deleteStoreCascade(data.storeId)
 
     return { ok: true, data: null }
   })
