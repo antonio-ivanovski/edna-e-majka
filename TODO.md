@@ -8,6 +8,98 @@ Legend: `[ ]` todo, `[x]` done. **Blockers** = dependencies on other items or pr
 
 ---
 
+---
+
+## Tier 0 — Foundation: API & app cleanup (do this first)
+
+Scope: architecture, not product features. Do it **before any Tier 1–4 work**: most
+of those items touch the same files, and building them on today's shape means
+paying for this rewrite twice.
+
+Goal: one typed contract layer, Effect everywhere on the server, one client cache.
+
+- [ ] **T0-01** Effect 4 foundation. Add `effect@4.0.5` (exact pin). Add the
+  "Learning more about Effect" section to `AGENTS.md` and read
+  `node_modules/effect/AGENTS.md` before writing any Effect code. Blockers: none.
+- [ ] **T0-02** Effect services and layers. `Db` (Drizzle over D1, kept as the
+  query layer), `Env`, `Session`/`Viewer` (Better Auth), `Assets` (R2), `Mailer`
+  (Cloudflare Email), `RateLimiter`, `AppConfig`. One `AppLayer` built with
+  `Layer.mergeAll`; every service is a `Context.Service` + `Layer`. Blockers: T0-01.
+- [ ] **T0-03** Typed domain errors. `NotFound`, `NotAllowed`, `NotSignedIn`,
+  `Invalid`, `RateLimited`, `Storage` as `Schema.TaggedError`. Replace
+  `src/lib/action.ts` (`ActionResult`, `NOT_SIGNED_IN`, `NOT_ALLOWED`) with
+  `Effect.Result` + tagged errors. Blockers: T0-01.
+- [ ] **T0-04** One schema source of truth. Port every zod schema to Effect
+  Schema under `src/api/schemas/*`; expose them via `Schema.toStandardSchemaV1`
+  so TanStack `.validator()`, route `validateSearch` and react-hook-form all
+  accept the same definition. Drop `zod` from the app. Blockers: T0-01.
+- [ ] **T0-05** Typesafe client URL params. Every route's `validateSearch`
+  becomes an Effect Schema → the router types `search` and `Link search={{...}}`
+  is checked at compile time. Delete the hand-written parsers in
+  `src/lib/search-params.ts` and `src/lib/admin-search.ts` along with their
+  duplicated enums and `pageSchema`. Blockers: T0-04.
+- [ ] **T0-06** Effect everywhere on the server. Every query in
+  `src/server/queries/*` and every write in `src/server/functions/*` returns an
+  `Effect`: `Effect.fn`/`Effect.fnUntraced` for named operations, `Effect.gen`
+  for orchestration, `Effect.tryPromise` around Drizzle/Better Auth/R2 (never
+  `Effect.promise` — it swallows errors), `Effect.all` for parallelism,
+  `Effect.retry` + `Schedule.exponential` for transient D1/R2 failures,
+  `Effect.timeout` on external calls, `Effect.withSpan` for tracing into
+  Cloudflare observability, `Effect.log*` instead of `console`, `Effect.Clock`
+  instead of `src/lib/clock.ts`. Blockers: T0-02, T0-03.
+- [ ] **T0-07** One write path per concern. `functions/admin.ts` and
+  `functions/manage.ts` currently duplicate five writes (store details,
+  product + variants + categories, archive, delete product, delete store) and
+  admin repeats the "row not found" check eight times. One parameterised Effect
+  service per concern; the actor (`owner` vs `admin`) is an argument, not a
+  copy. Also unify `claimProductSlug`/`claimStoreSlug`. Blockers: T0-06.
+- [ ] **T0-08** Typed server functions. Keep `createServerFn` as the app's
+  transport; every one is typed from the Effect schemas and returns an
+  `Effect.Result`-shaped value, so `notFound()`/`redirect()` and the
+  `ActionResult` envelope both come from typed errors. Enable Start's CSRF
+  middleware for mutations. Blockers: T0-04, T0-06.
+- [ ] **T0-09** Uploads become a typed server function. Replace the hand-rolled
+  `POST`/`PATCH`/`DELETE` handlers in `src/routes/api/uploads.ts` (352 lines,
+  no zod, manual `ActionResult` over HTTP) with a server function taking a
+  `FormData` validator (TanStack supports `FormData` validators on POST).
+  `src/lib/uploads.ts` calls it and gets a typed result; the REST route goes
+  away. Blockers: T0-04, T0-06.
+- [ ] **T0-10** Remaining server routes typed. `/images/$`, `/robots.txt`,
+  `/rss.xml`, `/sitemap.xml`, `/api/auth/$` keep their shape but build their
+  payloads from typed Effect data (Effect Schema for sitemap/feed entries, the
+  `Assets` service for R2). Blockers: T0-06.
+- [ ] **T0-11** TanStack Query as the single client cache. Install
+  `@tanstack/react-query`; create the `QueryClient` in `src/router.tsx` and
+  pass it through router `context`; `defaultPreloadStaleTime: 0` so Query owns
+  freshness; `@tanstack/react-router-ssr-query` for SSR dehydrate/hydrate.
+  Key factories + `queryOptions` per domain in `src/lib/queries/*`, with
+  per-domain `staleTime` (catalogue ~60s, admin/manage 0). Prove the SSR
+  hydration path on one route before rolling it out. Blockers: none.
+- [ ] **T0-12** Loaders prefetch, components read. Every route loader calls
+  `queryClient.ensureQueryData(...)`; components use `useSuspenseQuery`;
+  mutations use `useMutation` + `queryClient.invalidateQueries` instead of
+  ad-hoc refetches. Blockers: T0-08, T0-11.
+- [ ] **T0-13** Delete what the refactor made redundant: `zod`,
+  `src/lib/action.ts`, `src/lib/clock.ts`, `src/lib/search-params.ts`,
+  `src/lib/admin-search.ts`, the duplicated slug claiming and the duplicated
+  admin/owner writes from T0-07. Blockers: T0-04, T0-05, T0-06, T0-07, T0-09.
+- [ ] **T0-14** Tests. Vitest coverage for the Effect services (layers with
+  test doubles), the tagged errors and the shared write paths; existing unit
+  tests stay green; `typecheck`, `lint` and `build` pass. Blockers: T0-06.
+- [ ] **T0-15** Documentation. `README.md` + `AGENTS.md` describe the layering
+  (`src/api` contracts → `src/server` Effect services → `src/lib/queries` →
+  routes) so later Tier 1–4 work lands in the new shape. Blockers: T0-13.
+
+### Tier 0 notes
+
+- Effect stays server-side only: no `HttpApi`, no Effect in the browser bundle.
+  `effect/http-api` is `@stability unstable` in 4.0.5 and is deliberately unused.
+- `@tanstack/react-router-ssr-query` was chosen over manual dehydrate/hydrate
+  because it hooks `router.options.dehydrate`, which Start already calls.
+- T0-11 is the only item with real integration risk; if the SSR hydration path
+  misbehaves in Start 1.169, fall back to seeding the Query cache from the
+  loader's own data rather than dropping TanStack Query.
+
 ## Tier 1 — Core product gaps
 
 - [x] **T1-01** Contact producer form on product/store page — structured enquiry that lands in the admin inbox (reuse `contactMessage`). Blockers: none.
@@ -107,4 +199,4 @@ Legend: `[ ]` todo, `[x]` done. **Blockers** = dependencies on other items or pr
 
 ## Suggested first sprint
 
-T1-01, T1-02, T1-03, T1-05, T1-06, T1-09, T1-10, T2-01, T2-10, T2-11, T2-13, T2-14, T3-03, T3-06, T3-09, TX-01.
+T0-01, T0-02, T0-03, T0-04, T0-05, T0-06 — then T1-01, T1-02, T1-03, T1-05, T1-06, T1-09, T1-10, T2-01, T2-10, T2-11, T2-13, T2-14, T3-03, T3-06, T3-09, TX-01.
