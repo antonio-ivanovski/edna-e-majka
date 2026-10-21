@@ -16,7 +16,7 @@ export const Route = createFileRoute('/manage/$storeId/products/')({
   validateSearch: parseProductSearch,
   loaderDeps: ({ search }) => ({ page: search.page ?? 1 }),
   loader: ({ params, deps }) =>
-    getManageProducts({ data: { storeId: params.storeId, page: deps.page } }),
+    getManageProducts({ data: { storeId: params.storeId, page: String(deps.page) } }),
   head: ({ loaderData }) => ({
     meta: [
       {

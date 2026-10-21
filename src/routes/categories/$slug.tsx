@@ -22,7 +22,7 @@ export const Route = createFileRoute('/categories/$slug')({
     return {
       category,
       params: deps,
-      page: await listProducts({ data: { ...deps, categorySlug: category.slug } }),
+      page: await listProducts({ data: { ...deps, page: String(deps.page), categorySlug: category.slug } }),
     }
   },
   head: ({ loaderData }) => ({

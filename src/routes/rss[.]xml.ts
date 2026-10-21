@@ -7,7 +7,7 @@ export const Route = createFileRoute('/rss.xml')({
   server: {
     handlers: {
       GET: async () => {
-        const page = await listProducts({ data: { page: 1 } })
+        const page = await listProducts({ data: { page: '1' } })
         const base = env.APP_URL.replace(/\/$/, '')
         const items = page.items
           .map(

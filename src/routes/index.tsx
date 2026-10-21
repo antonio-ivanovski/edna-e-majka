@@ -17,7 +17,7 @@ export const Route = createFileRoute('/')({
   loaderDeps: ({ search }) => resolveProductSearch(search),
   loader: async ({ deps }) => ({
     params: deps,
-    page: await listProducts({ data: deps }),
+    page: await listProducts({ data: { ...deps, page: String(deps.page) } }),
   }),
   head: () => ({
     meta: [{ title: 'ЕДНА Е МАЈКА' }],

@@ -1,72 +1,34 @@
+import { Effect } from 'effect'
 import { and, asc, count, desc, eq, inArray, or, sql } from 'drizzle-orm'
 
+import { Db } from '../services/db'
+import { DatabaseError } from '../errors'
 import { buildSearchVariants } from '#/lib/translit'
 import { MAX_CATALOGUE_ITEMS, PRODUCT_PAGE_SIZE } from '#/lib/pagination'
-import type { ProductListFilters } from '#/lib/schemas'
-
-import { getDb } from '../db/client'
+import type { ProductListFilters as ProductListFiltersType } from '#/api/schemas'
 import { product, productCategory, productImage, productVariant, store } from '../db/schema'
 
-export type ProductImage = {
-  key: string
-  width: number
-  height: number
-  alt: string | null
-}
-
-export type ProductVariant = {
-  id: string
-  title: string
-  price: number
-}
-
-/** What the card and the product header need from a producer. */
-export type ProductStore = {
-  id: string
-  name: string
-  avatarKey: string | null
-  /** The readable address of the shop. */
-  slug: string | null
-}
-
+export type ProductImage = { key: string; width: number; height: number; alt: string | null }
+export type ProductVariant = { id: string; title: string; price: number }
+export type ProductStore = { id: string; name: string; avatarKey: string | null; slug: string | null }
 export type ProductSummary = {
   id: string
   title: string
   description: string
   availability: 'in_stock' | 'out_of_stock' | 'on_order'
-  /** The readable address; null only for rows written before slugs existed. */
   slug: string | null
   createdAt: Date
-  /** First image by position, or null while a listing has no photo yet. */
   image: ProductImage | null
   variants: ProductVariant[]
   categorySlugs: string[]
   store: ProductStore
 }
-
 export type ProductDetail = ProductSummary & {
   images: ProductImage[]
-  store: ProductStore & {
-    description: string
-    email: string
-    phone: string
-    facebook: string | null
-    instagram: string | null
-  }
+  store: ProductStore & { description: string; email: string; phone: string; facebook: string | null; instagram: string | null }
 }
+export type ProductPage = { items: ProductSummary[]; total: number }
 
-export type ProductPage = {
-  items: ProductSummary[]
-  total: number
-}
-
-/**
- * Columns shared by the card and the product page.
- *
- * The store columns are aliased by hand because D1 hands rows back keyed by
- * column name: two columns called `id` (or `description`) collapse into one and
- * every value after them shifts. Aliases keep the names unique.
- */
 const productColumns = {
   id: product.id,
   title: product.title,
@@ -80,154 +42,64 @@ const productColumns = {
   storeSlug: sql<string | null>`${store.slug}`.as('store_slug'),
 }
 
-/**
- * A published product in an active store is the only thing the public sees;
- * suspended, archived and pending stores disappear from every list.
- */
-function publicProductConditions(filters: Partial<ProductListFilters>) {
+function publicProductConditions(filters: Partial<ProductListFiltersType>) {
   const conditions = [eq(product.status, 'published' as const), eq(store.status, 'active' as const)]
-
   if (filters.categorySlug) {
     conditions.push(
-      sql`exists (
-        select 1 from ${productCategory}
-        where ${productCategory.productId} = ${product.id}
-          and ${productCategory.categorySlug} = ${filters.categorySlug}
-      )`,
+      sql`exists (select 1 from ${productCategory} where ${productCategory.productId} = ${product.id} and ${productCategory.categorySlug} = ${filters.categorySlug})`,
     )
   }
-
-  if (filters.storeId) {
-    conditions.push(eq(product.storeId, filters.storeId))
-  }
-
+  if (filters.storeId) conditions.push(eq(product.storeId, filters.storeId))
   if (filters.query) {
-    // `instr` rather than `LIKE`: no wildcard to escape, and the stored text
-    // already carries both scripts.
-    const matches = buildSearchVariants(filters.query).map(
-      (variant) => sql`instr(${product.searchText}, ${variant}) > 0`,
-    )
-
-    if (matches.length > 0) {
-      conditions.push(or(...matches) ?? sql`0`)
-    }
+    const matches = buildSearchVariants(filters.query).map((v) => sql`instr(${product.searchText}, ${v}) > 0`)
+    if (matches.length > 0) conditions.push(or(...matches) ?? sql`0`)
   }
-
   return and(...conditions)
 }
 
-/** The price shown in a listing is the cheapest variant. Null when there is none. */
-const lowestVariantPrice = sql<number>`(
-  select min(${productVariant.price}) from ${productVariant}
-  where ${productVariant.productId} = ${product.id}
-)`
+const lowestVariantPrice = sql<number>`(select min(${productVariant.price}) from ${productVariant} where ${productVariant.productId} = ${product.id})`
 
-function ordering(filters: ProductListFilters) {
+function ordering(filters: ProductListFiltersType) {
   const direction = filters.direction
-
-  if (filters.sort === 'alpha') {
-    return [direction === 'desc' ? desc(product.title) : asc(product.title)]
-  }
-
-  if (filters.sort === 'price') {
-    return [direction === 'desc' ? desc(lowestVariantPrice) : asc(lowestVariantPrice)]
-  }
-
+  if (filters.sort === 'alpha') return [direction === 'desc' ? desc(product.title) : asc(product.title)]
+  if (filters.sort === 'price') return [direction === 'desc' ? desc(lowestVariantPrice) : asc(lowestVariantPrice)]
   return [direction === 'asc' ? asc(product.createdAt) : desc(product.createdAt)]
 }
 
-export async function selectProductPage(filters: ProductListFilters): Promise<ProductPage> {
-  const db = getDb()
+export const selectProductPage = Effect.fn('selectProductPage')(function* (
+  filters: ProductListFiltersType,
+): Effect.fn.Return<ProductPage, DatabaseError, Db> {
+  const db = yield* Db
   const where = publicProductConditions(filters)
-
-  // The list grows a page at a time: page three asks for three pages of
-  // products, so the cards already on the screen stay where they are.
   const limit = Math.min(filters.page * PRODUCT_PAGE_SIZE, MAX_CATALOGUE_ITEMS)
+  const [idRows, totalRows] = yield* db.run((d) =>
+    d.batch([
+      d.select({ id: product.id }).from(product).innerJoin(store, eq(store.id, product.storeId)).where(where).orderBy(...ordering(filters), asc(product.id)).limit(limit),
+      d.select({ total: count() }).from(product).innerJoin(store, eq(store.id, product.storeId)).where(where),
+    ]) as unknown as Promise<[ { id: string }[], { total: number }[] ]>,
+  )
+  const items = yield* selectProductSummaries(idRows.map((r) => r.id))
+  return { items, total: totalRows[0]?.total ?? 0 }
+})
 
-  const [idRows, totalRows] = await db.batch([
-    db
-      .select({ id: product.id })
-      .from(product)
-      .innerJoin(store, eq(store.id, product.storeId))
-      .where(where)
-      // The id keeps paging stable when two products share a timestamp or price.
-      .orderBy(...ordering(filters), asc(product.id))
-      .limit(limit),
-    db
-      .select({ total: count() })
-      .from(product)
-      .innerJoin(store, eq(store.id, product.storeId))
-      .where(where),
-  ])
-
-  const items = await selectProductSummaries(idRows.map((row) => row.id))
-
-  return {
-    items,
-    total: totalRows[0]?.total ?? 0,
-  }
-}
-
-/**
- * Loads everything a card shows for the given products, in four batched queries,
- * and returns them in the order they were asked for.
- */
-export async function selectProductSummaries(
+export const selectProductSummaries = Effect.fn('selectProductSummaries')(function* (
   productIds: readonly string[],
-): Promise<ProductSummary[]> {
-  if (productIds.length === 0) {
-    return []
-  }
-
-  const db = getDb()
-
-  const [productRows, imageRows, variantRows, categoryRows] = await db.batch([
-    db
-      .select(productColumns)
-      .from(product)
-      .innerJoin(store, eq(store.id, product.storeId))
-      .where(inArray(product.id, [...productIds])),
-    db
-      .select({
-        productId: productImage.productId,
-        key: productImage.r2Key,
-        width: productImage.width,
-        height: productImage.height,
-        alt: productImage.alt,
-      })
-      .from(productImage)
-      .where(inArray(productImage.productId, [...productIds]))
-      .orderBy(asc(productImage.position)),
-    db
-      .select({
-        id: productVariant.id,
-        productId: productVariant.productId,
-        title: productVariant.title,
-        price: productVariant.price,
-      })
-      .from(productVariant)
-      .where(inArray(productVariant.productId, [...productIds]))
-      .orderBy(asc(productVariant.position)),
-    db
-      .select({
-        productId: productCategory.productId,
-        categorySlug: productCategory.categorySlug,
-      })
-      .from(productCategory)
-      .where(inArray(productCategory.productId, [...productIds])),
-  ])
-
-  const byId = new Map(productRows.map((row) => [row.id, row]))
-
+): Effect.fn.Return<ProductSummary[], DatabaseError, Db> {
+  if (productIds.length === 0) return []
+  const db = yield* Db
+  const [productRows, imageRows, variantRows, categoryRows] = yield* db.run((d) =>
+    d.batch([
+      d.select(productColumns).from(product).innerJoin(store, eq(store.id, product.storeId)).where(inArray(product.id, [...productIds])),
+      d.select({ productId: productImage.productId, key: productImage.r2Key, width: productImage.width, height: productImage.height, alt: productImage.alt }).from(productImage).where(inArray(productImage.productId, [...productIds])).orderBy(asc(productImage.position)),
+      d.select({ id: productVariant.id, productId: productVariant.productId, title: productVariant.title, price: productVariant.price }).from(productVariant).where(inArray(productVariant.productId, [...productIds])).orderBy(asc(productVariant.position)),
+      d.select({ productId: productCategory.productId, categorySlug: productCategory.categorySlug }).from(productCategory).where(inArray(productCategory.productId, [...productIds])),
+    ]) as unknown as Promise<[any[], any[], any[], any[]]>,
+  )
+  const byId = new Map(productRows.map((row: any) => [row.id, row]))
   return productIds.flatMap((productId) => {
     const row = byId.get(productId)
-
-    if (!row) {
-      return []
-    }
-
-    const images = imageRows.filter((image) => image.productId === productId)
-
+    if (!row) return []
+    const images = imageRows.filter((image: any) => image.productId === productId)
     return [
       {
         id: row.id,
@@ -238,144 +110,80 @@ export async function selectProductSummaries(
         createdAt: row.createdAt,
         image: images[0] ?? null,
         variants: variantRows
-          .filter((variant) => variant.productId === productId)
-          .map(({ id, title, price }) => ({ id, title, price }))
-          .sort((left, right) => left.price - right.price),
-        categorySlugs: categoryRows
-          .filter((category) => category.productId === productId)
-          .map((category) => category.categorySlug),
-        store: {
-          id: row.storeId,
-          name: row.storeName,
-          avatarKey: row.storeAvatarKey,
-          slug: row.storeSlug,
-        },
+          .filter((v: any) => v.productId === productId)
+          .map(({ id, title, price }: any) => ({ id, title, price }))
+          .sort((a: any, b: any) => a.price - b.price),
+        categorySlugs: categoryRows.filter((c: any) => c.productId === productId).map((c: any) => c.categorySlug),
+        store: { id: row.storeId, name: row.storeName, avatarKey: row.storeAvatarKey, slug: row.storeSlug },
       },
     ]
   })
-}
+})
 
-/**
- * Other products from the same shop, newest first. Used on the product page
- * under "more from this producer".
- */
-export async function selectProductsByStore(
+export const selectProductsByStore = Effect.fn('selectProductsByStore')(function* (
   storeId: string,
   excludeProductId: string,
   limit = 4,
-): Promise<ProductSummary[]> {
-  const db = getDb()
+): Effect.fn.Return<ProductSummary[], DatabaseError, Db> {
+  const db = yield* Db
+  const rows = yield* db.run((d) =>
+    d
+      .select({ id: product.id })
+      .from(product)
+      .innerJoin(store, eq(store.id, product.storeId))
+      .where(and(eq(product.storeId, storeId), eq(product.status, 'published'), eq(store.status, 'active'), sql`${product.id} <> ${excludeProductId}`))
+      .orderBy(desc(product.createdAt))
+      .limit(limit),
+  )
+  return yield* selectProductSummaries(rows.map((r: any) => r.id))
+})
 
-  const rows = await db
-    .select({ id: product.id })
-    .from(product)
-    .innerJoin(store, eq(store.id, product.storeId))
-    .where(
-      and(
-        eq(product.storeId, storeId),
-        eq(product.status, 'published'),
-        eq(store.status, 'active'),
-        sql`${product.id} <> ${excludeProductId}`,
-      ),
-    )
-    .orderBy(desc(product.createdAt))
-    .limit(limit)
-
-  return selectProductSummaries(rows.map((row) => row.id))
-}
-
-/**
- * Published products in any of the given categories. Used on the product page
- * under "similar products".
- */
-export async function selectProductsByCategories(
+export const selectProductsByCategories = Effect.fn('selectProductsByCategories')(function* (
   categorySlugs: readonly string[],
   excludeProductId: string,
   limit = 4,
-): Promise<ProductSummary[]> {
-  if (categorySlugs.length === 0) {
-    return []
-  }
-
-  const db = getDb()
-
-  const rows = await db
-    .selectDistinct({ id: product.id })
-    .from(product)
-    .innerJoin(store, eq(store.id, product.storeId))
-    .innerJoin(productCategory, eq(productCategory.productId, product.id))
-    .where(
-      and(
-        inArray(productCategory.categorySlug, [...categorySlugs]),
-        eq(product.status, 'published'),
-        eq(store.status, 'active'),
-        sql`${product.id} <> ${excludeProductId}`,
-      ),
-    )
-    .orderBy(desc(product.createdAt))
-    .limit(limit)
-
-  return selectProductSummaries(rows.map((row) => row.id))
-}
-
-export async function selectProductDetail(productId: string): Promise<ProductDetail | null> {
-  const db = getDb()
-
-  const [rows, imageRows, variantRows, categoryRows] = await db.batch([
-    db
-      .select({
-        ...productColumns,
-        // Aliased for the same reason as the store columns above: `description`
-        // already exists in `productColumns`.
-        storeDescription: sql<string>`${store.description}`.as('store_description'),
-        storeEmail: sql<string>`${store.email}`.as('store_email'),
-        storePhone: sql<string>`${store.phone}`.as('store_phone'),
-        storeFacebook: sql<string | null>`${store.facebook}`.as('store_facebook'),
-        storeInstagram: sql<string | null>`${store.instagram}`.as('store_instagram'),
-      })
+): Effect.fn.Return<ProductSummary[], DatabaseError, Db> {
+  if (categorySlugs.length === 0) return []
+  const db = yield* Db
+  const rows = yield* db.run((d) =>
+    d
+      .selectDistinct({ id: product.id })
       .from(product)
       .innerJoin(store, eq(store.id, product.storeId))
-      .where(
-        and(
-          // The address in the URL may be the id or the slug; both find the
-          // listing, so old links keep working.
-          or(eq(product.id, productId), eq(product.slug, productId)),
-          eq(product.status, 'published'),
-          eq(store.status, 'active'),
-        ),
-      )
-      .limit(1),
-    db
-      .select({
-        key: productImage.r2Key,
-        width: productImage.width,
-        height: productImage.height,
-        alt: productImage.alt,
-      })
-      .from(productImage)
-      .where(eq(productImage.productId, productId))
-      .orderBy(asc(productImage.position)),
-    db
-      .select({
-        id: productVariant.id,
-        title: productVariant.title,
-        price: productVariant.price,
-      })
-      .from(productVariant)
-      .where(eq(productVariant.productId, productId))
-      .orderBy(asc(productVariant.position)),
-    db
-      .select({ categorySlug: productCategory.categorySlug })
-      .from(productCategory)
-      .where(eq(productCategory.productId, productId)),
-  ])
+      .innerJoin(productCategory, eq(productCategory.productId, product.id))
+      .where(and(inArray(productCategory.categorySlug, [...categorySlugs]), eq(product.status, 'published'), eq(store.status, 'active'), sql`${product.id} <> ${excludeProductId}`))
+      .orderBy(desc(product.createdAt))
+      .limit(limit),
+  )
+  return yield* selectProductSummaries(rows.map((r: any) => r.id))
+})
 
+export const selectProductDetail = Effect.fn('selectProductDetail')(function* (
+  productId: string,
+): Effect.fn.Return<ProductDetail | null, DatabaseError, Db> {
+  const db = yield* Db
+  const [rows, imageRows, variantRows, categoryRows] = yield* db.run((d) =>
+    d.batch([
+      d
+        .select({
+          ...productColumns,
+          storeDescription: sql<string>`${store.description}`.as('store_description'),
+          storeEmail: sql<string>`${store.email}`.as('store_email'),
+          storePhone: sql<string>`${store.phone}`.as('store_phone'),
+          storeFacebook: sql<string | null>`${store.facebook}`.as('store_facebook'),
+          storeInstagram: sql<string | null>`${store.instagram}`.as('store_instagram'),
+        })
+        .from(product)
+        .innerJoin(store, eq(store.id, product.storeId))
+        .where(and(or(eq(product.id, productId), eq(product.slug, productId)), eq(product.status, 'published'), eq(store.status, 'active')))
+        .limit(1),
+      d.select({ key: productImage.r2Key, width: productImage.width, height: productImage.height, alt: productImage.alt }).from(productImage).where(eq(productImage.productId, productId)).orderBy(asc(productImage.position)),
+      d.select({ id: productVariant.id, title: productVariant.title, price: productVariant.price }).from(productVariant).where(eq(productVariant.productId, productId)).orderBy(asc(productVariant.position)),
+      d.select({ categorySlug: productCategory.categorySlug }).from(productCategory).where(eq(productCategory.productId, productId)),
+    ]) as unknown as Promise<[any[], any[], any[], any[]]>,
+  )
   const row = rows[0]
-
-  if (!row) {
-    return null
-  }
-
+  if (!row) return null
   return {
     id: row.id,
     title: row.title,
@@ -385,8 +193,8 @@ export async function selectProductDetail(productId: string): Promise<ProductDet
     createdAt: row.createdAt,
     image: imageRows[0] ?? null,
     images: imageRows,
-    variants: variantRows.sort((left, right) => left.price - right.price),
-    categorySlugs: categoryRows.map((category) => category.categorySlug),
+    variants: variantRows.sort((a: any, b: any) => a.price - b.price),
+    categorySlugs: categoryRows.map((c: any) => c.categorySlug),
     store: {
       id: row.storeId,
       name: row.storeName,
@@ -399,4 +207,4 @@ export async function selectProductDetail(productId: string): Promise<ProductDet
       instagram: row.storeInstagram,
     },
   }
-}
+})

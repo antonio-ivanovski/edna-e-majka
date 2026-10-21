@@ -24,7 +24,7 @@ export const Route = createFileRoute('/producers/$storeId')({
       throw redirect({ to: '/producers/$storeId', params: { storeId: store.slug } })
     }
 
-    const page = await listProducts({ data: { ...deps, storeId: store.id } })
+    const page = await listProducts({ data: { ...deps, page: String(deps.page), storeId: store.id } })
 
     return { store, params: deps, page }
   },

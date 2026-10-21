@@ -26,7 +26,7 @@ export const Route = createFileRoute('/search')({
       query,
       params: deps,
       page: await listProducts({
-        data: { sort: deps.sort, direction: deps.direction, page: deps.page, query },
+        data: { sort: deps.sort, direction: deps.direction, page: String(deps.page), query },
       }),
     }
   },
