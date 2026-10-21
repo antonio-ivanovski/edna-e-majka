@@ -18,7 +18,15 @@ export class Db extends Context.Service<Db, {
         Effect.tryPromise({
           try: () => f(db),
           catch: (cause) => new DatabaseError({ message: 'Грешка при пристап до базата.', cause }),
-        }),
+        }).pipe(
+          Effect.retry({ times: 2 }),
+          Effect.timeout('10 seconds'),
+          Effect.mapError((e) =>
+            e._tag === 'TimeoutError'
+              ? new DatabaseError({ message: 'Грешка при пристап до базата.', cause: e })
+              : e,
+          ),
+        ),
     })
   })
 }
