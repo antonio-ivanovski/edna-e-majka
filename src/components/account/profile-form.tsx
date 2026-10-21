@@ -37,8 +37,8 @@ export function AccountProfileForm({ name, image }: { name: string; image: strin
 
     const result = await updateAccount({ data: { name: values.name } })
 
-    if (!result.ok) {
-      setServerError(result.message)
+    if (result._tag === 'Failure') {
+      setServerError(result.failure.message)
       return
     }
 

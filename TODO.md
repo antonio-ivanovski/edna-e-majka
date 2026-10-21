@@ -53,7 +53,7 @@ Goal: one typed contract layer, Effect everywhere on the server, one client cach
   admin repeats the "row not found" check eight times. One parameterised Effect
   service per concern; the actor (`owner` vs `admin`) is an argument, not a
   copy. Also unify `claimProductSlug`/`claimStoreSlug`. Blockers: T0-06.
-- [ ] **T0-08** Typed server functions. Keep `createServerFn` as the app's
+- [x] **T0-08** Typed server functions. Keep `createServerFn` as the app's
   transport; every one is typed from the Effect schemas and returns an
   `Effect.Result`-shaped value, so `notFound()`/`redirect()` and the
   `ActionResult` envelope both come from typed errors. Enable Start's CSRF

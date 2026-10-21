@@ -28,8 +28,8 @@ export function TransferOwnerForm({ store }: { store: AdminStore }) {
 
     setBusy(false)
 
-    if (!result.ok) {
-      setError(result.message)
+    if (result._tag === "Failure") {
+      setError(result.failure.message)
       return
     }
 

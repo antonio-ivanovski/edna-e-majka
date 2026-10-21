@@ -178,8 +178,8 @@ export function StoreForm({
     if (store) {
       const result = await updateStore({ data: { ...values, storeId: store.id } })
 
-      if (!result.ok) {
-        setServerError(result.message)
+      if (result._tag === 'Failure') {
+        setServerError(result.failure.message)
         return
       }
 
@@ -191,14 +191,14 @@ export function StoreForm({
 
     const result = await applyForStore({ data: values })
 
-    if (!result.ok) {
-      setServerError(result.message)
+    if (result._tag === 'Failure') {
+      setServerError(result.failure.message)
       return
     }
 
     await router.invalidate()
     toast.success('Продавницата е регистрирана.')
-    onSaved?.(result.data.storeId)
+    onSaved?.(result.success.storeId)
   })
 
   return (

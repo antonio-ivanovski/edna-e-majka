@@ -5,6 +5,7 @@ import { Db } from './services/db'
 import { NotAllowedError, NotFoundError } from './errors'
 import { store } from './db/schema'
 import { optionalText } from '#/lib/text'
+// eslint-disable-next-line @typescript-eslint/consistent-type-imports
 import { StoreDetails } from '#/api/schemas/stores'
 
 type StoreDetailsType = typeof StoreDetails.Type

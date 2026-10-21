@@ -41,8 +41,8 @@ export function AdminStoreForm({ store }: { store: AdminStore }) {
 
     const result = await adminUpdateStore({ data: { ...values, storeId: store.id } })
 
-    if (!result.ok) {
-      setServerError(result.message)
+    if (result._tag === "Failure") {
+      setServerError(result.failure.message)
       return
     }
 

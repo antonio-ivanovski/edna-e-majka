@@ -1,10 +1,11 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import { notFound, redirect } from '@tanstack/react-router'
 import { createServerFn } from '@tanstack/react-start'
 import type { BatchItem } from 'drizzle-orm/batch'
 import { eq } from 'drizzle-orm'
 
-import { NOT_ALLOWED, NOT_SIGNED_IN, type ActionResult } from '#/lib/action'
+import { Result } from 'effect'
+import type { DomainError } from '../errors'
+import { NotAllowedError, NotFoundError, NotSignedInError } from '../errors'
 import { toValidator, ManageProduct, ManageProducts, ProductDelete, ProductForm, ProductImageAlt, ProductStatusSchema as ProductStatus, StoreDetails, StoreId, StoreUpdate } from '#/api/schemas'
 import { buildSearchText } from '#/lib/translit'
 import { optionalText } from '#/lib/text'
@@ -30,7 +31,7 @@ function rowStatements<Statement extends BatchItem<'sqlite'>>(statements: Statem
   return first ? [first, ...rest] : null
 }
 
-export const getManageHome = createServerFn({ method: 'GET' })
+export const getManageHome = createServerFn({ method: 'GET', strict: { output: false } })
   .middleware([withViewer])
   .handler(async ({ context }) => {
     const ownerId = requireOwner(context.viewer?.id)
@@ -41,7 +42,7 @@ export const getManageHome = createServerFn({ method: 'GET' })
     }
   })
 
-export const getManageStore = createServerFn({ method: 'GET' })
+export const getManageStore = createServerFn({ method: 'GET', strict: { output: false } })
   .middleware([withViewer])
   .validator(toValidator(StoreId))
   .handler(async ({ context, data }) => {
@@ -51,7 +52,7 @@ export const getManageStore = createServerFn({ method: 'GET' })
     return { store: ownStore }
   })
 
-export const getManageProducts = createServerFn({ method: 'GET' })
+export const getManageProducts = createServerFn({ method: 'GET', strict: { output: false } })
   .middleware([withViewer])
   .validator(toValidator(ManageProducts))
   .handler(async ({ context, data }) => {
@@ -62,7 +63,7 @@ export const getManageProducts = createServerFn({ method: 'GET' })
     return { store: ownStore, products: page.items, total: page.total }
   })
 
-export const getManageProduct = createServerFn({ method: 'GET' })
+export const getManageProduct = createServerFn({ method: 'GET', strict: { output: false } })
   .middleware([withViewer])
   .validator(toValidator(ManageProduct))
   .handler(async ({ context, data }) => {
@@ -74,14 +75,14 @@ export const getManageProduct = createServerFn({ method: 'GET' })
     return { store: ownStore, product: owned }
   })
 
-export const applyForStore = createServerFn({ method: 'POST' })
+export const applyForStore = createServerFn({ method: 'POST', strict: { output: false } })
   .middleware([withViewer])
   .validator(toValidator(StoreDetails))
-  .handler(async ({ context, data }): Promise<ActionResult<{ storeId: string }>> => {
+  .handler(async ({ context, data }): Promise<Result.Result<{ storeId: string }, DomainError>> => {
     const viewer = context.viewer
-    if (!viewer) return NOT_SIGNED_IN
+    if (!viewer) return Result.fail(new NotSignedInError({ message: 'Не сте најавени.' }))
     const existing = await runEffect(selectOwnerStore(viewer.id))
-    if (existing) return { ok: false, message: 'Веќе имате регистрирано продавница.' }
+    if (existing) return Result.fail(new NotAllowedError({ message: 'Веќе имате регистрирано продавница.' }))
     const verdict = reviewShopApplication({ name: data.name, description: data.description })
     const storeId = crypto.randomUUID()
     await getDb().insert(store).values({
@@ -99,35 +100,35 @@ export const applyForStore = createServerFn({ method: 'POST' })
       status: verdict.status,
       statusNote: verdict.status === 'pending' ? verdict.note : null,
     })
-    return { ok: true, data: { storeId } }
+    return Result.succeed({ storeId })
   })
 
-export const updateStore = createServerFn({ method: 'POST' })
+export const updateStore = createServerFn({ method: 'POST', strict: { output: false } })
   .middleware([withViewer])
   .validator(toValidator(StoreUpdate))
-  .handler(async ({ context, data }): Promise<ActionResult> => {
+  .handler(async ({ context, data }): Promise<Result.Result<null, DomainError>> => {
     const viewer = context.viewer
-    if (!viewer) return NOT_SIGNED_IN
+    if (!viewer) return Result.fail(new NotSignedInError({ message: 'Не сте најавени.' }))
     try {
       await runEffect(updateStoreDetailsEffect(data.storeId, data, { kind: 'owner', id: viewer.id }))
-      return { ok: true, data: null }
+      return Result.succeed(null)
     } catch (e) {
-      return { ok: false, message: (e as Error).message || 'Немате дозвола за оваа акција.' }
+      return Result.fail(new NotAllowedError({ message: (e as Error).message || 'Немате дозвола за оваа акција.' }))
     }
   })
 
-export const saveProduct = createServerFn({ method: 'POST' })
+export const saveProduct = createServerFn({ method: 'POST', strict: { output: false } })
   .middleware([withViewer])
   .validator(toValidator(ProductForm))
-  .handler(async ({ context, data }): Promise<ActionResult<{ productId: string }>> => {
+  .handler(async ({ context, data }): Promise<Result.Result<{ productId: string }, DomainError>> => {
     const viewer = context.viewer
-    if (!viewer) return NOT_SIGNED_IN
-    if (!(await runEffect(selectOwnerStoreById(data.storeId, viewer.id)))) return NOT_ALLOWED
+    if (!viewer) return Result.fail(new NotSignedInError({ message: 'Не сте најавени.' }))
+    if (!(await runEffect(selectOwnerStoreById(data.storeId, viewer.id)))) return Result.fail(new NotAllowedError({ message: 'Немате дозвола за оваа акција.' }))
     const db = getDb()
     const searchText = buildSearchText(data.title, data.description)
     const productId = data.productId ?? crypto.randomUUID()
     if (data.productId) {
-      if (!(await runEffect(selectOwnerProduct(data.productId, data.storeId)))) return NOT_ALLOWED
+      if (!(await runEffect(selectOwnerProduct(data.productId, data.storeId)))) return Result.fail(new NotAllowedError({ message: 'Немате дозвола за оваа акција.' }))
       await db.update(product).set({ title: data.title, description: data.description, searchText, availability: data.availability }).where(eq(product.id, productId))
     } else {
       await db.insert(product).values({ id: productId, storeId: data.storeId, title: data.title, description: data.description, searchText, availability: data.availability, slug: await runEffect(claimProductSlug(data.title)) })
@@ -139,56 +140,56 @@ export const saveProduct = createServerFn({ method: 'POST' })
       ...data.categories.map((categorySlug) => db.insert(productCategory).values({ productId, categorySlug })),
     ])
     if (statements) await db.batch(statements)
-    return { ok: true, data: { productId } }
+    return Result.succeed({ productId })
   })
 
-export const setProductArchived = createServerFn({ method: 'POST' })
+export const setProductArchived = createServerFn({ method: 'POST', strict: { output: false } })
   .middleware([withViewer])
   .validator(toValidator(ProductStatus))
-  .handler(async ({ context, data }): Promise<ActionResult> => {
+  .handler(async ({ context, data }): Promise<Result.Result<null, DomainError>> => {
     const viewer = context.viewer
-    if (!viewer) return NOT_SIGNED_IN
-    if (!(await runEffect(selectOwnedProductRow(data.productId, viewer.id)))) return NOT_ALLOWED
+    if (!viewer) return Result.fail(new NotSignedInError({ message: 'Не сте најавени.' }))
+    if (!(await runEffect(selectOwnedProductRow(data.productId, viewer.id)))) return Result.fail(new NotAllowedError({ message: 'Немате дозвола за оваа акција.' }))
     await getDb().update(product).set({ status: data.archived ? 'archived' : 'published', archivedAt: data.archived ? new Date() : null, archivedBy: data.archived ? viewer.id : null }).where(eq(product.id, data.productId))
-    return { ok: true, data: null }
+    return Result.succeed(null)
   })
 
-export const deleteProduct = createServerFn({ method: 'POST' })
+export const deleteProduct = createServerFn({ method: 'POST', strict: { output: false } })
   .middleware([withViewer])
   .validator(toValidator(ProductDelete))
-  .handler(async ({ context, data }): Promise<ActionResult> => {
+  .handler(async ({ context, data }): Promise<Result.Result<null, DomainError>> => {
     const viewer = context.viewer
-    if (!viewer) return NOT_SIGNED_IN
-    if (!(await runEffect(selectOwnedProductRow(data.productId, viewer.id)))) return NOT_ALLOWED
+    if (!viewer) return Result.fail(new NotSignedInError({ message: 'Не сте најавени.' }))
+    if (!(await runEffect(selectOwnedProductRow(data.productId, viewer.id)))) return Result.fail(new NotAllowedError({ message: 'Немате дозвола за оваа акција.' }))
     await runEffect(deleteProductCascade(data.productId))
-    return { ok: true, data: null }
+    return Result.succeed(null)
   })
 
-export const deleteStore = createServerFn({ method: 'POST' })
+export const deleteStore = createServerFn({ method: 'POST', strict: { output: false } })
   .middleware([withViewer])
   .validator(toValidator(StoreId))
-  .handler(async ({ context, data }): Promise<ActionResult> => {
+  .handler(async ({ context, data }): Promise<Result.Result<null, DomainError>> => {
     const viewer = context.viewer
-    if (!viewer) return NOT_SIGNED_IN
-    if (!(await runEffect(selectOwnerStoreById(data.storeId, viewer.id)))) return NOT_ALLOWED
+    if (!viewer) return Result.fail(new NotSignedInError({ message: 'Не сте најавени.' }))
+    if (!(await runEffect(selectOwnerStoreById(data.storeId, viewer.id)))) return Result.fail(new NotAllowedError({ message: 'Немате дозвола за оваа акција.' }))
     await runEffect(deleteStoreCascade(data.storeId))
-    return { ok: true, data: null }
+    return Result.succeed(null)
   })
 
-export const updateProductImageAlt = createServerFn({ method: 'POST' })
+export const updateProductImageAlt = createServerFn({ method: 'POST', strict: { output: false } })
   .middleware([withViewer])
   .validator(toValidator(ProductImageAlt))
-  .handler(async ({ context, data }): Promise<ActionResult> => {
+  .handler(async ({ context, data }): Promise<Result.Result<null, DomainError>> => {
     const viewer = context.viewer
-    if (!viewer) return NOT_SIGNED_IN
+    if (!viewer) return Result.fail(new NotSignedInError({ message: 'Не сте најавени.' }))
     const db = getDb()
     const rows = await db.select({ productId: productImage.productId }).from(productImage).where(eq(productImage.id, data.imageId)).limit(1)
     const image = rows[0]
-    if (!image) return { ok: false, message: 'Сликата не е најдена.' }
+    if (!image) return Result.fail(new NotFoundError({ message: 'Сликата не е најдена.' }))
     const owned = viewer.role === 'admin'
       ? await selectAdminProductRow(image.productId)
       : await runEffect(selectOwnedProductRow(image.productId, viewer.id))
-    if (!owned) return NOT_ALLOWED
+    if (!owned) return Result.fail(new NotAllowedError({ message: 'Немате дозвола за оваа акција.' }))
     await db.update(productImage).set({ alt: data.alt.trim() ? data.alt.trim() : null }).where(eq(productImage.id, data.imageId))
-    return { ok: true, data: null }
+    return Result.succeed(null)
   })

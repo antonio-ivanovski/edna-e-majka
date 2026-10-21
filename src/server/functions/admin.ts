@@ -10,7 +10,9 @@
 import { notFound } from '@tanstack/react-router'
 import { createServerFn } from '@tanstack/react-start'
 import { eq, sql } from 'drizzle-orm'
-import type { ActionResult } from '#/lib/action'
+import { Result } from 'effect'
+import type { DomainError } from '../errors'
+import { InvalidInputError, NotAllowedError, NotFoundError } from '../errors'
 import { toValidator, AdminMessage, AdminMessageHandled, AdminMessageList, AdminProductList, AdminStoreDetails, AdminStoreList, AdminStoreStatus, AdminTransferStore, AdminUserList, AdminUserRole, ProductDelete, ProductForm, ProductStatusSchema as ProductStatus, StoreId } from '#/api/schemas'
 import { buildSearchText } from '#/lib/translit'
 
@@ -32,12 +34,12 @@ import {
 } from '../queries/admin'
 import { selectOwnerProduct, selectOwnerStore } from '../queries/manage'
 
-export const getAdminStores = createServerFn({ method: 'GET' })
+export const getAdminStores = createServerFn({ method: 'GET', strict: { output: false } })
   .middleware([withAdmin])
   .validator(toValidator(AdminStoreList))
   .handler(async ({ data }) => runEffect(selectAdminStores(data as any)))
 
-export const getAdminStore = createServerFn({ method: 'GET' })
+export const getAdminStore = createServerFn({ method: 'GET', strict: { output: false } })
   .middleware([withAdmin])
   .validator(toValidator(StoreId))
   .handler(async ({ data }) => {
@@ -53,17 +55,17 @@ export const getAdminStore = createServerFn({ method: 'GET' })
     }
   })
 
-export const getAdminProducts = createServerFn({ method: 'GET' })
+export const getAdminProducts = createServerFn({ method: 'GET', strict: { output: false } })
   .middleware([withAdmin])
   .validator(toValidator(AdminProductList))
   .handler(async ({ data }) => runEffect(selectAdminProducts(data as any)))
 
-export const getAdminUsers = createServerFn({ method: 'GET' })
+export const getAdminUsers = createServerFn({ method: 'GET', strict: { output: false } })
   .middleware([withAdmin])
   .validator(toValidator(AdminUserList))
   .handler(async ({ data }) => runEffect(selectAdminUsers(data as any)))
 
-export const getAdminMessages = createServerFn({ method: 'GET' })
+export const getAdminMessages = createServerFn({ method: 'GET', strict: { output: false } })
   .middleware([withAdmin])
   .validator(toValidator(AdminMessageList))
   .handler(async ({ data }) => runEffect(selectAdminMessages(data as any)))
@@ -73,28 +75,28 @@ export const getAdminMessages = createServerFn({ method: 'GET' })
  * it is not, so a quick approval from the list does not erase the reason an
  * earlier suspension gave.
  */
-export const setStoreStatus = createServerFn({ method: 'POST' })
+export const setStoreStatus = createServerFn({ method: 'POST', strict: { output: false } })
   .middleware([withAdmin])
   .validator(toValidator(AdminStoreStatus))
-  .handler(async ({ context, data }): Promise<ActionResult> => {
+  .handler(async ({ context, data }): Promise<Result.Result<null, DomainError>> => {
     try {
       await runEffect(setStoreStatusEffect(data.storeId, data.status, data.note, { kind: 'admin', id: context.admin.id }))
-      return { ok: true, data: null }
+      return Result.succeed(null)
     } catch (e) {
-      return { ok: false, message: (e as Error).message || 'Грешка.' }
+      return Result.fail(new NotFoundError({ message: (e as Error).message || 'Грешка.' }))
     }
   })
 
 /** An admin may correct the details of any shop; ownership stays where it is. */
-export const adminUpdateStore = createServerFn({ method: 'POST' })
+export const adminUpdateStore = createServerFn({ method: 'POST', strict: { output: false } })
   .middleware([withAdmin])
   .validator(toValidator(AdminStoreDetails))
-  .handler(async ({ data }): Promise<ActionResult> => {
+  .handler(async ({ data }): Promise<Result.Result<null, DomainError>> => {
     try {
       await runEffect(updateStoreDetailsEffect(data.storeId, data, { kind: 'admin', id: 'admin' }))
-      return { ok: true, data: null }
+      return Result.succeed(null)
     } catch (e) {
-      return { ok: false, message: (e as Error).message || 'Грешка.' }
+      return Result.fail(new NotFoundError({ message: (e as Error).message || 'Грешка.' }))
     }
   })
 
@@ -102,10 +104,10 @@ export const adminUpdateStore = createServerFn({ method: 'POST' })
  * Removes a shop with everything that belonged to it: the listings, the photos,
  * the logo and the cover.
  */
-export const adminDeleteStore = createServerFn({ method: 'POST' })
+export const adminDeleteStore = createServerFn({ method: 'POST', strict: { output: false } })
   .middleware([withAdmin])
   .validator(toValidator(StoreId))
-  .handler(async ({ data }): Promise<ActionResult> => {
+  .handler(async ({ data }): Promise<Result.Result<null, DomainError>> => {
     const rows = await getDb()
       .select({ id: store.id })
       .from(store)
@@ -113,21 +115,21 @@ export const adminDeleteStore = createServerFn({ method: 'POST' })
       .limit(1)
 
     if (!rows[0]) {
-      return { ok: false, message: 'Продавницата не е најдена.' }
+      return Result.fail(new NotFoundError({ message: 'Продавницата не е најдена.' }))
     }
 
     await runEffect(deleteStoreCascade(data.storeId))
 
-    return { ok: true, data: null }
+    return Result.succeed(null)
   })
 
 /**
  * Moves a shop to another account, for the cases the platform cannot solve by
  * itself. One shop per person still holds: the target must not have one.
- */ export const transferStoreOwner = createServerFn({ method: 'POST' })
+ */ export const transferStoreOwner = createServerFn({ method: 'POST', strict: { output: false } })
   .middleware([withAdmin])
   .validator(toValidator(AdminTransferStore))
-  .handler(async ({ data }): Promise<ActionResult> => {
+  .handler(async ({ data }): Promise<Result.Result<null, DomainError>> => {
     const db = getDb()
     const email = data.email.trim().toLowerCase()
 
@@ -140,7 +142,7 @@ export const adminDeleteStore = createServerFn({ method: 'POST' })
     const target = candidates[0]
 
     if (!target) {
-      return { ok: false, message: 'Нема корисник со таа е-маил адреса.' }
+      return Result.fail(new NotFoundError({ message: 'Нема корисник со таа е-маил адреса.' }))
     }
 
     const rows = await db
@@ -152,26 +154,26 @@ export const adminDeleteStore = createServerFn({ method: 'POST' })
     const current = rows[0]
 
     if (!current) {
-      return { ok: false, message: 'Продавницата не е најдена.' }
+      return Result.fail(new NotFoundError({ message: 'Продавницата не е најдена.' }))
     }
 
     if (current.ownerId === target.id) {
-      return { ok: false, message: 'Продавницата веќе е на таа адреса.' }
+      return Result.fail(new NotAllowedError({ message: 'Продавницата веќе е на таа адреса.' }))
     }
 
     if (await runEffect(selectOwnerStore(target.id))) {
-      return { ok: false, message: 'Тој корисник веќе има продавница.' }
+      return Result.fail(new NotAllowedError({ message: 'Тој корисник веќе има продавница.' }))
     }
 
     await db.update(store).set({ ownerId: target.id }).where(eq(store.id, data.storeId))
 
-    return { ok: true, data: null }
+    return Result.succeed(null)
   })
 
-export const adminSetProductArchived = createServerFn({ method: 'POST' })
+export const adminSetProductArchived = createServerFn({ method: 'POST', strict: { output: false } })
   .middleware([withAdmin])
   .validator(toValidator(ProductStatus))
-  .handler(async ({ context, data }): Promise<ActionResult> => {
+  .handler(async ({ context, data }): Promise<Result.Result<null, DomainError>> => {
     const db = getDb()
 
     const rows = await db
@@ -181,7 +183,7 @@ export const adminSetProductArchived = createServerFn({ method: 'POST' })
       .limit(1)
 
     if (!rows[0]) {
-      return { ok: false, message: 'Производот не е најден.' }
+      return Result.fail(new NotFoundError({ message: 'Производот не е најден.' }))
     }
 
     await db
@@ -193,13 +195,13 @@ export const adminSetProductArchived = createServerFn({ method: 'POST' })
       })
       .where(eq(product.id, data.productId))
 
-    return { ok: true, data: null }
+    return Result.succeed(null)
   })
 
-export const adminDeleteProduct = createServerFn({ method: 'POST' })
+export const adminDeleteProduct = createServerFn({ method: 'POST', strict: { output: false } })
   .middleware([withAdmin])
   .validator(toValidator(ProductDelete))
-  .handler(async ({ data }): Promise<ActionResult> => {
+  .handler(async ({ data }): Promise<Result.Result<null, DomainError>> => {
     const rows = await getDb()
       .select({ id: product.id })
       .from(product)
@@ -207,12 +209,12 @@ export const adminDeleteProduct = createServerFn({ method: 'POST' })
       .limit(1)
 
     if (!rows[0]) {
-      return { ok: false, message: 'Производот не е најден.' }
+      return Result.fail(new NotFoundError({ message: 'Производот не е најден.' }))
     }
 
     await runEffect(deleteProductCascade(data.productId))
 
-    return { ok: true, data: null }
+    return Result.succeed(null)
   })
 
 /**
@@ -220,12 +222,12 @@ export const adminDeleteProduct = createServerFn({ method: 'POST' })
  * refused: the platform must not be able to lose its last administrator by a
  * mis-click.
  */
-export const setUserRole = createServerFn({ method: 'POST' })
+export const setUserRole = createServerFn({ method: 'POST', strict: { output: false } })
   .middleware([withAdmin])
   .validator(toValidator(AdminUserRole))
-  .handler(async ({ context, data }): Promise<ActionResult> => {
+  .handler(async ({ context, data }): Promise<Result.Result<null, DomainError>> => {
     if (data.userId === context.admin.id) {
-      return { ok: false, message: 'Не можете да ја смените сопствената улога.' }
+      return Result.fail(new NotAllowedError({ message: 'Не можете да ја смените сопствената улога.' }))
     }
 
     const rows = await getDb()
@@ -235,18 +237,18 @@ export const setUserRole = createServerFn({ method: 'POST' })
       .limit(1)
 
     if (!rows[0]) {
-      return { ok: false, message: 'Корисникот не е најден.' }
+      return Result.fail(new NotFoundError({ message: 'Корисникот не е најден.' }))
     }
 
     await getDb().update(user).set({ role: data.role }).where(eq(user.id, data.userId))
 
-    return { ok: true, data: null }
+    return Result.succeed(null)
   })
 
-export const setMessageHandled = createServerFn({ method: 'POST' })
+export const setMessageHandled = createServerFn({ method: 'POST', strict: { output: false } })
   .middleware([withAdmin])
   .validator(toValidator(AdminMessageHandled))
-  .handler(async ({ data }): Promise<ActionResult> => {
+  .handler(async ({ data }): Promise<Result.Result<null, DomainError>> => {
     const rows = await getDb()
       .select({ id: contactMessage.id })
       .from(contactMessage)
@@ -254,7 +256,7 @@ export const setMessageHandled = createServerFn({ method: 'POST' })
       .limit(1)
 
     if (!rows[0]) {
-      return { ok: false, message: 'Пораката не е најдена.' }
+      return Result.fail(new NotFoundError({ message: 'Пораката не е најдена.' }))
     }
 
     await getDb()
@@ -262,13 +264,13 @@ export const setMessageHandled = createServerFn({ method: 'POST' })
       .set({ handledAt: data.handled ? new Date() : null })
       .where(eq(contactMessage.id, data.messageId))
 
-    return { ok: true, data: null }
+    return Result.succeed(null)
   })
 
-export const deleteMessage = createServerFn({ method: 'POST' })
+export const deleteMessage = createServerFn({ method: 'POST', strict: { output: false } })
   .middleware([withAdmin])
   .validator(toValidator(AdminMessage))
-  .handler(async ({ data }): Promise<ActionResult> => {
+  .handler(async ({ data }): Promise<Result.Result<null, DomainError>> => {
     const rows = await getDb()
       .select({ id: contactMessage.id })
       .from(contactMessage)
@@ -276,15 +278,15 @@ export const deleteMessage = createServerFn({ method: 'POST' })
       .limit(1)
 
     if (!rows[0]) {
-      return { ok: false, message: 'Пораката не е најдена.' }
+      return Result.fail(new NotFoundError({ message: 'Пораката не е најдена.' }))
     }
 
     await getDb().delete(contactMessage).where(eq(contactMessage.id, data.messageId))
 
-    return { ok: true, data: null }
+    return Result.succeed(null)
   })
 
-export const getAdminProduct = createServerFn({ method: 'GET' })
+export const getAdminProduct = createServerFn({ method: 'GET', strict: { output: false } })
   .middleware([withAdmin])
   .validator(toValidator(ProductDelete))
   .handler(async ({ data }) => {
@@ -309,18 +311,18 @@ export const getAdminProduct = createServerFn({ method: 'GET' })
     return { store, product }
   })
 
-export const adminSaveProduct = createServerFn({ method: 'POST' })
+export const adminSaveProduct = createServerFn({ method: 'POST', strict: { output: false } })
   .middleware([withAdmin])
   .validator(toValidator(ProductForm))
-  .handler(async ({ data }): Promise<ActionResult<{ productId: string }>> => {
+  .handler(async ({ data }): Promise<Result.Result<{ productId: string }, DomainError>> => {
     if (!data.productId) {
-      return { ok: false, message: 'Недостасува производ.' }
+      return Result.fail(new InvalidInputError({ message: 'Недостасува производ.' }))
     }
 
     const row = await runEffect(selectAdminProductRow(data.productId))
 
     if (!row) {
-      return { ok: false, message: 'Производот не е најден.' }
+      return Result.fail(new NotFoundError({ message: 'Производот не е најден.' }))
     }
 
     const db = getDb()
@@ -354,5 +356,5 @@ export const adminSaveProduct = createServerFn({ method: 'POST' })
       await db.insert(productCategory).values({ productId, categorySlug })
     }
 
-    return { ok: true, data: { productId } }
+    return Result.succeed({ productId })
   })

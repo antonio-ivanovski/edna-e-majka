@@ -9,7 +9,9 @@ import { notFound } from '@tanstack/react-router'
 import { createServerFn } from '@tanstack/react-start'
 import { eq } from 'drizzle-orm'
 
-import { NOT_SIGNED_IN, type ActionResult } from '#/lib/action'
+import { Result } from 'effect'
+import type { DomainError } from '../errors'
+import { NotSignedInError } from '../errors'
 
 import { account, session, user } from '../db/auth-schema'
 import { getDb } from '../db/client'
@@ -30,7 +32,7 @@ export type AccountProfile = {
 }
 
 /** The account of the signed-in person. */
-export const getAccount = createServerFn({ method: 'GET' })
+export const getAccount = createServerFn({ method: 'GET', strict: { output: false } })
   .middleware([withViewer])
   .handler(async ({ context }): Promise<AccountProfile> => {
     const viewer = context.viewer
@@ -55,38 +57,37 @@ export const getAccount = createServerFn({ method: 'GET' })
   })
 
 /** Renames the account. The picture is changed through the upload route. */
-export const updateAccount = createServerFn({ method: 'POST' })
+export const updateAccount = createServerFn({ method: 'POST', strict: { output: false } })
   .middleware([withViewer])
   .validator(profileSchema)
-  .handler(async ({ context, data }): Promise<ActionResult> => {
+  .handler(async ({ context, data }): Promise<Result.Result<null, DomainError>> => {
     const viewer = context.viewer
 
     if (!viewer) {
-      return NOT_SIGNED_IN
+      return Result.fail(new NotSignedInError({ message: 'Не сте најавени.' }))
     }
 
     await getDb().update(user).set({ name: data.name.trim() }).where(eq(user.id, viewer.id))
 
-    return { ok: true, data: null }
+    return Result.succeed(null)
   })
 
 /**
  * Closes the account for good: the shop it holds, its listings and their
  * photos, the sessions and the account itself.
  */
-export const deleteAccount = createServerFn({ method: 'POST' })
+export const deleteAccount = createServerFn({ method: 'POST', strict: { output: false } })
   .middleware([withViewer])
-  .handler(async ({ context }): Promise<ActionResult> => {
+  .handler(async ({ context }): Promise<Result.Result<null, DomainError>> => {
     const viewer = context.viewer
 
     if (!viewer) {
-      return NOT_SIGNED_IN
+      return Result.fail(new NotSignedInError({ message: 'Не сте најавени.' }))
     }
 
     const db = getDb()
     const ownStore = await runEffect(selectOwnerStore(viewer.id))
 
-    // The shop goes first, so its files leave the bucket before the rows go.
     if (ownStore) {
       await runEffect(deleteStoreCascade(ownStore.id))
     }
@@ -96,11 +97,11 @@ export const deleteAccount = createServerFn({ method: 'POST' })
     await db.delete(store).where(eq(store.ownerId, viewer.id))
     await db.delete(user).where(eq(user.id, viewer.id))
 
-    return { ok: true, data: null }
+    return Result.succeed(null)
   })
 
 /** The shop the account holds, if any: shown before the account is closed. */
-export const getAccountStore = createServerFn({ method: 'GET' })
+export const getAccountStore = createServerFn({ method: 'GET', strict: { output: false } })
   .middleware([withViewer])
   .handler(async ({ context }) => {
     const viewer = context.viewer

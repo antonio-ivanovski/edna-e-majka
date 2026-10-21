@@ -27,8 +27,8 @@ export function ProductRow({ storeId, product }: { storeId: string; product: Own
 
     setBusy(false)
 
-    if (!result.ok) {
-      toast.error(result.message)
+    if (result._tag === "Failure") {
+      toast.error(result.failure.message)
       return
     }
 
@@ -39,8 +39,8 @@ export function ProductRow({ storeId, product }: { storeId: string; product: Own
   const remove = async () => {
     const result = await deleteProduct({ data: { productId: product.id } })
 
-    if (!result.ok) {
-      toast.error(result.message)
+    if (result._tag === "Failure") {
+      toast.error(result.failure.message)
       return false
     }
 

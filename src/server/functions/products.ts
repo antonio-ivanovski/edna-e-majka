@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import { notFound } from '@tanstack/react-router'
 import { createServerFn } from '@tanstack/react-start'
 

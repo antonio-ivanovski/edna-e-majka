@@ -9,7 +9,8 @@ import { Button } from '#/components/ui/button'
 import { Field, Input, Select, Textarea } from '#/components/ui/field'
 import { Message } from '#/components/ui/message'
 import { CATEGORIES, type CategorySlug } from '#/lib/categories'
-import type { ActionResult } from '#/lib/action'
+import type { Result } from 'effect'
+import type { DomainError } from '#/server/errors'
 import { imageUrl } from '#/lib/images'
 import { effectResolver } from '#/lib/effect-resolver'
 import { deleteProductImage, reorderProductImages, uploadProductImage } from '#/lib/uploads'
@@ -50,7 +51,7 @@ export function ProductForm({
 }: {
   storeId: string
   product?: OwnerProductDetail
-  save?: (args: { data: ProductFormData }) => Promise<ActionResult<{ productId: string }>>
+  save?: (args: { data: ProductFormData }) => Promise<Result.Result<{ productId: string }, DomainError>>
 }) {
   const router = useRouter()
   const navigate = useNavigate()
@@ -216,13 +217,13 @@ export function ProductForm({
       },
     })
 
-    if (!result.ok) {
-      setServerError(result.message)
+    if (result._tag === 'Failure') {
+      setServerError(result.failure.message)
       return
     }
 
     for (const item of pending) {
-      const uploaded = await uploadProductImage(result.data.productId, item.file)
+      const uploaded = await uploadProductImage(result.success.productId, item.file)
 
       URL.revokeObjectURL(item.url)
 
@@ -239,7 +240,7 @@ export function ProductForm({
     if (!product) {
       await navigate({
         to: '/manage/$storeId/products/$productId',
-        params: { storeId, productId: result.data.productId },
+        params: { storeId, productId: result.success.productId },
       })
     }
   })
@@ -397,7 +398,7 @@ export function ProductForm({
                   const result = await updateProductImageAlt({
                     data: { imageId: image.id, alt: value },
                   })
-                  if (result.ok) {
+                  if (result._tag === 'Success') {
                     setImages((current) =>
                       current.map((entry) =>
                         entry.id === image.id ? { ...entry, alt: value.trim() || null } : entry,
