@@ -25,6 +25,10 @@ jobs:
 
       - run: pnpm install --frozen-lockfile
 
+      # worker-configuration.d.ts is committed; regenerate it so a stale copy
+      # (for example after a wrangler.jsonc binding change) is caught by typecheck.
+      - run: pnpm run cf-typegen
+
       - run: pnpm run format:check
       - run: pnpm run lint
       - run: pnpm run typecheck

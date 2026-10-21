@@ -27,5 +27,7 @@
   ],
   "vars": {
     "APP_URL": "http://localhost:3000",
+    "EMAIL_FROM": "noreply@ednaemajka.antonio.mk",
+    "EMAIL_FROM_NAME": "Една е Мајка",
   },
 }

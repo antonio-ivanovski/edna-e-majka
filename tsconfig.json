@@ -27,6 +27,7 @@
     }
   },
   "include": [
+    "worker-configuration.d.ts",
     "src/**/*.ts",
     "src/**/*.tsx",
     "drizzle.config.ts",
