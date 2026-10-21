@@ -1,11 +1,70 @@
 @import 'tailwindcss';
 @import 'tw-animate-css';
 
+/*
+ * The palette the site has always used, kept as design tokens. Amber is the
+ * shop front, red is the action colour, and the muted colours are the contact
+ * labels (phone, Facebook, Instagram).
+ */
 @theme {
   --font-sans: 'Onest Variable', ui-sans-serif, system-ui, sans-serif;
-  --font-serif: 'Literata Variable', ui-serif, Georgia, serif;
+  --font-display: 'Literata Variable', ui-serif, Georgia, serif;
+
+  --color-brand: #ffc145;
+  --color-accent: #fbbd08;
+  --color-accent-strong: #eaae00;
+
+  --color-danger: #db2828;
+  --color-danger-soft: #fff6f6;
+  --color-danger-strong: #9f3a38;
+
+  --color-success: #21ba45;
+  --color-success-soft: #fcfff5;
+  --color-success-strong: #2c662d;
+
+  --color-facebook: #2185d0;
+  --color-instagram: #a333c8;
+  --color-muted: #767676;
+
+  --color-line: rgb(34 36 38 / 15%);
+  --color-line-strong: #dddddd;
+  --color-surface-subtle: #f8f8f9;
+  --color-surface-footer: #f9fafb;
+
+  /* The legacy look is nearly square: 0.2857rem, not a modern pill. */
+  --radius-card: 0.2857rem;
+  --shadow-panel: 0 1px 3px 0 #d4d4d5, 0 0 0 1px #d4d4d5;
+
+  /* Category tiles glow amber on hover, as they did. */
+  --background-image-tile-hover: radial-gradient(circle, #ffc145 0%, #ffffff 70%);
 }
 
-html {
-  -webkit-text-size-adjust: 100%;
+@layer base {
+  html {
+    -webkit-text-size-adjust: 100%;
+  }
+
+  body {
+    background-color: var(--color-surface-subtle);
+    color: rgb(0 0 0 / 87%);
+    font-family: var(--font-sans);
+    font-size: 0.875rem;
+    line-height: 1.4285;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  h1,
+  h2,
+  h3 {
+    font-weight: 600;
+  }
+
+  a {
+    color: inherit;
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--color-accent-strong);
+    outline-offset: 2px;
+  }
 }

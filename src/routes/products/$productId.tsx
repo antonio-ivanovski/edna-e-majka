@@ -1,0 +1,140 @@
+import { Link, createFileRoute } from '@tanstack/react-router'
+import { Info } from 'lucide-react'
+
+import { ProducerContacts } from '#/components/catalogue/producer-contacts'
+import { Avatar } from '#/components/ui/avatar'
+import { Label } from '#/components/ui/label'
+import { Popover } from '#/components/ui/popover'
+import { Statistic, StatisticGroup } from '#/components/ui/statistic'
+import { findCategory } from '#/lib/categories'
+import { formatPrice, truncate } from '#/lib/format'
+import { imageUrl } from '#/lib/images'
+import { getProduct } from '#/server/functions/products'
+
+export const Route = createFileRoute('/products/$productId')({
+  loader: async ({ params }) => ({
+    product: await getProduct({ data: { productId: params.productId } }),
+  }),
+  head: ({ loaderData }) => {
+    const title = loaderData ? `${loaderData.product.title} | ЕДНА Е МАЈКА` : 'ЕДНА Е МАЈКА'
+
+    return {
+      meta: [
+        { title },
+        {
+          name: 'description',
+          content: loaderData ? truncate(loaderData.product.description, 155) : '',
+        },
+        { property: 'og:title', content: title },
+        {
+          property: 'og:image',
+          content: loaderData?.product.image
+            ? imageUrl(loaderData.product.image.key)
+            : '/edna-e-majka-og.jpg',
+        },
+      ],
+    }
+  },
+  component: ProductPage,
+})
+
+function ProductPage() {
+  const { product } = Route.useLoaderData()
+  const categories = product.categorySlugs.flatMap((slug) => {
+    const category = findCategory(slug)
+
+    return category ? [category] : []
+  })
+
+  return (
+    <div className="flex flex-col gap-6 p-2.5">
+      {product.images.length > 0 ? (
+        <div className="flex flex-wrap gap-3">
+          {product.images.map((image, index) => (
+            <div
+              key={image.key}
+              className="max-w-[400px] min-w-[133px] flex-1 overflow-hidden rounded-[0.2857rem] bg-black/[0.04]"
+            >
+              <img
+                src={imageUrl(image.key)}
+                alt={image.alt ?? product.title}
+                width={image.width}
+                height={image.height}
+                loading={index === 0 ? 'eager' : 'lazy'}
+                className="aspect-4/3 w-full object-cover"
+              />
+            </div>
+          ))}
+        </div>
+      ) : null}
+
+      <div>
+        {categories.length > 0 ? (
+          <div className="flex flex-wrap gap-2">
+            {categories.map((category) => (
+              <Label key={category.slug} asChild size="small" color="grey">
+                <Link to="/categories/$slug" params={{ slug: category.slug }}>
+                  {category.title}
+                </Link>
+              </Label>
+            ))}
+          </div>
+        ) : null}
+
+        <h1 className="mt-3 font-display text-3xl leading-tight font-semibold">{product.title}</h1>
+
+        <div className="mt-3 flex flex-wrap items-center gap-2">
+          <Link
+            to="/producers/$storeId"
+            params={{ storeId: product.store.id }}
+            className="inline-flex items-center gap-2 font-bold hover:underline"
+          >
+            {product.store.name}
+            <Avatar src={imageUrl(product.store.avatarKey)} alt={product.store.name} />
+          </Link>
+          {product.store.description ? (
+            <Popover
+              trigger={
+                <button
+                  type="button"
+                  aria-label={`Повеќе за ${product.store.name}`}
+                  className="cursor-pointer rounded-full p-1 text-black/40 hover:bg-black/[0.04] hover:text-black/70"
+                >
+                  <Info className="size-4" />
+                </button>
+              }
+            >
+              <p className="whitespace-pre-wrap">{product.store.description}</p>
+            </Popover>
+          ) : null}
+        </div>
+
+        <p className="mt-5 whitespace-pre-wrap text-black/[0.87]">{product.description}</p>
+
+        <section className="mt-6">
+          <h2 className="text-[1.2857rem] font-bold text-black/[0.87]">Цена:</h2>
+          {product.variants.length > 0 ? (
+            <StatisticGroup className="mt-3">
+              {product.variants.map((variant) => (
+                <Statistic
+                  key={variant.id}
+                  value={formatPrice(variant.price)}
+                  label={variant.title}
+                />
+              ))}
+            </StatisticGroup>
+          ) : (
+            <p className="mt-2 text-black/55">Цена по договор со производителот.</p>
+          )}
+        </section>
+
+        <section className="mt-8">
+          <h2 className="text-[1.2857rem] font-bold text-black/[0.87]">
+            Нарачај „{product.title}“ од {product.store.name} преку:
+          </h2>
+          <ProducerContacts contacts={product.store} className="mt-3" />
+        </section>
+      </div>
+    </div>
+  )
+}

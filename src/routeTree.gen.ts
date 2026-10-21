@@ -10,11 +10,53 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as SearchRouteImport } from './routes/search'
+import { Route as SignInRouteImport } from './routes/sign-in'
+import { Route as CategoriesSlugRouteImport } from './routes/categories/$slug'
+import { Route as ImagesSplatRouteImport } from './routes/images/$'
+import { Route as ProducersIndexRouteImport } from './routes/producers/index'
+import { Route as ProducersStoreIdRouteImport } from './routes/producers/$storeId'
+import { Route as ProductsProductIdRouteImport } from './routes/products/$productId'
 import { Route as ApiAuthSplatRouteImport } from './routes/api/auth/$'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SearchRoute = SearchRouteImport.update({
+  id: '/search',
+  path: '/search',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SignInRoute = SignInRouteImport.update({
+  id: '/sign-in',
+  path: '/sign-in',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const CategoriesSlugRoute = CategoriesSlugRouteImport.update({
+  id: '/categories/$slug',
+  path: '/categories/$slug',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ImagesSplatRoute = ImagesSplatRouteImport.update({
+  id: '/images/$',
+  path: '/images/$',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ProducersIndexRoute = ProducersIndexRouteImport.update({
+  id: '/producers/',
+  path: '/producers/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ProducersStoreIdRoute = ProducersStoreIdRouteImport.update({
+  id: '/producers/$storeId',
+  path: '/producers/$storeId',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ProductsProductIdRoute = ProductsProductIdRouteImport.update({
+  id: '/products/$productId',
+  path: '/products/$productId',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ApiAuthSplatRoute = ApiAuthSplatRouteImport.update({
@@ -25,27 +67,83 @@ const ApiAuthSplatRoute = ApiAuthSplatRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/search': typeof SearchRoute
+  '/sign-in': typeof SignInRoute
+  '/categories/$slug': typeof CategoriesSlugRoute
+  '/images/$': typeof ImagesSplatRoute
+  '/producers/$storeId': typeof ProducersStoreIdRoute
+  '/products/$productId': typeof ProductsProductIdRoute
+  '/producers/': typeof ProducersIndexRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/search': typeof SearchRoute
+  '/sign-in': typeof SignInRoute
+  '/categories/$slug': typeof CategoriesSlugRoute
+  '/images/$': typeof ImagesSplatRoute
+  '/producers/$storeId': typeof ProducersStoreIdRoute
+  '/products/$productId': typeof ProductsProductIdRoute
+  '/producers': typeof ProducersIndexRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/search': typeof SearchRoute
+  '/sign-in': typeof SignInRoute
+  '/categories/$slug': typeof CategoriesSlugRoute
+  '/images/$': typeof ImagesSplatRoute
+  '/producers/$storeId': typeof ProducersStoreIdRoute
+  '/products/$productId': typeof ProductsProductIdRoute
+  '/producers/': typeof ProducersIndexRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/api/auth/$'
+  fullPaths:
+    | '/'
+    | '/search'
+    | '/sign-in'
+    | '/categories/$slug'
+    | '/images/$'
+    | '/producers/$storeId'
+    | '/products/$productId'
+    | '/producers/'
+    | '/api/auth/$'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/api/auth/$'
-  id: '__root__' | '/' | '/api/auth/$'
+  to:
+    | '/'
+    | '/search'
+    | '/sign-in'
+    | '/categories/$slug'
+    | '/images/$'
+    | '/producers/$storeId'
+    | '/products/$productId'
+    | '/producers'
+    | '/api/auth/$'
+  id:
+    | '__root__'
+    | '/'
+    | '/search'
+    | '/sign-in'
+    | '/categories/$slug'
+    | '/images/$'
+    | '/producers/$storeId'
+    | '/products/$productId'
+    | '/producers/'
+    | '/api/auth/$'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  SearchRoute: typeof SearchRoute
+  SignInRoute: typeof SignInRoute
+  CategoriesSlugRoute: typeof CategoriesSlugRoute
+  ImagesSplatRoute: typeof ImagesSplatRoute
+  ProducersStoreIdRoute: typeof ProducersStoreIdRoute
+  ProductsProductIdRoute: typeof ProductsProductIdRoute
+  ProducersIndexRoute: typeof ProducersIndexRoute
   ApiAuthSplatRoute: typeof ApiAuthSplatRoute
 }
 
@@ -56,6 +154,55 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/'
       preLoaderRoute: typeof IndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/search': {
+      id: '/search'
+      path: '/search'
+      fullPath: '/search'
+      preLoaderRoute: typeof SearchRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/sign-in': {
+      id: '/sign-in'
+      path: '/sign-in'
+      fullPath: '/sign-in'
+      preLoaderRoute: typeof SignInRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/categories/$slug': {
+      id: '/categories/$slug'
+      path: '/categories/$slug'
+      fullPath: '/categories/$slug'
+      preLoaderRoute: typeof CategoriesSlugRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/images/$': {
+      id: '/images/$'
+      path: '/images/$'
+      fullPath: '/images/$'
+      preLoaderRoute: typeof ImagesSplatRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/producers/': {
+      id: '/producers/'
+      path: '/producers'
+      fullPath: '/producers/'
+      preLoaderRoute: typeof ProducersIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/producers/$storeId': {
+      id: '/producers/$storeId'
+      path: '/producers/$storeId'
+      fullPath: '/producers/$storeId'
+      preLoaderRoute: typeof ProducersStoreIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/products/$productId': {
+      id: '/products/$productId'
+      path: '/products/$productId'
+      fullPath: '/products/$productId'
+      preLoaderRoute: typeof ProductsProductIdRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/auth/$': {
@@ -70,6 +217,13 @@ declare module '@tanstack/react-router' {
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  SearchRoute: SearchRoute,
+  SignInRoute: SignInRoute,
+  CategoriesSlugRoute: CategoriesSlugRoute,
+  ImagesSplatRoute: ImagesSplatRoute,
+  ProducersStoreIdRoute: ProducersStoreIdRoute,
+  ProductsProductIdRoute: ProductsProductIdRoute,
+  ProducersIndexRoute: ProducersIndexRoute,
   ApiAuthSplatRoute: ApiAuthSplatRoute,
 }
 export const routeTree = rootRouteImport
