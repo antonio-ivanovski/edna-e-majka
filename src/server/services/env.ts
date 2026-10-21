@@ -12,6 +12,7 @@ export interface AppEnv {
   readonly BUCKET: typeof env.BUCKET
   readonly EMAIL: typeof env.EMAIL
   readonly APP_URL: string
+  readonly R2_PUBLIC_BASE_URL: string
   readonly EMAIL_FROM: string
   readonly EMAIL_FROM_NAME: string
   readonly BETTER_AUTH_URL: string
@@ -28,6 +29,7 @@ export class Env extends Context.Service<Env, AppEnv>()('edna-e-majka/server/Env
       BUCKET: env.BUCKET,
       EMAIL: env.EMAIL,
       APP_URL: env.APP_URL,
+      R2_PUBLIC_BASE_URL: env.R2_PUBLIC_BASE_URL,
       EMAIL_FROM: env.EMAIL_FROM,
       EMAIL_FROM_NAME: env.EMAIL_FROM_NAME,
       BETTER_AUTH_URL: env.BETTER_AUTH_URL,

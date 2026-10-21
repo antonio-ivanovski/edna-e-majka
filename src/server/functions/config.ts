@@ -8,4 +8,5 @@ import { env } from 'cloudflare:workers'
  */
 export const getShellConfig = createServerFn({ method: 'GET' }).handler(() => ({
   googleEnabled: Boolean(env.GOOGLE_CLIENT_ID && env.GOOGLE_CLIENT_SECRET),
+  assetsBaseUrl: env.R2_PUBLIC_BASE_URL?.trim() || null,
 }))

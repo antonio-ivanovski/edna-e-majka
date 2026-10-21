@@ -18,3 +18,8 @@ GOOGLE_CLIENT_SECRET=""
 # Outbound mail identity (Cloudflare Email Service `EMAIL` binding).
 EMAIL_FROM="noreply@ednaemajka.antonio.mk"
 EMAIL_FROM_NAME="Една е Мајка"
+
+# Public base URL for R2 assets. Leave empty in local dev to serve through
+# the /images/* Worker route. In production set this to the R2 public host
+# (r2.dev subdomain or a custom domain), e.g. https://pub-xxx.r2.dev
+R2_PUBLIC_BASE_URL=""

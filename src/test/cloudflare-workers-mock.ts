@@ -8,6 +8,7 @@ export const env = {
     delete: async () => {},
   },
   APP_URL: 'https://example.com',
+  R2_PUBLIC_BASE_URL: '',
   MAILER: { send: async () => ({}) },
   RATE_LIMITER: { limit: async () => ({ success: true }) },
 } as any
