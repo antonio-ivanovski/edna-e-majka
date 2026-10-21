@@ -2,11 +2,11 @@ import { Link, createFileRoute } from '@tanstack/react-router'
 
 import { ProductForm } from '#/components/manage/product-form'
 import { ProductStatusLabel } from '#/components/manage/status-label'
-import { getManageProduct } from '#/server/functions/manage'
+import { manageQueries } from '#/lib/queries/manage'
 
 export const Route = createFileRoute('/manage/$storeId/products/$productId')({
-  loader: ({ params }) =>
-    getManageProduct({ data: { storeId: params.storeId, productId: params.productId } }),
+  loader: ({ context: { queryClient }, params }) =>
+    queryClient.ensureQueryData(manageQueries.product(params.storeId, params.productId)),
   head: ({ loaderData }) => ({
     meta: [
       {
