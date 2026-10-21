@@ -4,10 +4,11 @@ import { DeleteStoreButton } from '#/components/manage/delete-store-button'
 import { StoreStatusLabel } from '#/components/manage/status-label'
 import { StoreAvatarField, StoreCoverField, StoreForm } from '#/components/manage/store-form'
 import { Button } from '#/components/ui/button'
-import { getManageStore } from '#/server/functions/manage'
+import { manageQueries } from '#/lib/queries/manage'
 
 export const Route = createFileRoute('/manage/$storeId/')({
-  loader: ({ params }) => getManageStore({ data: { storeId: params.storeId } }),
+  loader: ({ context: { queryClient }, params }) =>
+    queryClient.ensureQueryData(manageQueries.store(params.storeId)),
   head: ({ loaderData }) => ({
     meta: [
       {
