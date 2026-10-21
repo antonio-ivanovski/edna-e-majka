@@ -1,5 +1,5 @@
 import { Link, useRouter } from '@tanstack/react-router'
-import { ChevronDown, LogOut, ShieldCheck, Store } from 'lucide-react'
+import { ChevronDown, LogOut, ShieldCheck, Store, User } from 'lucide-react'
 
 import { Avatar } from '#/components/ui/avatar'
 import {
@@ -61,6 +61,13 @@ export function UserMenu({ googleEnabled }: { googleEnabled: boolean }) {
       </div>
 
       <DropdownMenuSeparator />
+
+      <DropdownMenuItem asChild>
+        <Link to="/account" className="w-full">
+          <User aria-hidden="true" className="size-4 text-black/40" />
+          Мојата сметка
+        </Link>
+      </DropdownMenuItem>
 
       <DropdownMenuItem asChild>
         <Link to="/manage" className="w-full">

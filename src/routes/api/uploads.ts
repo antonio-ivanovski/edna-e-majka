@@ -4,6 +4,7 @@ import { eq } from 'drizzle-orm'
 
 import { NOT_SIGNED_IN, type ActionResult } from '#/lib/action'
 import { getDb } from '#/server/db/client'
+import { user } from '#/server/db/auth-schema'
 import { productImage, store } from '#/server/db/schema'
 import { selectAdminProductRow, selectAdminStore } from '#/server/queries/admin'
 import {
@@ -26,6 +27,15 @@ const EXTENSIONS: Record<string, string> = {
   'image/jpeg': 'jpg',
   'image/png': 'png',
   'image/webp': 'webp',
+}
+
+/** The bucket key behind an `/images/{key}` address, when it is one of ours. */
+function r2KeyOf(url: string | null | undefined): string | null {
+  if (!url || !url.startsWith('/images/')) {
+    return null
+  }
+
+  return url.slice('/images/'.length)
 }
 
 const MAX_UPLOAD_BYTES = 8 * 1024 * 1024
@@ -79,6 +89,31 @@ export const Route = createFileRoute('/api/uploads')({
         const httpMetadata = {
           contentType: file.type,
           cacheControl: 'public, max-age=31536000, immutable',
+        }
+
+        if (form.get('userAvatar') === '1') {
+          const key = `users/${viewer.id}/avatar/${crypto.randomUUID()}.${extension}`
+
+          await env.BUCKET.put(key, file.stream(), { httpMetadata })
+
+          const rows = await getDb()
+            .select({ image: user.image })
+            .from(user)
+            .where(eq(user.id, viewer.id))
+            .limit(1)
+
+          const oldKey = r2KeyOf(rows[0]?.image)
+
+          if (oldKey) {
+            await env.BUCKET.delete(oldKey)
+          }
+
+          await getDb()
+            .update(user)
+            .set({ image: `/images/${key}` })
+            .where(eq(user.id, viewer.id))
+
+          return json({ ok: true, data: { key } })
         }
 
         if (typeof productId === 'string' && productId) {
@@ -230,6 +265,24 @@ export const Route = createFileRoute('/api/uploads')({
         const imageId = url.searchParams.get('imageId')
         const storeId = url.searchParams.get('storeId')
         const db = getDb()
+
+        if (url.searchParams.get('userAvatar') === '1') {
+          const rows = await db
+            .select({ image: user.image })
+            .from(user)
+            .where(eq(user.id, viewer.id))
+            .limit(1)
+
+          const oldKey = r2KeyOf(rows[0]?.image)
+
+          if (oldKey) {
+            await env.BUCKET.delete(oldKey)
+          }
+
+          await db.update(user).set({ image: null }).where(eq(user.id, viewer.id))
+
+          return json({ ok: true, data: null })
+        }
 
         if (imageId) {
           const rows = await db

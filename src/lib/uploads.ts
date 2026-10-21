@@ -132,6 +132,21 @@ export function deleteStoreAvatar(storeId: string): Promise<ActionResult> {
   return send(`/api/uploads?storeId=${encodeURIComponent(storeId)}`, { method: 'DELETE' })
 }
 
+/** The signed-in person's own picture. */
+export async function uploadUserAvatar(file: File): Promise<ActionResult<{ key: string }>> {
+  const { blob } = await shrink(file)
+  const form = new FormData()
+
+  form.set('userAvatar', '1')
+  form.set('file', blob, 'avatar.jpg')
+
+  return send<{ key: string }>('/api/uploads', { method: 'POST', body: form })
+}
+
+export function deleteUserAvatar(): Promise<ActionResult> {
+  return send('/api/uploads?userAvatar=1', { method: 'DELETE' })
+}
+
 export function deleteStoreCover(storeId: string): Promise<ActionResult> {
   return send(`/api/uploads?storeId=${encodeURIComponent(storeId)}&cover=1`, { method: 'DELETE' })
 }
