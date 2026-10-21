@@ -245,6 +245,69 @@ export async function selectProductSummaries(
   })
 }
 
+/**
+ * Other products from the same shop, newest first. Used on the product page
+ * under "more from this producer".
+ */
+export async function selectProductsByStore(
+  storeId: string,
+  excludeProductId: string,
+  limit = 4,
+): Promise<ProductSummary[]> {
+  const db = getDb()
+
+  const rows = await db
+    .select({ id: product.id })
+    .from(product)
+    .innerJoin(store, eq(store.id, product.storeId))
+    .where(
+      and(
+        eq(product.storeId, storeId),
+        eq(product.status, 'published'),
+        eq(store.status, 'active'),
+        sql`${product.id} <> ${excludeProductId}`,
+      ),
+    )
+    .orderBy(desc(product.createdAt))
+    .limit(limit)
+
+  return selectProductSummaries(rows.map((row) => row.id))
+}
+
+/**
+ * Published products in any of the given categories. Used on the product page
+ * under "similar products".
+ */
+export async function selectProductsByCategories(
+  categorySlugs: readonly string[],
+  excludeProductId: string,
+  limit = 4,
+): Promise<ProductSummary[]> {
+  if (categorySlugs.length === 0) {
+    return []
+  }
+
+  const db = getDb()
+
+  const rows = await db
+    .selectDistinct({ id: product.id })
+    .from(product)
+    .innerJoin(store, eq(store.id, product.storeId))
+    .innerJoin(productCategory, eq(productCategory.productId, product.id))
+    .where(
+      and(
+        inArray(productCategory.categorySlug, [...categorySlugs]),
+        eq(product.status, 'published'),
+        eq(store.status, 'active'),
+        sql`${product.id} <> ${excludeProductId}`,
+      ),
+    )
+    .orderBy(desc(product.createdAt))
+    .limit(limit)
+
+  return selectProductSummaries(rows.map((row) => row.id))
+}
+
 export async function selectProductDetail(productId: string): Promise<ProductDetail | null> {
   const db = getDb()
 

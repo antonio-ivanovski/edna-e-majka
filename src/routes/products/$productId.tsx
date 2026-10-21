@@ -5,6 +5,7 @@ import { useEffect } from 'react'
 import { recordRecentlyViewed } from '#/lib/recently-viewed'
 
 import { EnquiryForm } from '#/components/catalogue/enquiry-form'
+import { ProductGrid } from '#/components/catalogue/product-grid'
 import { ProducerContacts } from '#/components/catalogue/producer-contacts'
 import { ShareButtons } from '#/components/catalogue/share-buttons'
 import { Avatar } from '#/components/ui/avatar'
@@ -15,12 +16,17 @@ import { Statistic, StatisticGroup } from '#/components/ui/statistic'
 import { findCategory } from '#/lib/categories'
 import { formatPrice, truncate } from '#/lib/format'
 import { imageUrl } from '#/lib/images'
-import { getProduct } from '#/server/functions/products'
+import { getProduct, getRelatedProducts } from '#/server/functions/products'
 
 export const Route = createFileRoute('/products/$productId')({
-  loader: async ({ params }) => ({
-    product: await getProduct({ data: { productId: params.productId } }),
-  }),
+  loader: async ({ params }) => {
+    const [product, related] = await Promise.all([
+      getProduct({ data: { productId: params.productId } }),
+      getRelatedProducts({ data: { productId: params.productId } }),
+    ])
+
+    return { product, related }
+  },
   head: ({ loaderData }) => {
     const title = loaderData ? `${loaderData.product.title} | ЕДНА Е МАЈКА` : 'ЕДНА Е МАЈКА'
 
@@ -45,7 +51,7 @@ export const Route = createFileRoute('/products/$productId')({
 })
 
 function ProductPage() {
-  const { product } = Route.useLoaderData()
+  const { product, related } = Route.useLoaderData()
 
   useEffect(() => {
     recordRecentlyViewed({
@@ -179,6 +185,28 @@ function ProductPage() {
           </div>
         </section>
       </div>
+
+      {related.fromStore.length > 0 ? (
+        <section className="mt-6">
+          <h2 className="px-4 font-display text-xl font-semibold">
+            Од истиот производител
+          </h2>
+          <ProductGrid
+            products={related.fromStore}
+            emptyTitle="Нема други производи"
+          />
+        </section>
+      ) : null}
+
+      {related.similar.length > 0 ? (
+        <section className="mt-6">
+          <h2 className="px-4 font-display text-xl font-semibold">Слични производи</h2>
+          <ProductGrid
+            products={related.similar}
+            emptyTitle="Нема слични производи"
+          />
+        </section>
+      ) : null}
     </div>
   )
 }
