@@ -1,18 +1,18 @@
 import { and, eq } from 'drizzle-orm'
 import { createFileRoute } from '@tanstack/react-router'
+import { Effect } from 'effect'
+
 import { env } from 'cloudflare:workers'
 
-import { getDb } from '#/server/db/client'
+import { runEffect } from '#/server/runtime'
+import { Db } from '#/server/services/db'
 import { product, store } from '#/server/db/schema'
 
-/** The public address the sitemap is written for. */
 function baseUrl(): string {
   const configured = env.APP_URL?.trim()
-
   return configured ? configured.replace(/\/$/, '') : 'https://ednaemajka.antonio.mk'
 }
 
-/** Escape the five characters that would break an XML text node. */
 function escape(value: string): string {
   return value
     .replace(/&/g, '&amp;')
@@ -26,18 +26,22 @@ export const Route = createFileRoute('/sitemap.xml')({
   server: {
     handlers: {
       GET: async () => {
-        const db = getDb()
-
-        const stores = await db
-          .select({ id: store.id, slug: store.slug, updatedAt: store.updatedAt })
-          .from(store)
-          .where(eq(store.status, 'active'))
-
-        const products = await db
-          .select({ id: product.id, slug: product.slug, updatedAt: product.updatedAt })
-          .from(product)
-          .innerJoin(store, eq(store.id, product.storeId))
-          .where(and(eq(product.status, 'published'), eq(store.status, 'active')))
+        const { stores, products } = await runEffect(
+          Effect.gen(function* () {
+            const db = yield* Db
+            const stores = yield* db.run((d) =>
+              d.select({ id: store.id, slug: store.slug, updatedAt: store.updatedAt }).from(store).where(eq(store.status, 'active')),
+            )
+            const products = yield* db.run((d) =>
+              d
+                .select({ id: product.id, slug: product.slug, updatedAt: product.updatedAt })
+                .from(product)
+                .innerJoin(store, eq(store.id, product.storeId))
+                .where(and(eq(product.status, 'published'), eq(store.status, 'active'))),
+            )
+            return { stores, products }
+          }),
+        )
 
         const base = baseUrl()
         const now = new Date().toISOString()
@@ -45,32 +49,19 @@ export const Route = createFileRoute('/sitemap.xml')({
         const urls = [
           { loc: `${base}/`, lastmod: now },
           { loc: `${base}/producers`, lastmod: now },
-          ...stores.map((item) => ({
-            loc: `${base}/producers/${item.slug ?? item.id}`,
-            lastmod: item.updatedAt.toISOString(),
-          })),
-          ...products.map((item) => ({
-            loc: `${base}/products/${item.slug ?? item.id}`,
-            lastmod: item.updatedAt.toISOString(),
-          })),
+          ...stores.map((item) => ({ loc: `${base}/producers/${item.slug ?? item.id}`, lastmod: item.updatedAt.toISOString() })),
+          ...products.map((item) => ({ loc: `${base}/products/${item.slug ?? item.id}`, lastmod: item.updatedAt.toISOString() })),
         ]
 
         const body = `<?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
 ${urls
-  .map(
-    (entry) => `  <url>
-    <loc>${escape(entry.loc)}</loc>
-    <lastmod>${entry.lastmod}</lastmod>
-  </url>`,
-  )
+  .map((entry) => `  <url>\n    <loc>${escape(entry.loc)}</loc>\n    <lastmod>${entry.lastmod}</lastmod>\n  </url>`)
   .join('\n')}
 </urlset>
 `
 
-        return new Response(body, {
-          headers: { 'Content-Type': 'application/xml; charset=utf-8' },
-        })
+        return new Response(body, { headers: { 'Content-Type': 'application/xml; charset=utf-8' } })
       },
     },
   },
