@@ -26,6 +26,11 @@ export const Route = createRootRoute({
       { property: 'og:title', content: 'ЕДНА Е МАЈКА' },
       { property: 'og:description', content: 'Тука се сите домашни производи.' },
       { property: 'og:image', content: '/edna-e-majka-og.jpg' },
+      { property: 'og:locale', content: 'mk_MK' },
+      { name: 'twitter:card', content: 'summary_large_image' },
+      { name: 'twitter:title', content: 'ЕДНА Е МАЈКА' },
+      { name: 'twitter:description', content: 'Тука се сите домашни производи.' },
+      { name: 'twitter:image', content: '/edna-e-majka-og.jpg' },
     ],
     links: [
       { rel: 'icon', href: '/favicon.ico', sizes: 'any' },
@@ -48,10 +53,20 @@ export const Route = createRootRoute({
   notFoundComponent: () => (
     <div className="mx-auto max-w-2xl px-6 py-16 text-center">
       <h1 className="font-display text-3xl font-semibold">Страницата не е најдена</h1>
-      <p className="mt-3 text-black/60">Проверете ја адресата или почете од почетната страница.</p>
-      <Button asChild variant="primary" className="mt-6">
-        <Link to="/">Кон почетната</Link>
-      </Button>
+      <p className="mt-3 text-black/60">Проверете ја адресата или почете од една од страниците подолу.</p>
+      <div className="mt-6 flex flex-wrap justify-center gap-3">
+        <Button asChild variant="primary">
+          <Link to="/">Почетна</Link>
+        </Button>
+        <Button asChild variant="outline">
+          <Link to="/producers">Производители</Link>
+        </Button>
+        <Button asChild variant="outline">
+          <Link to="/categories/$slug" params={{ slug: 'honey' }}>
+            Категории
+          </Link>
+        </Button>
+      </div>
     </div>
   ),
   errorComponent: ({ error, reset }: { error: unknown; reset: () => void }) => (

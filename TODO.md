@@ -42,10 +42,10 @@ Legend: `[ ]` todo, `[x]` done. **Blockers** = dependencies on other items or pr
 - [ ] **T2-07** Admin moderation notes (internal comments on stores/products). Blockers: new table.
 - [ ] **T2-08** Data export — user data (GDPR) + store products CSV export/import. Blockers: T1-18 for attribute columns.
 - [ ] **T2-09** Content guidelines / producer onboarding guide page. Blockers: none.
-- [ ] **T2-10** 404 page with suggestions + richer empty states. Blockers: none.
+- [x] **T2-10** 404 page with suggestions + richer empty states. Blockers: none.
 - [ ] **T2-11** Accessibility audit (focus management, keyboard nav, aria-live, skip link, reduced motion). Blockers: none.
 - [ ] **T2-12** Structured data (JSON-LD: Product, Organization, BreadcrumbList, LocalBusiness). Blockers: T1-04 (slugs) for canonical URLs.
-- [ ] **T2-13** Twitter card + richer OG meta (twitter:card, og:locale, per-product). Blockers: none.
+- [x] **T2-13** Twitter card + richer OG meta (twitter:card, og:locale, per-product). Blockers: none.
 - [ ] **T2-14** Canonical URLs + trailing-slash consistency. Blockers: none.
 - [ ] **T2-15** RSS/Atom feed of new products. Blockers: none.
 
