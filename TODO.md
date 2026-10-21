@@ -86,7 +86,7 @@ Goal: one typed contract layer, Effect everywhere on the server, one client cach
 - [ ] **T0-14** Tests. Vitest coverage for the Effect services (layers with
   test doubles), the tagged errors and the shared write paths; existing unit
   tests stay green; `typecheck`, `lint` and `build` pass. Blockers: T0-06.
-- [ ] **T0-15** Documentation. `README.md` + `AGENTS.md` describe the layering
+- [x] **T0-15** Documentation. `README.md` + `AGENTS.md` describe the layering
   (`src/api` contracts → `src/server` Effect services → `src/lib/queries` →
   routes) so later Tier 1–4 work lands in the new shape. Blockers: T0-13.
 

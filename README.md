@@ -49,6 +49,26 @@ Local state lives in `.wrangler/state`. Outbound email is simulated locally.
 | `pnpm db:migrate:local` / `:remote` | Apply migrations               |
 | `pnpm db:seed`                      | Seed the demo catalogue        |
 
+## Architecture
+
+Layered, bottom to top:
+
+- `src/api/schemas/*` — Effect Schema. Single source of truth for server-function
+  validators, route `validateSearch`, and react-hook-form resolvers (via
+  `Schema.toStandardSchemaV1`).
+- `src/server/services/*` — `Context.Service` + `Layer` implementations (Db, Env,
+  Assets, Mailer, RateLimiter, Session). One `AppLayer` composes them; `ManagedRuntime`
+  bridges to TanStack Start.
+- `src/server/errors/*` — `Schema.TaggedError` domain errors.
+- `src/server/*` — Effect programs (queries, writes) declaring requirements via
+  services and errors via tagged errors; retried and timed out at the `Db` layer.
+- `src/lib/queries/*` — TanStack Query key factories + `queryOptions`.
+- `src/routes/*` — TanStack Router routes whose loaders call
+  `queryClient.ensureQueryData(...)` and whose components read from the cache.
+
+Effect stays server-side: no `effect` code ships to the browser. The client
+transports are TanStack Start server functions and TanStack Router.
+
 ## Deployment
 
 Deployed to Cloudflare Workers. Push to `main` deploys; pull requests run typecheck,
