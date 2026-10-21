@@ -21,7 +21,7 @@ Legend: `[ ]` todo, `[x]` done. **Blockers** = dependencies on other items or pr
 - [x] **T1-09** Breadcrumbs on product/category/producer pages. Blockers: none.
 - [x] **T1-10** Recently viewed (client) + "new arrivals" section on home. Blockers: none.
 - [ ] **T1-11** Paginate manage products + endless scroll on public catalogue. Blockers: paginated API for owner products.
-- [ ] **T1-12** Admin edit product details (title/description/price/categories/images). Blockers: admin form reuse.
+- [x] **T1-12** Admin edit product details (title/description/price/categories/images). Blockers: admin form reuse.
 - [ ] **T1-13** Store deletion (owner request + admin) with propagation across all store assets (R2 objects, products, variants, images, categories). Blockers: cascade R2 cleanup.
 - [ ] **T1-14** Account profile edit (name, avatar) + account deletion (GDPR). Blockers: auth endpoints.
 - [ ] **T1-15** Email notifications (new enquiry to producer; moderation decision to owner; new shop application to admin). Blockers: email templates via `send_email`.

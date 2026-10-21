@@ -9,6 +9,7 @@ import { Button } from '#/components/ui/button'
 import { Field, Input, Select, Textarea } from '#/components/ui/field'
 import { Message } from '#/components/ui/message'
 import { CATEGORIES, type CategorySlug } from '#/lib/categories'
+import type { ActionResult } from '#/lib/action'
 import { imageUrl } from '#/lib/images'
 import { productFormValuesSchema, type ProductFormValues } from '#/lib/schemas'
 import { deleteProductImage, uploadProductImage } from '#/lib/uploads'
@@ -29,9 +30,11 @@ type PendingImage = { file: File; url: string }
 export function ProductForm({
   storeId,
   product,
+  save = saveProduct,
 }: {
   storeId: string
   product?: OwnerProductDetail
+  save?: (args: { data: any }) => Promise<ActionResult<{ productId: string }>>
 }) {
   const router = useRouter()
   const navigate = useNavigate()
@@ -124,7 +127,7 @@ export function ProductForm({
   const onSubmit = handleSubmit(async (values) => {
     setServerError('')
 
-    const result = await saveProduct({
+    const result = await save({
       data: {
         ...(product ? { productId: product.id } : {}),
         storeId,

@@ -20,24 +20,27 @@ import {
   adminTransferStoreSchema,
   adminUserRoleSchema,
   productDeleteSchema,
+  productFormSchema,
   productStatusSchema,
   storeIdSchema,
 } from '#/lib/schemas'
+import { buildSearchText } from '#/lib/translit'
 import { optionalText } from '#/lib/text'
 
 import { user } from '../db/auth-schema'
 import { getDb } from '../db/client'
-import { contactMessage, product, store } from '../db/schema'
+import { contactMessage, product, productCategory, productVariant, store } from '../db/schema'
 import { withAdmin } from '../middleware'
 import { deleteProductCascade } from '../product-writes'
 import {
   selectAdminMessages,
+  selectAdminProductRow,
   selectAdminProducts,
   selectAdminStore,
   selectAdminStores,
   selectAdminUsers,
 } from '../queries/admin'
-import { selectOwnerStore } from '../queries/manage'
+import { selectOwnerProduct, selectOwnerStore } from '../queries/manage'
 
 const storeStatusSchema = z.enum(['pending', 'active', 'suspended', 'archived'])
 const productStatusEnum = z.enum(['published', 'archived'])
@@ -328,4 +331,77 @@ export const deleteMessage = createServerFn({ method: 'POST' })
     await getDb().delete(contactMessage).where(eq(contactMessage.id, data.messageId))
 
     return { ok: true, data: null }
+  })
+
+export const getAdminProduct = createServerFn({ method: 'GET' })
+  .middleware([withAdmin])
+  .validator(productDeleteSchema)
+  .handler(async ({ data }) => {
+    const row = await selectAdminProductRow(data.productId)
+
+    if (!row) {
+      throw notFound()
+    }
+
+    const product = await selectOwnerProduct(data.productId, row.storeId)
+
+    if (!product) {
+      throw notFound()
+    }
+
+    const store = await selectAdminStore(row.storeId)
+
+    if (!store) {
+      throw notFound()
+    }
+
+    return { store, product }
+  })
+
+export const adminSaveProduct = createServerFn({ method: 'POST' })
+  .middleware([withAdmin])
+  .validator(productFormSchema)
+  .handler(async ({ data }): Promise<ActionResult<{ productId: string }>> => {
+    if (!data.productId) {
+      return { ok: false, message: 'Недостасува производ.' }
+    }
+
+    const row = await selectAdminProductRow(data.productId)
+
+    if (!row) {
+      return { ok: false, message: 'Производот не е најден.' }
+    }
+
+    const db = getDb()
+    const searchText = buildSearchText(data.title, data.description)
+    const productId = data.productId
+
+    await db
+      .update(product)
+      .set({
+        title: data.title,
+        description: data.description,
+        searchText,
+        availability: data.availability,
+      })
+      .where(eq(product.id, productId))
+
+    await db.delete(productVariant).where(eq(productVariant.productId, productId))
+    await db.delete(productCategory).where(eq(productCategory.productId, productId))
+
+    for (const [position, variant] of data.variants.entries()) {
+      await db.insert(productVariant).values({
+        id: crypto.randomUUID(),
+        productId,
+        title: variant.title,
+        price: variant.price,
+        position,
+      })
+    }
+
+    for (const categorySlug of data.categories) {
+      await db.insert(productCategory).values({ productId, categorySlug })
+    }
+
+    return { ok: true, data: { productId } }
   })

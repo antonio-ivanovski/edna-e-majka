@@ -98,6 +98,11 @@ export function AdminProductRow({ product }: { product: AdminProduct }) {
 
       <TableCell>
         <div className="flex flex-wrap items-center justify-end gap-2">
+          <Button asChild variant="outline" size="sm">
+            <Link to="/admin/products/$productId" params={{ productId: product.id }}>
+              Уреди
+            </Link>
+          </Button>
           <Button variant="default" size="sm" disabled={busy} onClick={() => void toggleArchived()}>
             {published ? 'Архивирај' : 'Објави'}
           </Button>
