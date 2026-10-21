@@ -58,7 +58,7 @@ Goal: one typed contract layer, Effect everywhere on the server, one client cach
   `Effect.Result`-shaped value, so `notFound()`/`redirect()` and the
   `ActionResult` envelope both come from typed errors. Enable Start's CSRF
   middleware for mutations. Blockers: T0-04, T0-06.
-- [ ] **T0-09** Uploads become a typed server function. Replace the hand-rolled
+- [x] **T0-09** Uploads become a typed server function. Replace the hand-rolled
   `POST`/`PATCH`/`DELETE` handlers in `src/routes/api/uploads.ts` (352 lines,
   no zod, manual `ActionResult` over HTTP) with a server function taking a
   `FormData` validator (TanStack supports `FormData` validators on POST).
@@ -79,7 +79,7 @@ Goal: one typed contract layer, Effect everywhere on the server, one client cach
   `queryClient.ensureQueryData(...)`; components use `useSuspenseQuery`;
   mutations use `useMutation` + `queryClient.invalidateQueries` instead of
   ad-hoc refetches. Blockers: T0-08, T0-11.
-- [ ] **T0-13** Delete what the refactor made redundant: `zod`,
+- [x] **T0-13** Delete what the refactor made redundant: `zod`,
   `src/lib/action.ts`, `src/lib/clock.ts`, `src/lib/search-params.ts`,
   `src/lib/admin-search.ts`, the duplicated slug claiming and the duplicated
   admin/owner writes from T0-07. Blockers: T0-04, T0-05, T0-06, T0-07, T0-09.

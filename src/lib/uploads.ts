@@ -1,9 +1,17 @@
-/**
- * Photos are shrunk in the browser before they are uploaded: a phone camera
- * picture is several megabytes and nothing on the site displays wider than
- * about 1400 pixels. Server-side checks still run on everything that arrives.
- */
-import type { ActionResult } from './action'
+import type { Result } from 'effect'
+import type { DomainError } from '#/server/errors'
+
+import {
+  deleteProductImage as deleteProductImageFn,
+  deleteStoreAvatar as deleteStoreAvatarFn,
+  deleteStoreCover as deleteStoreCoverFn,
+  deleteUserAvatar as deleteUserAvatarFn,
+  reorderProductImages as reorderProductImagesFn,
+  uploadProductImage as uploadProductImageFn,
+  uploadStoreAvatar as uploadStoreAvatarFn,
+  uploadStoreCover as uploadStoreCoverFn,
+  uploadUserAvatar as uploadUserAvatarFn,
+} from '#/server/functions/uploads'
 
 export type UploadedImage = {
   id: string
@@ -15,11 +23,6 @@ export type UploadedImage = {
 
 const MAX_EDGE = 1400
 const JPEG_QUALITY = 0.85
-
-const NETWORK_FAILURE: ActionResult<never> = {
-  ok: false,
-  message: 'Не успеавме да ја испратиме сликата. Проверете ја врската и обидете се повторно.',
-}
 
 async function shrink(file: File): Promise<{ blob: Blob; width: number; height: number }> {
   const bitmap = await createImageBitmap(file)
@@ -52,101 +55,71 @@ async function shrink(file: File): Promise<{ blob: Blob; width: number; height: 
   return { blob, width, height }
 }
 
-async function send<Value>(url: string, init: RequestInit): Promise<ActionResult<Value>> {
-  try {
-    const response = await fetch(url, init)
-
-    return (await response.json()) as ActionResult<Value>
-  } catch {
-    return NETWORK_FAILURE
-  }
-}
-
 export async function uploadProductImage(
   productId: string,
   file: File,
   alt?: string,
-): Promise<ActionResult<UploadedImage>> {
+): Promise<Result.Result<UploadedImage, DomainError>> {
   const { blob, width, height } = await shrink(file)
   const form = new FormData()
-
   form.set('productId', productId)
   form.set('width', String(width))
   form.set('height', String(height))
-  if (alt && alt.trim()) {
-    form.set('alt', alt.trim())
-  }
+  if (alt && alt.trim()) form.set('alt', alt.trim())
   form.set('file', blob, 'photo.jpg')
-
-  return send<UploadedImage>('/api/uploads', { method: 'POST', body: form })
+  return uploadProductImageFn({ data: form })
 }
 
 export async function uploadStoreAvatar(
   storeId: string,
   file: File,
-): Promise<ActionResult<{ key: string }>> {
+): Promise<Result.Result<{ key: string }, DomainError>> {
   const { blob } = await shrink(file)
   const form = new FormData()
-
   form.set('storeId', storeId)
   form.set('file', blob, 'avatar.jpg')
-
-  return send<{ key: string }>('/api/uploads', { method: 'POST', body: form })
+  return uploadStoreAvatarFn({ data: form })
 }
 
-/** The banner behind the shop header. */
 export async function uploadStoreCover(
   storeId: string,
   file: File,
-): Promise<ActionResult<{ key: string }>> {
+): Promise<Result.Result<{ key: string }, DomainError>> {
   const { blob } = await shrink(file)
   const form = new FormData()
-
   form.set('storeId', storeId)
   form.set('cover', '1')
   form.set('file', blob, 'cover.jpg')
-
-  return send<{ key: string }>('/api/uploads', { method: 'POST', body: form })
+  return uploadStoreCoverFn({ data: form })
 }
 
-export function deleteProductImage(imageId: string): Promise<ActionResult> {
-  return send(`/api/uploads?imageId=${encodeURIComponent(imageId)}`, { method: 'DELETE' })
+export function deleteProductImage(imageId: string): Promise<Result.Result<null, DomainError>> {
+  return deleteProductImageFn({ data: { imageId } })
 }
 
-/**
- * Saves the order of the product's images. The first image is the one the
- * catalogue card shows.
- */
 export function reorderProductImages(
   productId: string,
   imageIds: readonly string[],
-): Promise<ActionResult> {
-  return send('/api/uploads', {
-    method: 'PATCH',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ productId, imageIds }),
-  })
+): Promise<Result.Result<null, DomainError>> {
+  return reorderProductImagesFn({ data: { productId, imageIds: [...imageIds] } })
 }
 
-export function deleteStoreAvatar(storeId: string): Promise<ActionResult> {
-  return send(`/api/uploads?storeId=${encodeURIComponent(storeId)}`, { method: 'DELETE' })
+export function deleteStoreAvatar(storeId: string): Promise<Result.Result<null, DomainError>> {
+  return deleteStoreAvatarFn({ data: { storeId } })
 }
 
-/** The signed-in person's own picture. */
-export async function uploadUserAvatar(file: File): Promise<ActionResult<{ key: string }>> {
+export async function uploadUserAvatar(file: File): Promise<Result.Result<{ key: string }, DomainError>> {
   const { blob } = await shrink(file)
   const form = new FormData()
-
   form.set('userAvatar', '1')
   form.set('file', blob, 'avatar.jpg')
-
-  return send<{ key: string }>('/api/uploads', { method: 'POST', body: form })
+  return uploadUserAvatarFn({ data: form })
 }
 
-export function deleteUserAvatar(): Promise<ActionResult> {
-  return send('/api/uploads?userAvatar=1', { method: 'DELETE' })
+export function deleteUserAvatar(): Promise<Result.Result<null, DomainError>> {
+  return deleteUserAvatarFn()
 }
 
-export function deleteStoreCover(storeId: string): Promise<ActionResult> {
-  return send(`/api/uploads?storeId=${encodeURIComponent(storeId)}&cover=1`, { method: 'DELETE' })
+export function deleteStoreCover(storeId: string): Promise<Result.Result<null, DomainError>> {
+  return deleteStoreCoverFn({ data: { storeId } })
 }

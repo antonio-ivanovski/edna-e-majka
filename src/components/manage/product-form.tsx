@@ -109,12 +109,12 @@ export function ProductForm({
     for (const file of picked) {
       const result = await uploadProductImage(product.id, file)
 
-      if (!result.ok) {
-        setImageError(result.message)
+      if (result._tag === 'Failure') {
+        setImageError(result.failure.message)
         break
       }
 
-      setImages((current) => [...current, result.data])
+      setImages((current) => [...current, result.success])
     }
 
     setBusyImages(false)
@@ -131,8 +131,8 @@ export function ProductForm({
 
     const result = await deleteProductImage(imageId)
 
-    if (!result.ok) {
-      setImageError(result.message)
+    if (result._tag === 'Failure') {
+      setImageError(result.failure.message)
     } else {
       setImages((current) => current.filter((image) => image.id !== imageId))
       await router.invalidate()
@@ -157,8 +157,8 @@ export function ProductForm({
       next.map((image) => image.id),
     )
 
-    if (!result.ok) {
-      setImageError(result.message)
+    if (result._tag === 'Failure') {
+      setImageError(result.failure.message)
       await router.invalidate()
     }
   }
@@ -227,8 +227,8 @@ export function ProductForm({
 
       URL.revokeObjectURL(item.url)
 
-      if (!uploaded.ok) {
-        toast.error(uploaded.message)
+      if (uploaded._tag === 'Failure') {
+        toast.error(uploaded.failure.message)
         break
       }
     }

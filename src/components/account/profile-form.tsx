@@ -59,8 +59,8 @@ export function AccountProfileForm({ name, image }: { name: string; image: strin
 
     setBusy(false)
 
-    if (!result.ok) {
-      toast.error(result.message)
+    if (result._tag === 'Failure') {
+      toast.error(result.failure.message)
     } else {
       await router.invalidate()
     }
@@ -77,8 +77,8 @@ export function AccountProfileForm({ name, image }: { name: string; image: strin
 
     setBusy(false)
 
-    if (!result.ok) {
-      toast.error(result.message)
+    if (result._tag === 'Failure') {
+      toast.error(result.failure.message)
     } else {
       await router.invalidate()
     }

@@ -26,7 +26,6 @@ import { Route as AdminMessagesRouteImport } from './routes/admin/messages'
 import { Route as AdminProductsRouteImport } from './routes/admin/products'
 import { Route as AdminStoresRouteImport } from './routes/admin/stores'
 import { Route as AdminUsersRouteImport } from './routes/admin/users'
-import { Route as ApiUploadsRouteImport } from './routes/api/uploads'
 import { Route as CategoriesSlugRouteImport } from './routes/categories/$slug'
 import { Route as ImagesSplatRouteImport } from './routes/images/$'
 import { Route as ManageIndexRouteImport } from './routes/manage/index'
@@ -129,11 +128,6 @@ const AdminUsersRoute = AdminUsersRouteImport.update({
   id: '/users',
   path: '/users',
   getParentRoute: () => AdminRoute,
-} as any)
-const ApiUploadsRoute = ApiUploadsRouteImport.update({
-  id: '/api/uploads',
-  path: '/api/uploads',
-  getParentRoute: () => rootRouteImport,
 } as any)
 const CategoriesSlugRoute = CategoriesSlugRouteImport.update({
   id: '/categories/$slug',
@@ -241,7 +235,6 @@ export interface FileRoutesByFullPath {
   '/admin/products': typeof AdminProductsRouteWithChildren
   '/admin/stores': typeof AdminStoresRouteWithChildren
   '/admin/users': typeof AdminUsersRoute
-  '/api/uploads': typeof ApiUploadsRoute
   '/categories/$slug': typeof CategoriesSlugRoute
   '/images/$': typeof ImagesSplatRoute
   '/manage/$storeId': typeof ManageStoreIdRouteWithChildren
@@ -275,7 +268,6 @@ export interface FileRoutesByTo {
   '/terms': typeof TermsRoute
   '/admin/messages': typeof AdminMessagesRoute
   '/admin/users': typeof AdminUsersRoute
-  '/api/uploads': typeof ApiUploadsRoute
   '/categories/$slug': typeof CategoriesSlugRoute
   '/images/$': typeof ImagesSplatRoute
   '/manage/new': typeof ManageNewRoute
@@ -312,7 +304,6 @@ export interface FileRoutesById {
   '/admin/products': typeof AdminProductsRouteWithChildren
   '/admin/stores': typeof AdminStoresRouteWithChildren
   '/admin/users': typeof AdminUsersRoute
-  '/api/uploads': typeof ApiUploadsRoute
   '/categories/$slug': typeof CategoriesSlugRoute
   '/images/$': typeof ImagesSplatRoute
   '/manage/$storeId': typeof ManageStoreIdRouteWithChildren
@@ -351,7 +342,6 @@ export interface FileRouteTypes {
     | '/admin/products'
     | '/admin/stores'
     | '/admin/users'
-    | '/api/uploads'
     | '/categories/$slug'
     | '/images/$'
     | '/manage/$storeId'
@@ -385,7 +375,6 @@ export interface FileRouteTypes {
     | '/terms'
     | '/admin/messages'
     | '/admin/users'
-    | '/api/uploads'
     | '/categories/$slug'
     | '/images/$'
     | '/manage/new'
@@ -421,7 +410,6 @@ export interface FileRouteTypes {
     | '/admin/products'
     | '/admin/stores'
     | '/admin/users'
-    | '/api/uploads'
     | '/categories/$slug'
     | '/images/$'
     | '/manage/$storeId'
@@ -455,7 +443,6 @@ export interface RootRouteChildren {
   SignInRoute: typeof SignInRoute
   SitemapDotxmlRoute: typeof SitemapDotxmlRoute
   TermsRoute: typeof TermsRoute
-  ApiUploadsRoute: typeof ApiUploadsRoute
   CategoriesSlugRoute: typeof CategoriesSlugRoute
   ImagesSplatRoute: typeof ImagesSplatRoute
   ManageStoreIdRoute: typeof ManageStoreIdRouteWithChildren
@@ -587,13 +574,6 @@ declare module '@tanstack/react-router' {
       fullPath: '/admin/users'
       preLoaderRoute: typeof AdminUsersRouteImport
       parentRoute: typeof AdminRoute
-    }
-    '/api/uploads': {
-      id: '/api/uploads'
-      path: '/api/uploads'
-      fullPath: '/api/uploads'
-      preLoaderRoute: typeof ApiUploadsRouteImport
-      parentRoute: typeof rootRouteImport
     }
     '/categories/$slug': {
       id: '/categories/$slug'
@@ -794,7 +774,6 @@ const rootRouteChildren: RootRouteChildren = {
   SignInRoute: SignInRoute,
   SitemapDotxmlRoute: SitemapDotxmlRoute,
   TermsRoute: TermsRoute,
-  ApiUploadsRoute: ApiUploadsRoute,
   CategoriesSlugRoute: CategoriesSlugRoute,
   ImagesSplatRoute: ImagesSplatRoute,
   ManageStoreIdRoute: ManageStoreIdRouteWithChildren,

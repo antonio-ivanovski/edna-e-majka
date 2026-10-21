@@ -245,8 +245,8 @@ export function StoreAvatarField({ store }: { store: OwnerStore }) {
 
     const result = await uploadStoreAvatar(store.id, file)
 
-    if (!result.ok) {
-      setError(result.message)
+    if (result._tag === 'Failure') {
+      setError(result.failure.message)
     } else {
       await router.invalidate()
     }
@@ -264,8 +264,8 @@ export function StoreAvatarField({ store }: { store: OwnerStore }) {
 
     const result = await deleteStoreAvatar(store.id)
 
-    if (!result.ok) {
-      setError(result.message)
+    if (result._tag === 'Failure') {
+      setError(result.failure.message)
     } else {
       await router.invalidate()
     }
@@ -338,8 +338,8 @@ export function StoreCoverField({ store }: { store: OwnerStore }) {
 
     const result = await uploadStoreCover(store.id, file)
 
-    if (!result.ok) {
-      setError(result.message)
+    if (result._tag === 'Failure') {
+      setError(result.failure.message)
     } else {
       await router.invalidate()
     }
@@ -357,8 +357,8 @@ export function StoreCoverField({ store }: { store: OwnerStore }) {
 
     const result = await deleteStoreCover(store.id)
 
-    if (!result.ok) {
-      setError(result.message)
+    if (result._tag === 'Failure') {
+      setError(result.failure.message)
     } else {
       await router.invalidate()
     }
