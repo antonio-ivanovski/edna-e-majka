@@ -16,7 +16,6 @@ import { Statistic, StatisticGroup } from '#/components/ui/statistic'
 import { findCategory } from '#/lib/categories'
 import { formatPrice, truncate } from '#/lib/format'
 import { imageUrl } from '#/lib/images'
-import { getProduct, getRelatedProducts } from '#/server/functions/products'
 import { productQueries } from '#/lib/queries/products'
 
 export const Route = createFileRoute('/products/$productId')({
