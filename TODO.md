@@ -83,7 +83,7 @@ Goal: one typed contract layer, Effect everywhere on the server, one client cach
   `src/lib/action.ts`, `src/lib/clock.ts`, `src/lib/search-params.ts`,
   `src/lib/admin-search.ts`, the duplicated slug claiming and the duplicated
   admin/owner writes from T0-07. Blockers: T0-04, T0-05, T0-06, T0-07, T0-09.
-- [ ] **T0-14** Tests. Vitest coverage for the Effect services (layers with
+- [x] **T0-14** Tests. Vitest coverage for the Effect services (layers with
   test doubles), the tagged errors and the shared write paths; existing unit
   tests stay green; `typecheck`, `lint` and `build` pass. Blockers: T0-06.
 - [x] **T0-15** Documentation. `README.md` + `AGENTS.md` describe the layering

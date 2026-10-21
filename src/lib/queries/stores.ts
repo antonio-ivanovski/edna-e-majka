@@ -2,12 +2,8 @@ import { queryOptions } from '@tanstack/react-query'
 
 import { listStores, getStore } from '#/server/functions/stores'
 
-export const storeKeys = {
-  all: ['stores'] as const,
-  lists: () => [...storeKeys.all, 'list'] as const,
-  details: () => [...storeKeys.all, 'detail'] as const,
-  detail: (id: string) => [...storeKeys.details(), id] as const,
-}
+import { storeKeys } from './keys'
+export { storeKeys }
 
 export const storeQueries = {
   list: () =>

@@ -2,13 +2,8 @@ import { queryOptions } from '@tanstack/react-query'
 
 import { getManageHome, getManageStore, getManageProducts, getManageProduct } from '#/server/functions/manage'
 
-export const manageKeys = {
-  all: ['manage'] as const,
-  home: () => [...manageKeys.all, 'home'] as const,
-  store: (storeId: string) => [...manageKeys.all, 'store', storeId] as const,
-  products: (storeId: string, page: number) => [...manageKeys.all, 'products', storeId, page] as const,
-  product: (storeId: string, productId: string) => [...manageKeys.all, 'product', storeId, productId] as const,
-}
+import { manageKeys } from './keys'
+export { manageKeys }
 
 export const manageQueries = {
   home: () =>

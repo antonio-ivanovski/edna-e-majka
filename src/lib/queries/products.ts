@@ -3,14 +3,8 @@ import { queryOptions } from '@tanstack/react-query'
 import { listProducts, getProduct, getRelatedProducts } from '#/server/functions/products'
 import type { ProductListFilters } from '#/api/schemas'
 
-export const productKeys = {
-  all: ['products'] as const,
-  lists: () => [...productKeys.all, 'list'] as const,
-  list: (filters: ProductListFilters) => [...productKeys.lists(), filters] as const,
-  details: () => [...productKeys.all, 'detail'] as const,
-  detail: (id: string) => [...productKeys.details(), id] as const,
-  related: (id: string) => [...productKeys.details(), id, 'related'] as const,
-}
+import { productKeys } from './keys'
+export { productKeys }
 
 export const productQueries = {
   list: (filters: ProductListFilters) =>

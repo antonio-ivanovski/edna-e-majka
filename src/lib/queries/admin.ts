@@ -3,15 +3,8 @@ import { queryOptions } from '@tanstack/react-query'
 
 import { getAdminStores, getAdminProducts, getAdminUsers, getAdminMessages, getAdminStore, getAdminProduct } from '#/server/functions/admin'
 
-export const adminKeys = {
-  all: ['admin'] as const,
-  stores: (filters: any) => [...adminKeys.all, 'stores', filters] as const,
-  store: (id: string) => [...adminKeys.all, 'store', id] as const,
-  products: (filters: any) => [...adminKeys.all, 'products', filters] as const,
-  product: (id: string) => [...adminKeys.all, 'product', id] as const,
-  users: (filters: any) => [...adminKeys.all, 'users', filters] as const,
-  messages: (filters: any) => [...adminKeys.all, 'messages', filters] as const,
-}
+import { adminKeys } from './keys'
+export { adminKeys }
 
 export const adminQueries = {
   stores: (filters: any) => queryOptions({ queryKey: adminKeys.stores(filters), queryFn: () => getAdminStores({ data: filters }), staleTime: 0 }),
