@@ -1,26 +1,25 @@
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 
 import { Button } from '#/components/ui/button'
 
-/** Share actions relevant for the Macedonian market. */
+/**
+ * Share actions that matter in the Macedonian market. The address is built
+ * when the button is pressed: the page is in the browser by then, so the link
+ * is always the one the visitor is looking at.
+ */
 export function ShareButtons({ path, title }: { path: string; title: string }) {
-  const [url, setUrl] = useState('')
-
-  useEffect(() => {
-    setUrl(`${window.location.origin}${path}`)
-  }, [path])
   const [copied, setCopied] = useState(false)
 
-  const encodedUrl = encodeURIComponent(url)
-  const encodedTitle = encodeURIComponent(title)
+  const shareUrl = () => `${window.location.origin}${path}`
+  const shareText = `${title} ${shareUrl()}`
 
   const copy = async () => {
     try {
-      await navigator.clipboard.writeText(url)
+      await navigator.clipboard.writeText(shareUrl())
       setCopied(true)
       setTimeout(() => setCopied(false), 2000)
     } catch {
-      // Ignore.
+      // Clipboard can be blocked; the other buttons still work.
     }
   }
 
@@ -29,28 +28,41 @@ export function ShareButtons({ path, title }: { path: string; title: string }) {
       <Button type="button" variant="outline" size="sm" onClick={() => void copy()}>
         {copied ? 'Копирано' : 'Копирај линк'}
       </Button>
-      <a
-        href={`https://www.facebook.com/sharer/sharer.php?u=${encodedUrl}`}
-        target="_blank"
-        rel="noreferrer"
-        className="inline-flex items-center rounded border border-line px-3 py-1.5 text-sm font-semibold hover:bg-black/[0.03]"
+      <button
+        type="button"
+        className="inline-flex cursor-pointer items-center rounded border border-line px-3 py-1.5 text-sm font-semibold hover:bg-black/[0.03]"
+        onClick={() =>
+          window.open(
+            `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(shareUrl())}`,
+            '_blank',
+            'noopener,noreferrer',
+          )
+        }
       >
         Facebook
-      </a>
-      <a
-        href={`viber://forward?text=${encodedTitle}%20${encodedUrl}`}
-        className="inline-flex items-center rounded border border-line px-3 py-1.5 text-sm font-semibold hover:bg-black/[0.03]"
+      </button>
+      <button
+        type="button"
+        className="inline-flex cursor-pointer items-center rounded border border-line px-3 py-1.5 text-sm font-semibold hover:bg-black/[0.03]"
+        onClick={() => {
+          window.location.href = `viber://forward?text=${encodeURIComponent(shareText)}`
+        }}
       >
         Viber
-      </a>
-      <a
-        href={`https://wa.me/?text=${encodedTitle}%20${encodedUrl}`}
-        target="_blank"
-        rel="noreferrer"
-        className="inline-flex items-center rounded border border-line px-3 py-1.5 text-sm font-semibold hover:bg-black/[0.03]"
+      </button>
+      <button
+        type="button"
+        className="inline-flex cursor-pointer items-center rounded border border-line px-3 py-1.5 text-sm font-semibold hover:bg-black/[0.03]"
+        onClick={() =>
+          window.open(
+            `https://wa.me/?text=${encodeURIComponent(shareText)}`,
+            '_blank',
+            'noopener,noreferrer',
+          )
+        }
       >
         WhatsApp
-      </a>
+      </button>
     </div>
   )
 }

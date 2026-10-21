@@ -53,7 +53,9 @@ export const Route = createRootRoute({
   notFoundComponent: () => (
     <div className="mx-auto max-w-2xl px-6 py-16 text-center">
       <h1 className="font-display text-3xl font-semibold">Страницата не е најдена</h1>
-      <p className="mt-3 text-black/60">Проверете ја адресата или почете од една од страниците подолу.</p>
+      <p className="mt-3 text-black/60">
+        Проверете ја адресата или почете од една од страниците подолу.
+      </p>
       <div className="mt-6 flex flex-wrap justify-center gap-3">
         <Button asChild variant="primary">
           <Link to="/">Почетна</Link>

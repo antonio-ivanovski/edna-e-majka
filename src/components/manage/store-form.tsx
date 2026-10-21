@@ -10,7 +10,12 @@ import { Field, Input, Textarea } from '#/components/ui/field'
 import { Message } from '#/components/ui/message'
 import { imageUrl } from '#/lib/images'
 import { storeDetailsSchema } from '#/lib/schemas'
-import { deleteStoreAvatar, deleteStoreCover, uploadStoreAvatar, uploadStoreCover } from '#/lib/uploads'
+import {
+  deleteStoreAvatar,
+  deleteStoreCover,
+  uploadStoreAvatar,
+  uploadStoreCover,
+} from '#/lib/uploads'
 import { applyForStore, updateStore } from '#/server/functions/manage'
 import type { OwnerStore } from '#/server/queries/manage'
 

@@ -113,6 +113,21 @@ export function deleteProductImage(imageId: string): Promise<ActionResult> {
   return send(`/api/uploads?imageId=${encodeURIComponent(imageId)}`, { method: 'DELETE' })
 }
 
+/**
+ * Saves the order of the product's images. The first image is the one the
+ * catalogue card shows.
+ */
+export function reorderProductImages(
+  productId: string,
+  imageIds: readonly string[],
+): Promise<ActionResult> {
+  return send('/api/uploads', {
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ productId, imageIds }),
+  })
+}
+
 export function deleteStoreAvatar(storeId: string): Promise<ActionResult> {
   return send(`/api/uploads?storeId=${encodeURIComponent(storeId)}`, { method: 'DELETE' })
 }

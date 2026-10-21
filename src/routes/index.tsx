@@ -1,12 +1,11 @@
 import { Link, createFileRoute } from '@tanstack/react-router'
-import { useEffect, useState } from 'react'
 
 import { CatalogueList } from '#/components/catalogue/catalogue-list'
 import { ContactDialog } from '#/components/shell/contact-dialog'
 import { Message } from '#/components/ui/message'
+import { useRecentlyViewed } from '#/hooks/use-recently-viewed'
 import { CATEGORIES } from '#/lib/categories'
 import { imageUrl } from '#/lib/images'
-import { readRecentlyViewed, type RecentProduct } from '#/lib/recently-viewed'
 import { parseProductSearch, resolveProductSearch } from '#/lib/search-params'
 import { listProducts } from '#/server/functions/products'
 import { PRODUCT_PAGE_SIZE } from '#/lib/pagination'
@@ -27,11 +26,7 @@ export const Route = createFileRoute('/')({
 function HomePage() {
   const { page, params } = Route.useLoaderData()
   const navigate = Route.useNavigate()
-  const [recent, setRecent] = useState<RecentProduct[]>([])
-
-  useEffect(() => {
-    setRecent(readRecentlyViewed())
-  }, [])
+  const recent = useRecentlyViewed()
 
   return (
     <div>

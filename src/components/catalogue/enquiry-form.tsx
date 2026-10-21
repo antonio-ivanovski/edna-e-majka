@@ -11,9 +11,11 @@ import { Button } from '#/components/ui/button'
 import { Field, Input, Textarea } from '#/components/ui/field'
 import { Message } from '#/components/ui/message'
 
-const formSchema = enquiryMessageSchema.omit({ startedAt: true, honeypot: true, storeId: true, productId: true }).extend({
-  honeypot: z.string(),
-})
+const formSchema = enquiryMessageSchema
+  .omit({ startedAt: true, honeypot: true, storeId: true, productId: true })
+  .extend({
+    honeypot: z.string(),
+  })
 
 type FormValues = z.infer<typeof formSchema>
 
@@ -72,7 +74,14 @@ export function EnquiryForm({ storeId, productId }: { storeId: string; productId
       <Field label="Порака" htmlFor="enquiry-message" error={errors.message?.message}>
         <Textarea id="enquiry-message" rows={4} {...register('message')} />
       </Field>
-      <input type="text" tabIndex={-1} autoComplete="off" aria-hidden className="sr-only" {...register('honeypot')} />
+      <input
+        type="text"
+        tabIndex={-1}
+        autoComplete="off"
+        aria-hidden
+        className="sr-only"
+        {...register('honeypot')}
+      />
       {serverError ? <p className="text-sm text-danger">{serverError}</p> : null}
       <Button type="submit" variant="positive" disabled={isSubmitting}>
         {isSubmitting ? 'Испраќаме…' : 'Испрати порака'}

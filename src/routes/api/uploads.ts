@@ -162,6 +162,63 @@ export const Route = createFileRoute('/api/uploads')({
         return json({ ok: false, message: 'Недостасува производ или продавница.' }, 400)
       },
 
+      PATCH: async ({ request }) => {
+        const viewer = await getViewer()
+
+        if (!viewer) {
+          return json(NOT_SIGNED_IN, 401)
+        }
+
+        const body = (await request.json().catch(() => null)) as {
+          productId?: unknown
+          imageIds?: unknown
+        } | null
+
+        const productId = typeof body?.productId === 'string' ? body.productId : ''
+        const imageIds = Array.isArray(body?.imageIds)
+          ? body.imageIds.filter((id): id is string => typeof id === 'string')
+          : []
+
+        if (!productId || imageIds.length === 0) {
+          return json({ ok: false, message: 'Нема слики за преместување.' }, 400)
+        }
+
+        const owned =
+          viewer.role === 'admin'
+            ? await selectAdminProductRow(productId)
+            : await selectOwnedProductRow(productId, viewer.id)
+
+        if (!owned) {
+          return json({ ok: false, message: 'Немате дозвола за овој производ.' }, 403)
+        }
+
+        const db = getDb()
+        const rows = await db
+          .select({ id: productImage.id })
+          .from(productImage)
+          .where(eq(productImage.productId, productId))
+
+        const known = new Set(rows.map((row) => row.id))
+
+        // Only images of this product may be reordered: the ids come from the
+        // browser and nothing else is trusted.
+        if (imageIds.some((id) => !known.has(id))) {
+          return json({ ok: false, message: 'Некоја слика не припаѓа на производот.' }, 400)
+        }
+
+        const statements = imageIds.map((id, position) =>
+          db.update(productImage).set({ position }).where(eq(productImage.id, id)),
+        )
+
+        const [first, ...rest] = statements
+
+        if (first) {
+          await db.batch([first, ...rest])
+        }
+
+        return json({ ok: true, data: null })
+      },
+
       DELETE: async ({ request }) => {
         const viewer = await getViewer()
 

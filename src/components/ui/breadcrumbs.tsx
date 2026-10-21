@@ -11,12 +11,19 @@ export type BreadcrumbItem = {
 /** Simple breadcrumb trail used on product, category and producer pages. */
 export function Breadcrumbs({ items }: { items: BreadcrumbItem[] }) {
   return (
-    <nav aria-label="Патека" className="flex flex-wrap items-center gap-1 px-4 pt-4 text-sm text-black/50">
+    <nav
+      aria-label="Патека"
+      className="flex flex-wrap items-center gap-1 px-4 pt-4 text-sm text-black/50"
+    >
       {items.map((item, index) => (
         <span key={`${item.label}-${index}`} className="flex items-center gap-1">
           {index > 0 ? <ChevronRight aria-hidden="true" className="size-3.5" /> : null}
           {item.to ? (
-            <Link to={item.to} params={item.params as never} className="hover:text-black/80 hover:underline">
+            <Link
+              to={item.to}
+              params={item.params as never}
+              className="hover:text-black/80 hover:underline"
+            >
               {item.label}
             </Link>
           ) : (

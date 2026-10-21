@@ -179,7 +179,9 @@ function ProductPage() {
         </section>
 
         <section className="mt-8">
-          <h2 className="text-[1.2857rem] font-bold text-black/[0.87]">Контактирајте го производителот</h2>
+          <h2 className="text-[1.2857rem] font-bold text-black/[0.87]">
+            Контактирајте го производителот
+          </h2>
           <div className="mt-3 max-w-xl">
             <EnquiryForm storeId={product.store.id} productId={product.id} />
           </div>
@@ -188,23 +190,15 @@ function ProductPage() {
 
       {related.fromStore.length > 0 ? (
         <section className="mt-6">
-          <h2 className="px-4 font-display text-xl font-semibold">
-            Од истиот производител
-          </h2>
-          <ProductGrid
-            products={related.fromStore}
-            emptyTitle="Нема други производи"
-          />
+          <h2 className="px-4 font-display text-xl font-semibold">Од истиот производител</h2>
+          <ProductGrid products={related.fromStore} emptyTitle="Нема други производи" />
         </section>
       ) : null}
 
       {related.similar.length > 0 ? (
         <section className="mt-6">
           <h2 className="px-4 font-display text-xl font-semibold">Слични производи</h2>
-          <ProductGrid
-            products={related.similar}
-            emptyTitle="Нема слични производи"
-          />
+          <ProductGrid products={related.similar} emptyTitle="Нема слични производи" />
         </section>
       ) : null}
     </div>

@@ -11,8 +11,8 @@ import { Message } from '#/components/ui/message'
 import { CATEGORIES, type CategorySlug } from '#/lib/categories'
 import type { ActionResult } from '#/lib/action'
 import { imageUrl } from '#/lib/images'
-import { productFormValuesSchema, type ProductFormValues } from '#/lib/schemas'
-import { deleteProductImage, uploadProductImage } from '#/lib/uploads'
+import { productFormValuesSchema, type ProductForm, type ProductFormValues } from '#/lib/schemas'
+import { deleteProductImage, reorderProductImages, uploadProductImage } from '#/lib/uploads'
 import { saveProduct, updateProductImageAlt } from '#/server/functions/manage'
 import type { OwnerProductDetail, OwnerProductImage } from '#/server/queries/manage'
 
@@ -34,7 +34,7 @@ export function ProductForm({
 }: {
   storeId: string
   product?: OwnerProductDetail
-  save?: (args: { data: any }) => Promise<ActionResult<{ productId: string }>>
+  save?: (args: { data: ProductForm }) => Promise<ActionResult<{ productId: string }>>
 }) {
   const router = useRouter()
   const navigate = useNavigate()
@@ -122,6 +122,64 @@ export function ProductForm({
     }
 
     setBusyImages(false)
+  }
+
+  /**
+   * Moves an image inside the list and saves the new order. The first image is
+   * the one the catalogue card shows, so "set as cover" is a move to the front.
+   */
+  const persistOrder = async (next: OwnerProductImage[]) => {
+    setImages(next)
+
+    if (!product) {
+      return
+    }
+
+    const result = await reorderProductImages(
+      product.id,
+      next.map((image) => image.id),
+    )
+
+    if (!result.ok) {
+      setImageError(result.message)
+      await router.invalidate()
+    }
+  }
+
+  const moveImage = (index: number, offset: number) => {
+    const target = index + offset
+
+    if (target < 0 || target >= images.length) {
+      return
+    }
+
+    const next = [...images]
+    const [moved] = next.splice(index, 1)
+
+    if (!moved) {
+      return
+    }
+
+    next.splice(target, 0, moved)
+
+    void persistOrder(next)
+  }
+
+  const setAsCover = (index: number) => {
+    if (index === 0) {
+      return
+    }
+
+    const next = [...images]
+    const [moved] = next.splice(index, 1)
+
+    if (!moved) {
+      return
+    }
+
+    next.unshift(moved)
+
+    void persistOrder(next)
   }
 
   const onSubmit = handleSubmit(async (values) => {
@@ -287,7 +345,7 @@ export function ProductForm({
         />
 
         <div className="flex flex-wrap gap-3">
-          {images.map((image) => (
+          {images.map((image, index) => (
             <div key={image.id} className="flex flex-col gap-1">
               <div className="relative">
                 <img
@@ -297,6 +355,11 @@ export function ProductForm({
                   height={90}
                   className="h-[90px] w-[120px] rounded-[0.2857rem] border border-line object-cover"
                 />
+                {index === 0 ? (
+                  <span className="absolute bottom-1 left-1 rounded bg-black/70 px-1.5 py-0.5 text-[10px] font-bold text-white">
+                    Главна
+                  </span>
+                ) : null}
                 <button
                   type="button"
                   aria-label="Отстрани слика"
@@ -327,6 +390,34 @@ export function ProductForm({
                   }
                 }}
               />
+              <div className="flex items-center gap-1">
+                <button
+                  type="button"
+                  aria-label="Премести нагоре"
+                  disabled={busyImages || index === 0}
+                  onClick={() => moveImage(index, -1)}
+                  className="cursor-pointer rounded border border-line px-1.5 py-0.5 text-xs disabled:cursor-not-allowed disabled:opacity-40"
+                >
+                  ↑
+                </button>
+                <button
+                  type="button"
+                  aria-label="Премести надолу"
+                  disabled={busyImages || index === images.length - 1}
+                  onClick={() => moveImage(index, 1)}
+                  className="cursor-pointer rounded border border-line px-1.5 py-0.5 text-xs disabled:cursor-not-allowed disabled:opacity-40"
+                >
+                  ↓
+                </button>
+                <button
+                  type="button"
+                  disabled={busyImages || index === 0}
+                  onClick={() => setAsCover(index)}
+                  className="cursor-pointer rounded border border-line px-1.5 py-0.5 text-xs disabled:cursor-not-allowed disabled:opacity-40"
+                >
+                  Главна
+                </button>
+              </div>
             </div>
           ))}
 
