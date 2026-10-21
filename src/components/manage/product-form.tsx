@@ -12,7 +12,7 @@ import { CATEGORIES, type CategorySlug } from '#/lib/categories'
 import { imageUrl } from '#/lib/images'
 import { productFormValuesSchema, type ProductFormValues } from '#/lib/schemas'
 import { deleteProductImage, uploadProductImage } from '#/lib/uploads'
-import { saveProduct } from '#/server/functions/manage'
+import { saveProduct, updateProductImageAlt } from '#/server/functions/manage'
 import type { OwnerProductDetail, OwnerProductImage } from '#/server/queries/manage'
 
 /** A photo picked before the product exists, and its local preview. */
@@ -271,23 +271,45 @@ export function ProductForm({
 
         <div className="flex flex-wrap gap-3">
           {images.map((image) => (
-            <div key={image.id} className="relative">
-              <img
-                src={imageUrl(image.key)}
-                alt={image.alt ?? ''}
-                width={120}
-                height={90}
-                className="h-[90px] w-[120px] rounded-[0.2857rem] border border-line object-cover"
+            <div key={image.id} className="flex flex-col gap-1">
+              <div className="relative">
+                <img
+                  src={imageUrl(image.key)}
+                  alt={image.alt ?? ''}
+                  width={120}
+                  height={90}
+                  className="h-[90px] w-[120px] rounded-[0.2857rem] border border-line object-cover"
+                />
+                <button
+                  type="button"
+                  aria-label="Отстрани слика"
+                  className="absolute -top-2 -right-2 flex size-6 cursor-pointer items-center justify-center rounded-full bg-danger text-white hover:bg-[#c92121]"
+                  disabled={busyImages}
+                  onClick={() => void removeImage(image.id)}
+                >
+                  <X className="size-3.5" />
+                </button>
+              </div>
+              <input
+                type="text"
+                defaultValue={image.alt ?? ''}
+                placeholder="Alt текст"
+                aria-label="Alt текст за сликата"
+                className="h-7 w-[120px] rounded border border-line px-1 text-xs"
+                onBlur={async (event) => {
+                  const value = event.target.value
+                  const result = await updateProductImageAlt({
+                    data: { imageId: image.id, alt: value },
+                  })
+                  if (result.ok) {
+                    setImages((current) =>
+                      current.map((entry) =>
+                        entry.id === image.id ? { ...entry, alt: value.trim() || null } : entry,
+                      ),
+                    )
+                  }
+                }}
               />
-              <button
-                type="button"
-                aria-label="Отстрани слика"
-                className="absolute -top-2 -right-2 flex size-6 cursor-pointer items-center justify-center rounded-full bg-danger text-white hover:bg-[#c92121]"
-                disabled={busyImages}
-                onClick={() => void removeImage(image.id)}
-              >
-                <X className="size-3.5" />
-              </button>
             </div>
           ))}
 

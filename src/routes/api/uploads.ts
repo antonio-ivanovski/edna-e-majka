@@ -96,10 +96,14 @@ export const Route = createFileRoute('/api/uploads')({
 
           await env.BUCKET.put(key, file.stream(), { httpMetadata })
 
+          const altRaw = form.get('alt')
+          const alt =
+            typeof altRaw === 'string' && altRaw.trim() ? altRaw.trim().slice(0, 200) : null
+
           const image = {
             id,
             key,
-            alt: owned.title,
+            alt,
             width: dimension(form.get('width'), 1200),
             height: dimension(form.get('height'), 900),
             position: await selectNextImagePosition(productId),

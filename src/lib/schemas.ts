@@ -129,6 +129,11 @@ export const productStatusSchema = z.object({
 
 export const productDeleteSchema = z.object({ productId: z.string().min(1) })
 
+export const productImageAltSchema = z.object({
+  imageId: z.string().min(1),
+  alt: z.string().trim().max(200),
+})
+
 /** A product is always addressed together with the shop that holds it. */
 export const manageProductSchema = z.object({
   storeId: z.string().min(1),

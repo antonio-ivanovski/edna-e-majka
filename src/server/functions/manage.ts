@@ -18,6 +18,7 @@ import {
   manageProductSchema,
   productDeleteSchema,
   productFormSchema,
+  productImageAltSchema,
   productStatusSchema,
   storeDetailsSchema,
   storeIdSchema,
@@ -27,9 +28,10 @@ import { buildSearchText } from '#/lib/translit'
 import { optionalText } from '#/lib/text'
 
 import { getDb } from '../db/client'
-import { product, productCategory, productVariant, store } from '../db/schema'
+import { product, productCategory, productImage, productVariant, store } from '../db/schema'
 import { withViewer } from '../middleware'
 import { reviewShopApplication } from '../moderation'
+import { selectAdminProductRow } from '../queries/admin'
 import {
   selectOwnedProductRow,
   selectOwnerProduct,
@@ -289,6 +291,45 @@ export const deleteProduct = createServerFn({ method: 'POST' })
     }
 
     await deleteProductCascade(data.productId)
+
+    return { ok: true, data: null }
+  })
+
+export const updateProductImageAlt = createServerFn({ method: 'POST' })
+  .middleware([withViewer])
+  .validator(productImageAltSchema)
+  .handler(async ({ context, data }): Promise<ActionResult> => {
+    const viewer = context.viewer
+
+    if (!viewer) {
+      return NOT_SIGNED_IN
+    }
+
+    const rows = await getDb()
+      .select({ productId: productImage.productId })
+      .from(productImage)
+      .where(eq(productImage.id, data.imageId))
+      .limit(1)
+
+    const image = rows[0]
+
+    if (!image) {
+      return { ok: false, message: 'Сликата не е најдена.' }
+    }
+
+    const owned =
+      viewer.role === 'admin'
+        ? await selectAdminProductRow(image.productId)
+        : await selectOwnedProductRow(image.productId, viewer.id)
+
+    if (!owned) {
+      return NOT_ALLOWED
+    }
+
+    await getDb()
+      .update(productImage)
+      .set({ alt: data.alt.trim() ? data.alt.trim() : null })
+      .where(eq(productImage.id, data.imageId))
 
     return { ok: true, data: null }
   })

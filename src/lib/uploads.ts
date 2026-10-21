@@ -65,6 +65,7 @@ async function send<Value>(url: string, init: RequestInit): Promise<ActionResult
 export async function uploadProductImage(
   productId: string,
   file: File,
+  alt?: string,
 ): Promise<ActionResult<UploadedImage>> {
   const { blob, width, height } = await shrink(file)
   const form = new FormData()
@@ -72,6 +73,9 @@ export async function uploadProductImage(
   form.set('productId', productId)
   form.set('width', String(width))
   form.set('height', String(height))
+  if (alt && alt.trim()) {
+    form.set('alt', alt.trim())
+  }
   form.set('file', blob, 'photo.jpg')
 
   return send<UploadedImage>('/api/uploads', { method: 'POST', body: form })

@@ -11,7 +11,7 @@ Legend: `[ ]` todo, `[x]` done. **Blockers** = dependencies on other items or pr
 ## Tier 1 — Core product gaps
 
 - [ ] **T1-01** Contact producer form on product/store page — structured enquiry that lands in the admin inbox (reuse `contactMessage`). Blockers: none.
-- [ ] **T1-02** Image alt text input in product form + use in `<img alt>`. Blockers: none.
+- [x] **T1-02** Image alt text input in product form + use in `<img alt>`. Blockers: none.
 - [ ] **T1-03** Image reordering (drag) + "set as cover" in product form. Blockers: position update API.
 - [ ] **T1-04** Pretty URLs (slugs) for products and stores + internal link updates. Blockers: DB migration (slug columns), uniqueness handling.
 - [ ] **T1-05** Store city/region field (display only; location-based filtering deferred). Blockers: none.
