@@ -66,6 +66,12 @@ export type CooperationMessage = z.infer<typeof cooperationMessageSchema>
 
 export const storeIdSchema = z.object({ storeId: z.string().min(1) })
 
+/** The owner's product table: one shop and a page of its listings. */
+export const manageProductsSchema = z.object({
+  storeId: z.string().min(1),
+  page: z.coerce.number().int().min(1).max(500).default(1),
+})
+
 /**
  * What a producer fills in about their shop, on the application form and when
  * editing it later. Facebook and Instagram stay free text: producers paste

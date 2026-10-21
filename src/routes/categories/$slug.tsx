@@ -1,8 +1,10 @@
 import { createFileRoute, notFound } from '@tanstack/react-router'
+import { useCallback } from 'react'
 
 import { CatalogueList } from '#/components/catalogue/catalogue-list'
 import { Breadcrumbs } from '#/components/ui/breadcrumbs'
 import { findCategory } from '#/lib/categories'
+import type { ProductSort, SortDirection } from '#/lib/schemas'
 import { parseProductSearch, resolveProductSearch } from '#/lib/search-params'
 import { listProducts } from '#/server/functions/products'
 import { PRODUCT_PAGE_SIZE } from '#/lib/pagination'
@@ -36,6 +38,12 @@ function CategoryPage() {
   const { category, page, params } = Route.useLoaderData()
   const navigate = Route.useNavigate()
 
+  const onParamsChange = useCallback(
+    (next: { sort?: ProductSort; direction?: SortDirection; page?: number }) =>
+      void navigate({ search: (prev) => ({ ...prev, ...next }) }),
+    [navigate],
+  )
+
   return (
     <div>
       <Breadcrumbs
@@ -55,7 +63,7 @@ function CategoryPage() {
         pageSize={PRODUCT_PAGE_SIZE}
         emptyTitle={`Сѐ уште нема производи во „${category.title}“.`}
         emptyDescription="Погледнете другите категории или сите производители."
-        onParamsChange={(next) => void navigate({ search: (prev) => ({ ...prev, ...next }) })}
+        onParamsChange={onParamsChange}
       />
     </div>
   )

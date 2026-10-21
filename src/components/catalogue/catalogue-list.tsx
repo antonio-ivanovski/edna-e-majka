@@ -1,11 +1,14 @@
 import { SortAsc, SortDesc } from 'lucide-react'
+import { useCallback } from 'react'
 
 import { Button } from '#/components/ui/button'
 import { formatCount } from '#/lib/format'
+import { MAX_CATALOGUE_ITEMS } from '#/lib/pagination'
 import type { ProductSort, SortDirection } from '#/lib/schemas'
 import type { ProductSummary } from '#/server/queries/products'
 import { cn } from '#/lib/utils'
 
+import { InfiniteScrollTrigger } from './infinite-scroll-trigger'
 import { ProductGrid } from './product-grid'
 
 const SORTS: { value: ProductSort; label: string }[] = [
@@ -39,7 +42,16 @@ export function CatalogueList({
   emptyDescription?: string
   onParamsChange: (next: { sort?: ProductSort; direction?: SortDirection; page?: number }) => void
 }) {
-  const pageCount = Math.max(1, Math.ceil(total / pageSize))
+  const pageCount = Math.min(
+    Math.max(1, Math.ceil(total / pageSize)),
+    Math.max(1, Math.ceil(MAX_CATALOGUE_ITEMS / pageSize)),
+  )
+  const hasMore = page < pageCount
+
+  // The next page is asked for when the marker at the end of the list appears.
+  const loadMore = useCallback(() => {
+    onParamsChange({ page: page + 1 })
+  }, [onParamsChange, page])
 
   return (
     <section>
@@ -91,6 +103,8 @@ export function CatalogueList({
         emptyTitle={emptyTitle}
         emptyDescription={emptyDescription}
       />
+
+      {hasMore ? <InfiniteScrollTrigger onVisible={loadMore} /> : null}
 
       {pageCount > 1 ? (
         <nav

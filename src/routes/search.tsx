@@ -1,8 +1,10 @@
 import { createFileRoute } from '@tanstack/react-router'
+import { useCallback } from 'react'
 
 import { CatalogueList } from '#/components/catalogue/catalogue-list'
 import { EmptyState } from '#/components/ui/empty-state'
 import { MIN_SEARCH_LENGTH } from '#/lib/schemas'
+import type { ProductSort, SortDirection } from '#/lib/schemas'
 import { parseSearchPage, resolveProductSearch, type SearchPageSearch } from '#/lib/search-params'
 import { listProducts } from '#/server/functions/products'
 import { PRODUCT_PAGE_SIZE } from '#/lib/pagination'
@@ -45,6 +47,12 @@ function SearchPage() {
   const { query, params, page } = Route.useLoaderData()
   const navigate = Route.useNavigate()
 
+  const onParamsChange = useCallback(
+    (next: { sort?: ProductSort; direction?: SortDirection; page?: number }) =>
+      void navigate({ search: (prev) => ({ ...prev, ...next }) }),
+    [navigate],
+  )
+
   if (query.length < MIN_SEARCH_LENGTH) {
     return (
       <EmptyState
@@ -67,7 +75,7 @@ function SearchPage() {
         pageSize={PRODUCT_PAGE_SIZE}
         emptyTitle={`Нема производи за „${query}“.`}
         emptyDescription="Пробајте со друг збор или прелистајте по категорија."
-        onParamsChange={(next) => void navigate({ search: (prev) => ({ ...prev, ...next }) })}
+        onParamsChange={onParamsChange}
       />
     </div>
   )

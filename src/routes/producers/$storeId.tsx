@@ -1,4 +1,5 @@
 import { createFileRoute, redirect } from '@tanstack/react-router'
+import { useCallback } from 'react'
 
 import { CatalogueList } from '#/components/catalogue/catalogue-list'
 import { ProducerContacts } from '#/components/catalogue/producer-contacts'
@@ -6,6 +7,7 @@ import { Avatar } from '#/components/ui/avatar'
 import { Breadcrumbs } from '#/components/ui/breadcrumbs'
 import { Panel } from '#/components/ui/panel'
 import { imageUrl } from '#/lib/images'
+import type { ProductSort, SortDirection } from '#/lib/schemas'
 import { parseProductSearch, resolveProductSearch } from '#/lib/search-params'
 import { listProducts } from '#/server/functions/products'
 import { getStore } from '#/server/functions/stores'
@@ -41,6 +43,12 @@ export const Route = createFileRoute('/producers/$storeId')({
 function ProducerPage() {
   const { store, params, page } = Route.useLoaderData()
   const navigate = Route.useNavigate()
+
+  const onParamsChange = useCallback(
+    (next: { sort?: ProductSort; direction?: SortDirection; page?: number }) =>
+      void navigate({ search: (prev) => ({ ...prev, ...next }) }),
+    [navigate],
+  )
 
   return (
     <div>
@@ -83,7 +91,7 @@ function ProducerPage() {
         pageSize={PRODUCT_PAGE_SIZE}
         emptyTitle={`${store.name} сѐ уште нема објавени производи.`}
         emptyDescription="Погледнете ги другите производители дотогаш."
-        onParamsChange={(next) => void navigate({ search: (prev) => ({ ...prev, ...next }) })}
+        onParamsChange={onParamsChange}
       />
     </div>
   )

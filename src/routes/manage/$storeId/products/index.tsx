@@ -8,10 +8,15 @@ import { EmptyState } from '#/components/ui/empty-state'
 import { Panel } from '#/components/ui/panel'
 import { Table, TableBody, TableHead, TableHeaderCell, TableRow } from '#/components/ui/table'
 import { formatCount } from '#/lib/format'
+import { MANAGE_PAGE_SIZE } from '#/lib/pagination'
+import { parseProductSearch } from '#/lib/search-params'
 import { getManageProducts } from '#/server/functions/manage'
 
 export const Route = createFileRoute('/manage/$storeId/products/')({
-  loader: ({ params }) => getManageProducts({ data: { storeId: params.storeId } }),
+  validateSearch: parseProductSearch,
+  loaderDeps: ({ search }) => ({ page: search.page ?? 1 }),
+  loader: ({ params, deps }) =>
+    getManageProducts({ data: { storeId: params.storeId, page: deps.page } }),
   head: ({ loaderData }) => ({
     meta: [
       {
@@ -26,7 +31,11 @@ export const Route = createFileRoute('/manage/$storeId/products/')({
 })
 
 function ManageProductsPage() {
-  const { store, products } = Route.useLoaderData()
+  const { store, products, total } = Route.useLoaderData()
+  const navigate = Route.useNavigate()
+  const page = Route.useSearch({ select: (search) => search.page ?? 1 })
+
+  const pageCount = Math.max(1, Math.ceil(total / MANAGE_PAGE_SIZE))
 
   return (
     <div className="mx-auto w-full max-w-5xl px-4 py-10">
@@ -41,7 +50,7 @@ function ManageProductsPage() {
             <StoreStatusLabel status={store.status} size="small" />
           </div>
           <p className="mt-1 text-black/60">
-            {store.name} · {formatCount(products.length, 'производ', 'производи')}
+            {store.name} · {formatCount(total, 'производ', 'производи')}
           </p>
         </div>
 
@@ -85,6 +94,35 @@ function ManageProductsPage() {
           </TableBody>
         </Table>
       )}
+
+      {pageCount > 1 ? (
+        <nav
+          aria-label="Страници"
+          className="mt-6 flex flex-wrap items-center justify-center gap-3"
+        >
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            disabled={page <= 1}
+            onClick={() => void navigate({ search: (prev) => ({ ...prev, page: page - 1 }) })}
+          >
+            Претходна
+          </Button>
+          <span className="text-black/60">
+            Страница {page} од {pageCount}
+          </span>
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            disabled={page >= pageCount}
+            onClick={() => void navigate({ search: (prev) => ({ ...prev, page: page + 1 }) })}
+          >
+            Следна
+          </Button>
+        </nav>
+      ) : null}
 
       <div className="mt-8 border-t border-line pt-5">
         <Button asChild variant="outline">

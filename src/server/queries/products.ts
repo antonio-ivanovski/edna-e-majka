@@ -1,7 +1,7 @@
 import { and, asc, count, desc, eq, inArray, or, sql } from 'drizzle-orm'
 
 import { buildSearchVariants } from '#/lib/translit'
-import { PRODUCT_PAGE_SIZE } from '#/lib/pagination'
+import { MAX_CATALOGUE_ITEMS, PRODUCT_PAGE_SIZE } from '#/lib/pagination'
 import type { ProductListFilters } from '#/lib/schemas'
 
 import { getDb } from '../db/client'
@@ -139,7 +139,10 @@ function ordering(filters: ProductListFilters) {
 export async function selectProductPage(filters: ProductListFilters): Promise<ProductPage> {
   const db = getDb()
   const where = publicProductConditions(filters)
-  const offset = (filters.page - 1) * PRODUCT_PAGE_SIZE
+
+  // The list grows a page at a time: page three asks for three pages of
+  // products, so the cards already on the screen stay where they are.
+  const limit = Math.min(filters.page * PRODUCT_PAGE_SIZE, MAX_CATALOGUE_ITEMS)
 
   const [idRows, totalRows] = await db.batch([
     db
@@ -149,8 +152,7 @@ export async function selectProductPage(filters: ProductListFilters): Promise<Pr
       .where(where)
       // The id keeps paging stable when two products share a timestamp or price.
       .orderBy(...ordering(filters), asc(product.id))
-      .limit(PRODUCT_PAGE_SIZE)
-      .offset(offset),
+      .limit(limit),
     db
       .select({ total: count() })
       .from(product)

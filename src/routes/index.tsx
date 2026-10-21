@@ -1,4 +1,5 @@
 import { Link, createFileRoute } from '@tanstack/react-router'
+import { useCallback } from 'react'
 
 import { CatalogueList } from '#/components/catalogue/catalogue-list'
 import { ContactDialog } from '#/components/shell/contact-dialog'
@@ -6,6 +7,7 @@ import { Message } from '#/components/ui/message'
 import { useRecentlyViewed } from '#/hooks/use-recently-viewed'
 import { CATEGORIES } from '#/lib/categories'
 import { imageUrl } from '#/lib/images'
+import type { ProductSort, SortDirection } from '#/lib/schemas'
 import { parseProductSearch, resolveProductSearch } from '#/lib/search-params'
 import { listProducts } from '#/server/functions/products'
 import { PRODUCT_PAGE_SIZE } from '#/lib/pagination'
@@ -27,6 +29,12 @@ function HomePage() {
   const { page, params } = Route.useLoaderData()
   const navigate = Route.useNavigate()
   const recent = useRecentlyViewed()
+
+  const onParamsChange = useCallback(
+    (next: { sort?: ProductSort; direction?: SortDirection; page?: number }) =>
+      void navigate({ search: (prev) => ({ ...prev, ...next }) }),
+    [navigate],
+  )
 
   return (
     <div>
@@ -109,7 +117,7 @@ function HomePage() {
         pageSize={PRODUCT_PAGE_SIZE}
         emptyTitle="Сѐ уште нема објавени производи."
         emptyDescription="Штом производителите ги објават своите производи, тие ќе се појават тука."
-        onParamsChange={(next) => void navigate({ search: (prev) => ({ ...prev, ...next }) })}
+        onParamsChange={onParamsChange}
       />
     </div>
   )

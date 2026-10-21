@@ -6,7 +6,9 @@
  * Ownership is always part of the `where` clause — a store is fetched *for* an
  * owner, never by id alone.
  */
-import { and, asc, desc, eq, inArray } from 'drizzle-orm'
+import { and, asc, count, desc, eq, inArray } from 'drizzle-orm'
+
+import { MANAGE_PAGE_SIZE } from '#/lib/pagination'
 
 import { getDb } from '../db/client'
 import { product, productCategory, productImage, productVariant, store } from '../db/schema'
@@ -120,22 +122,33 @@ export async function selectOwnerStoreById(
   return rows[0] ?? null
 }
 
-export async function selectOwnerProducts(storeId: string): Promise<OwnerProduct[]> {
+export async function selectOwnerProducts(
+  storeId: string,
+  page = 1,
+): Promise<{ items: OwnerProduct[]; total: number }> {
   const db = getDb()
+  const offset = (page - 1) * MANAGE_PAGE_SIZE
 
-  const rows = await db
-    .select({
-      id: product.id,
-      title: product.title,
-      status: product.status,
-      createdAt: product.createdAt,
-    })
-    .from(product)
-    .where(eq(product.storeId, storeId))
-    .orderBy(desc(product.createdAt))
+  const [rows, totalRows] = await db.batch([
+    db
+      .select({
+        id: product.id,
+        title: product.title,
+        status: product.status,
+        createdAt: product.createdAt,
+      })
+      .from(product)
+      .where(eq(product.storeId, storeId))
+      .orderBy(desc(product.createdAt))
+      .limit(MANAGE_PAGE_SIZE)
+      .offset(offset),
+    db.select({ total: count() }).from(product).where(eq(product.storeId, storeId)),
+  ])
+
+  const total = totalRows[0]?.total ?? 0
 
   if (rows.length === 0) {
-    return []
+    return { items: [], total }
   }
 
   const productIds = rows.map((row) => row.id)
@@ -159,7 +172,7 @@ export async function selectOwnerProducts(storeId: string): Promise<OwnerProduct
       .orderBy(asc(productImage.position)),
   ])
 
-  return rows.map((row) => {
+  const items = rows.map((row) => {
     const prices = variantRows.filter((variant) => variant.productId === row.id).map((v) => v.price)
     const firstImage = imageRows.find((image) => image.productId === row.id)
 
@@ -171,6 +184,8 @@ export async function selectOwnerProducts(storeId: string): Promise<OwnerProduct
       variantCount: prices.length,
     }
   })
+
+  return { items, total }
 }
 
 export async function selectOwnerProduct(

@@ -16,6 +16,7 @@ import { eq } from 'drizzle-orm'
 import { NOT_ALLOWED, NOT_SIGNED_IN, type ActionResult } from '#/lib/action'
 import {
   manageProductSchema,
+  manageProductsSchema,
   productDeleteSchema,
   productFormSchema,
   productImageAltSchema,
@@ -71,7 +72,8 @@ export const getManageHome = createServerFn({ method: 'GET' })
 
     return {
       store: ownStore,
-      products: ownStore ? await selectOwnerProducts(ownStore.id) : [],
+      // The overview only shows the newest few; the table has the rest.
+      products: ownStore ? (await selectOwnerProducts(ownStore.id)).items : [],
     }
   })
 
@@ -91,7 +93,7 @@ export const getManageStore = createServerFn({ method: 'GET' })
 
 export const getManageProducts = createServerFn({ method: 'GET' })
   .middleware([withViewer])
-  .validator(storeIdSchema)
+  .validator(manageProductsSchema)
   .handler(async ({ context, data }) => {
     const ownerId = await requireOwner(context.viewer?.id)
     const ownStore = await selectOwnerStoreById(data.storeId, ownerId)
@@ -100,7 +102,9 @@ export const getManageProducts = createServerFn({ method: 'GET' })
       throw notFound()
     }
 
-    return { store: ownStore, products: await selectOwnerProducts(ownStore.id) }
+    const page = await selectOwnerProducts(ownStore.id, data.page)
+
+    return { store: ownStore, products: page.items, total: page.total }
   })
 
 export const getManageProduct = createServerFn({ method: 'GET' })
