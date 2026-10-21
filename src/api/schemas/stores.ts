@@ -32,9 +32,9 @@ export const AdminTransferStore = Schema.Struct({
   email: Schema.String.pipe(Schema.check(Schema.isPattern(/^[^\s@]+@[^\s@]+\.[^\s@]+$/))),
 })
 
-const pageField = Schema.NumberFromString.pipe(
+const pageField = Schema.Union([Schema.Number, Schema.NumberFromString]).pipe(
   Schema.check(Schema.isInt(), Schema.isGreaterThanOrEqualTo(1), Schema.isLessThanOrEqualTo(500)),
-  Schema.withDecodingDefault(Effect.succeed('1' as any)),
+  Schema.withDecodingDefault(Effect.succeed(1 as any)),
 )
 
 export const AdminStoreList = Schema.Struct({

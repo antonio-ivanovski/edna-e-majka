@@ -9,11 +9,11 @@ import { Panel } from '#/components/ui/panel'
 import { Table, TableBody, TableHead, TableHeaderCell, TableRow } from '#/components/ui/table'
 import { formatCount } from '#/lib/format'
 import { MANAGE_PAGE_SIZE } from '#/lib/pagination'
-import { parseProductSearch } from '#/lib/search-params'
+import { toValidator, ProductSearch } from '#/api/schemas'
 import { getManageProducts } from '#/server/functions/manage'
 
 export const Route = createFileRoute('/manage/$storeId/products/')({
-  validateSearch: parseProductSearch,
+  validateSearch: toValidator(ProductSearch),
   loaderDeps: ({ search }) => ({ page: search.page ?? 1 }),
   loader: ({ params, deps }) =>
     getManageProducts({ data: { storeId: params.storeId, page: String(deps.page) } }),

@@ -6,7 +6,7 @@ import { AdminProductRow } from '#/components/admin/product-row'
 import { EmptyState } from '#/components/ui/empty-state'
 import { Panel } from '#/components/ui/panel'
 import { Table, TableBody, TableHead, TableHeaderCell, TableRow } from '#/components/ui/table'
-import { parseAdminProductSearch, resolveAdminPage } from '#/lib/admin-search'
+import { toValidator, AdminProductSearch } from '#/api/schemas'
 import { formatCount } from '#/lib/format'
 import { ADMIN_PAGE_SIZE } from '#/lib/pagination'
 import { getAdminProducts } from '#/server/functions/admin'
@@ -19,11 +19,11 @@ const STATUS_FILTERS: { value?: ProductStatus; label: string }[] = [
 ]
 
 export const Route = createFileRoute('/admin/products/')({
-  validateSearch: parseAdminProductSearch,
+  validateSearch: toValidator(AdminProductSearch),
   loaderDeps: ({ search }) => ({
     status: search.status,
     query: search.q,
-    page: resolveAdminPage(search),
+    page: search.page ?? 1,
   }),
   loader: ({ deps }) => getAdminProducts({ data: deps }),
   head: () => ({
@@ -98,7 +98,7 @@ function AdminProductsPage() {
       )}
 
       <AdminPager
-        page={resolveAdminPage(search)}
+        page={search.page ?? 1}
         total={total}
         pageSize={ADMIN_PAGE_SIZE}
         onPageChange={(page) => void navigate({ search: (prev) => ({ ...prev, page }) })}

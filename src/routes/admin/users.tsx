@@ -6,14 +6,14 @@ import { AdminUserRow } from '#/components/admin/user-row'
 import { EmptyState } from '#/components/ui/empty-state'
 import { Panel } from '#/components/ui/panel'
 import { Table, TableBody, TableHead, TableHeaderCell, TableRow } from '#/components/ui/table'
-import { parseAdminListSearch, resolveAdminPage } from '#/lib/admin-search'
+import { toValidator, AdminListSearch } from '#/api/schemas'
 import { formatCount } from '#/lib/format'
 import { ADMIN_PAGE_SIZE } from '#/lib/pagination'
 import { getAdminUsers } from '#/server/functions/admin'
 
 export const Route = createFileRoute('/admin/users')({
-  validateSearch: parseAdminListSearch,
-  loaderDeps: ({ search }) => ({ query: search.q, page: resolveAdminPage(search) }),
+  validateSearch: toValidator(AdminListSearch),
+  loaderDeps: ({ search }) => ({ query: search.q, page: search.page ?? 1 }),
   loader: ({ deps }) => getAdminUsers({ data: deps }),
   head: () => ({
     meta: [
@@ -76,7 +76,7 @@ function AdminUsersPage() {
       )}
 
       <AdminPager
-        page={resolveAdminPage(search)}
+        page={search.page ?? 1}
         total={total}
         pageSize={ADMIN_PAGE_SIZE}
         onPageChange={(page) => void navigate({ search: (prev) => ({ ...prev, page }) })}

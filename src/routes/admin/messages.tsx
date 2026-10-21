@@ -5,7 +5,8 @@ import { AdminFilters } from '#/components/admin/list-toolbar'
 import { AdminMessageCard } from '#/components/admin/message-card'
 import { EmptyState } from '#/components/ui/empty-state'
 import { Panel } from '#/components/ui/panel'
-import { parseAdminMessageSearch, resolveAdminPage, type MessageFilter } from '#/lib/admin-search'
+import { toValidator, AdminMessageSearch } from "#/api/schemas"
+import type { MessageFilter } from "#/lib/admin-search"
 import { formatCount } from '#/lib/format'
 import { ADMIN_PAGE_SIZE } from '#/lib/pagination'
 import { getAdminMessages } from '#/server/functions/admin'
@@ -17,10 +18,10 @@ const FILTERS: { value: MessageFilter; label: string }[] = [
 ]
 
 export const Route = createFileRoute('/admin/messages')({
-  validateSearch: parseAdminMessageSearch,
+  validateSearch: toValidator(AdminMessageSearch),
   loaderDeps: ({ search }) => ({
     filter: search.filter ?? 'open',
-    page: resolveAdminPage(search),
+    page: search.page ?? 1,
   }),
   loader: ({ deps }) => getAdminMessages({ data: deps }),
   head: () => ({
@@ -72,7 +73,7 @@ function AdminMessagesPage() {
       )}
 
       <AdminPager
-        page={resolveAdminPage(search)}
+        page={search.page ?? 1}
         total={total}
         pageSize={ADMIN_PAGE_SIZE}
         onPageChange={(page) => void navigate({ search: (prev) => ({ ...prev, page }) })}

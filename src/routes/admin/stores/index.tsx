@@ -17,7 +17,7 @@ import {
   TableHeaderCell,
   TableRow,
 } from '#/components/ui/table'
-import { parseAdminStoreSearch, resolveAdminPage } from '#/lib/admin-search'
+import { toValidator, AdminStoreSearch } from '#/api/schemas'
 import { formatCount, formatDate } from '#/lib/format'
 import { imageUrl } from '#/lib/images'
 import { ADMIN_PAGE_SIZE } from '#/lib/pagination'
@@ -33,11 +33,11 @@ const STATUS_FILTERS: { value?: StoreStatus; label: string }[] = [
 ]
 
 export const Route = createFileRoute('/admin/stores/')({
-  validateSearch: parseAdminStoreSearch,
+  validateSearch: toValidator(AdminStoreSearch),
   loaderDeps: ({ search }) => ({
     status: search.status,
     query: search.q,
-    page: resolveAdminPage(search),
+    page: search.page ?? 1,
   }),
   loader: ({ deps }) => getAdminStores({ data: deps }),
   head: () => ({
@@ -146,7 +146,7 @@ function AdminStoresPage() {
       )}
 
       <AdminPager
-        page={resolveAdminPage(search)}
+        page={search.page ?? 1}
         total={total}
         pageSize={ADMIN_PAGE_SIZE}
         onPageChange={(page) => void navigate({ search: (prev) => ({ ...prev, page }) })}
