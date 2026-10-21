@@ -75,7 +75,7 @@ Goal: one typed contract layer, Effect everywhere on the server, one client cach
   Key factories + `queryOptions` per domain in `src/lib/queries/*`, with
   per-domain `staleTime` (catalogue ~60s, admin/manage 0). Prove the SSR
   hydration path on one route before rolling it out. Blockers: none.
-- [ ] **T0-12** Loaders prefetch, components read. Every route loader calls
+- [x] **T0-12** Loaders prefetch, components read. Every route loader calls
   `queryClient.ensureQueryData(...)`; components use `useSuspenseQuery`;
   mutations use `useMutation` + `queryClient.invalidateQueries` instead of
   ad-hoc refetches. Blockers: T0-08, T0-11.
