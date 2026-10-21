@@ -64,7 +64,7 @@ Goal: one typed contract layer, Effect everywhere on the server, one client cach
   `FormData` validator (TanStack supports `FormData` validators on POST).
   `src/lib/uploads.ts` calls it and gets a typed result; the REST route goes
   away. Blockers: T0-04, T0-06.
-- [ ] **T0-10** Remaining server routes typed. `/images/$`, `/robots.txt`,
+- [x] **T0-10** Remaining server routes typed. `/images/$`, `/robots.txt`,
   `/rss.xml`, `/sitemap.xml`, `/api/auth/$` keep their shape but build their
   payloads from typed Effect data (Effect Schema for sitemap/feed entries, the
   `Assets` service for R2). Blockers: T0-06.
