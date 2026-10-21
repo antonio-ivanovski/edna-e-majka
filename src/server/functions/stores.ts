@@ -1,16 +1,16 @@
 import { notFound } from '@tanstack/react-router'
 import { createServerFn } from '@tanstack/react-start'
 
-import { storeIdSchema } from '#/lib/schemas'
-
+import { toValidator, StoreId } from '#/api/schemas'
+import { runEffect } from '../runtime'
 import { selectStoreDetail, selectStores } from '../queries/stores'
 
-export const listStores = createServerFn({ method: 'GET' }).handler(async () => selectStores())
+export const listStores = createServerFn({ method: 'GET' }).handler(async () => runEffect(selectStores()))
 
 export const getStore = createServerFn({ method: 'GET' })
-  .validator(storeIdSchema)
+  .validator(toValidator(StoreId))
   .handler(async ({ data }) => {
-    const detail = await selectStoreDetail(data.storeId)
+    const detail = await runEffect(selectStoreDetail(data.storeId))
 
     if (!detail) {
       throw notFound()
