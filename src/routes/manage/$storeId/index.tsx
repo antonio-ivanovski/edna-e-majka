@@ -1,7 +1,7 @@
 import { Link, createFileRoute } from '@tanstack/react-router'
 
 import { StoreStatusLabel } from '#/components/manage/status-label'
-import { StoreAvatarField, StoreForm } from '#/components/manage/store-form'
+import { StoreAvatarField, StoreCoverField, StoreForm } from '#/components/manage/store-form'
 import { Button } from '#/components/ui/button'
 import { getManageStore } from '#/server/functions/manage'
 
@@ -33,6 +33,7 @@ function EditStorePage() {
       </div>
 
       <StoreAvatarField store={store} />
+      <StoreCoverField store={store} />
 
       <StoreForm store={store} />
 

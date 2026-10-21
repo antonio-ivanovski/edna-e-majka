@@ -31,6 +31,7 @@ export const store = sqliteTable(
     name: text('name').notNull(),
     description: text('description').notNull(),
     avatarKey: text('avatar_key'),
+    coverKey: text('cover_key'),
     email: text('email').notNull(),
     phone: text('phone').notNull(),
     facebook: text('facebook'),

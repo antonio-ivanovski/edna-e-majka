@@ -8,6 +8,7 @@ export type StoreSummary = {
   name: string
   description: string
   avatarKey: string | null
+  coverKey: string | null
   city: string | null
   createdAt: Date
   productCount: number
@@ -34,6 +35,7 @@ export async function selectStores(): Promise<StoreSummary[]> {
       name: store.name,
       description: store.description,
       avatarKey: store.avatarKey,
+      coverKey: store.coverKey,
       city: store.city,
       createdAt: store.createdAt,
       productCount: publishedProductCount,
@@ -55,6 +57,7 @@ export async function selectStoreDetail(storeId: string): Promise<StoreDetail | 
         name: store.name,
         description: store.description,
         avatarKey: store.avatarKey,
+        coverKey: store.coverKey,
         city: store.city,
         createdAt: store.createdAt,
         email: store.email,

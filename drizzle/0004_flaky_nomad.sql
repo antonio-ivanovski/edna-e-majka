@@ -1,0 +1,1 @@
+ALTER TABLE `store` ADD `cover_key` text;

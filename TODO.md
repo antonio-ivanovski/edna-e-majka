@@ -16,7 +16,7 @@ Legend: `[ ]` todo, `[x]` done. **Blockers** = dependencies on other items or pr
 - [ ] **T1-04** Pretty URLs (slugs) for products and stores + internal link updates. Blockers: DB migration (slug columns), uniqueness handling.
 - [x] **T1-05** Store city/region field (display only; location-based filtering deferred). Blockers: none.
 - [x] **T1-06** Store hours / availability field + display. Blockers: none.
-- [ ] **T1-07** Store cover image (banner) separate from avatar. Blockers: upload handling (reuse avatar pattern).
+- [x] **T1-07** Store cover image (banner) separate from avatar. Blockers: upload handling (reuse avatar pattern).
 - [ ] **T1-08** "Similar products" + "more from this producer" on product page. Blockers: query additions.
 - [x] **T1-09** Breadcrumbs on product/category/producer pages. Blockers: none.
 - [x] **T1-10** Recently viewed (client) + "new arrivals" section on home. Blockers: none.

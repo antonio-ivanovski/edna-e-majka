@@ -94,10 +94,29 @@ export async function uploadStoreAvatar(
   return send<{ key: string }>('/api/uploads', { method: 'POST', body: form })
 }
 
+/** The banner behind the shop header. */
+export async function uploadStoreCover(
+  storeId: string,
+  file: File,
+): Promise<ActionResult<{ key: string }>> {
+  const { blob } = await shrink(file)
+  const form = new FormData()
+
+  form.set('storeId', storeId)
+  form.set('cover', '1')
+  form.set('file', blob, 'cover.jpg')
+
+  return send<{ key: string }>('/api/uploads', { method: 'POST', body: form })
+}
+
 export function deleteProductImage(imageId: string): Promise<ActionResult> {
   return send(`/api/uploads?imageId=${encodeURIComponent(imageId)}`, { method: 'DELETE' })
 }
 
 export function deleteStoreAvatar(storeId: string): Promise<ActionResult> {
   return send(`/api/uploads?storeId=${encodeURIComponent(storeId)}`, { method: 'DELETE' })
+}
+
+export function deleteStoreCover(storeId: string): Promise<ActionResult> {
+  return send(`/api/uploads?storeId=${encodeURIComponent(storeId)}&cover=1`, { method: 'DELETE' })
 }

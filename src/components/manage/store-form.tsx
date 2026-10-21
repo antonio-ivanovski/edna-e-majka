@@ -10,7 +10,7 @@ import { Field, Input, Textarea } from '#/components/ui/field'
 import { Message } from '#/components/ui/message'
 import { imageUrl } from '#/lib/images'
 import { storeDetailsSchema } from '#/lib/schemas'
-import { deleteStoreAvatar, uploadStoreAvatar } from '#/lib/uploads'
+import { deleteStoreAvatar, deleteStoreCover, uploadStoreAvatar, uploadStoreCover } from '#/lib/uploads'
 import { applyForStore, updateStore } from '#/server/functions/manage'
 import type { OwnerStore } from '#/server/queries/manage'
 
@@ -278,6 +278,104 @@ export function StoreAvatarField({ store }: { store: OwnerStore }) {
           />
         ) : (
           <span aria-hidden="true" className="size-16 rounded-full bg-black/[0.05]" />
+        )}
+
+        <div className="flex flex-wrap items-center gap-2">
+          <input
+            ref={input}
+            type="file"
+            accept="image/jpeg,image/png,image/webp"
+            className="sr-only"
+            onChange={(event) => void onPick(event.target.files)}
+          />
+          <Button
+            type="button"
+            variant="outline"
+            disabled={busy}
+            onClick={() => input.current?.click()}
+          >
+            {busy ? 'Прикачуваме…' : 'Изберете слика'}
+          </Button>
+          {current ? (
+            <Button type="button" variant="ghost" disabled={busy} onClick={() => void onRemove()}>
+              Отстрани
+            </Button>
+          ) : null}
+        </div>
+      </div>
+
+      {error ? <p className="mt-2 text-sm text-danger">{error}</p> : null}
+    </Field>
+  )
+}
+
+/** The banner above the shop header, replaced in place like the logo. */
+export function StoreCoverField({ store }: { store: OwnerStore }) {
+  const router = useRouter()
+  const input = useRef<HTMLInputElement>(null)
+  const [busy, setBusy] = useState(false)
+  const [error, setError] = useState('')
+
+  const current = imageUrl(store.coverKey)
+
+  const onPick = async (files: FileList | null) => {
+    const file = files?.[0]
+
+    if (!file) {
+      return
+    }
+
+    setBusy(true)
+    setError('')
+
+    const result = await uploadStoreCover(store.id, file)
+
+    if (!result.ok) {
+      setError(result.message)
+    } else {
+      await router.invalidate()
+    }
+
+    setBusy(false)
+
+    if (input.current) {
+      input.current.value = ''
+    }
+  }
+
+  const onRemove = async () => {
+    setBusy(true)
+    setError('')
+
+    const result = await deleteStoreCover(store.id)
+
+    if (!result.ok) {
+      setError(result.message)
+    } else {
+      await router.invalidate()
+    }
+
+    setBusy(false)
+  }
+
+  return (
+    <Field label="Cover слика на продавницата">
+      <div className="flex flex-wrap items-center gap-4">
+        {current ? (
+          <img
+            src={current}
+            alt=""
+            width={240}
+            height={90}
+            className="h-[90px] w-[240px] rounded-[0.2857rem] border border-line object-cover"
+          />
+        ) : (
+          <span
+            aria-hidden="true"
+            className="flex h-[90px] w-[240px] items-center justify-center rounded-[0.2857rem] border border-dashed border-line bg-black/[0.02] text-xs text-black/40"
+          >
+            Нема cover слика
+          </span>
         )}
 
         <div className="flex flex-wrap items-center gap-2">

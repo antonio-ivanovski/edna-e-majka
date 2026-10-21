@@ -23,6 +23,7 @@ export type OwnerStore = {
   facebook: string | null
   instagram: string | null
   avatarKey: string | null
+  coverKey: string | null
   city: string | null
   hours: string | null
   status: StoreStatus
@@ -80,6 +81,7 @@ const storeColumns = {
   facebook: store.facebook,
   instagram: store.instagram,
   avatarKey: store.avatarKey,
+  coverKey: store.coverKey,
   city: store.city,
   hours: store.hours,
   status: store.status,

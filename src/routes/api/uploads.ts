@@ -132,16 +132,29 @@ export const Route = createFileRoute('/api/uploads')({
             return json({ ok: false, message: 'Немате дозвола за оваа продавница.' }, 403)
           }
 
-          const key = `stores/${storeId}/avatar/${crypto.randomUUID()}.${extension}`
+          // The cover is a banner behind the shop; the avatar is the round one.
+          const isCover = form.get('cover') === '1'
+
+          const key = isCover
+            ? `stores/${storeId}/cover/${crypto.randomUUID()}.${extension}`
+            : `stores/${storeId}/avatar/${crypto.randomUUID()}.${extension}`
 
           await env.BUCKET.put(key, file.stream(), { httpMetadata })
 
-          // The old avatar is replaced, not kept: nothing points at it again.
-          if (ownStore.avatarKey) {
-            await env.BUCKET.delete(ownStore.avatarKey)
-          }
+          // The old image is replaced, not kept: nothing points at it again.
+          if (isCover) {
+            if (ownStore.coverKey) {
+              await env.BUCKET.delete(ownStore.coverKey)
+            }
 
-          await getDb().update(store).set({ avatarKey: key }).where(eq(store.id, storeId))
+            await getDb().update(store).set({ coverKey: key }).where(eq(store.id, storeId))
+          } else {
+            if (ownStore.avatarKey) {
+              await env.BUCKET.delete(ownStore.avatarKey)
+            }
+
+            await getDb().update(store).set({ avatarKey: key }).where(eq(store.id, storeId))
+          }
 
           return json({ ok: true, data: { key } })
         }
@@ -201,6 +214,16 @@ export const Route = createFileRoute('/api/uploads')({
 
           if (!ownStore) {
             return json({ ok: false, message: 'Немате дозвола за оваа продавница.' }, 403)
+          }
+
+          if (url.searchParams.get('cover') === '1') {
+            if (ownStore.coverKey) {
+              await env.BUCKET.delete(ownStore.coverKey)
+            }
+
+            await db.update(store).set({ coverKey: null }).where(eq(store.id, storeId))
+
+            return json({ ok: true, data: null })
           }
 
           if (ownStore.avatarKey) {

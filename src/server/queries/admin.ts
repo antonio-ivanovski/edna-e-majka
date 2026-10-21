@@ -35,6 +35,7 @@ export type AdminStore = {
   facebook: string | null
   instagram: string | null
   avatarKey: string | null
+  coverKey: string | null
   city: string | null
   hours: string | null
   createdAt: Date
@@ -123,6 +124,7 @@ const storeColumns = {
   facebook: store.facebook,
   instagram: store.instagram,
   avatarKey: store.avatarKey,
+  coverKey: store.coverKey,
   city: store.city,
   hours: store.hours,
   createdAt: store.createdAt,
@@ -146,6 +148,7 @@ type StoreRow = {
   facebook: string | null
   instagram: string | null
   avatarKey: string | null
+  coverKey: string | null
   city: string | null
   hours: string | null
   createdAt: Date
@@ -169,6 +172,7 @@ function toAdminStore(row: StoreRow): AdminStore {
     facebook: row.facebook,
     instagram: row.instagram,
     avatarKey: row.avatarKey,
+    coverKey: row.coverKey,
     city: row.city,
     hours: row.hours,
     createdAt: row.createdAt,
