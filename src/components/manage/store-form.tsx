@@ -21,6 +21,8 @@ import type { OwnerStore } from '#/server/queries/manage'
 export const storeFormSchema = storeDetailsSchema.extend({
   facebook: z.string().trim().max(300),
   instagram: z.string().trim().max(300),
+  city: z.string().trim().max(120),
+  hours: z.string().trim().max(200),
 })
 
 export type StoreFormValues = z.infer<typeof storeFormSchema>
@@ -97,6 +99,34 @@ export function StoreFields({
             {...register('instagram')}
           />
         </Field>
+
+        <Field
+          label="Град / регион"
+          htmlFor="store-city"
+          error={errors.city?.message}
+          className="[&_label]:font-normal [&_label]:text-black/60"
+        >
+          <Input
+            id="store-city"
+            placeholder="Скопје"
+            aria-invalid={Boolean(errors.city)}
+            {...register('city')}
+          />
+        </Field>
+
+        <Field
+          label="Работно време"
+          htmlFor="store-hours"
+          error={errors.hours?.message}
+          className="[&_label]:font-normal [&_label]:text-black/60"
+        >
+          <Input
+            id="store-hours"
+            placeholder="Пон–Пет 09:00–17:00"
+            aria-invalid={Boolean(errors.hours)}
+            {...register('hours')}
+          />
+        </Field>
       </div>
     </>
   )
@@ -129,6 +159,8 @@ export function StoreForm({
       phone: store?.phone ?? '',
       facebook: store?.facebook ?? '',
       instagram: store?.instagram ?? '',
+      city: store?.city ?? '',
+      hours: store?.hours ?? '',
     },
   })
 

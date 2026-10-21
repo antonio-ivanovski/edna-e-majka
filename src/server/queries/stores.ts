@@ -8,6 +8,7 @@ export type StoreSummary = {
   name: string
   description: string
   avatarKey: string | null
+  city: string | null
   createdAt: Date
   productCount: number
 }
@@ -17,6 +18,7 @@ export type StoreDetail = StoreSummary & {
   phone: string
   facebook: string | null
   instagram: string | null
+  hours: string | null
 }
 
 /** Stores a visitor can order from: active, newest name order for the directory. */
@@ -32,6 +34,7 @@ export async function selectStores(): Promise<StoreSummary[]> {
       name: store.name,
       description: store.description,
       avatarKey: store.avatarKey,
+      city: store.city,
       createdAt: store.createdAt,
       productCount: publishedProductCount,
     })
@@ -52,11 +55,13 @@ export async function selectStoreDetail(storeId: string): Promise<StoreDetail | 
         name: store.name,
         description: store.description,
         avatarKey: store.avatarKey,
+        city: store.city,
         createdAt: store.createdAt,
         email: store.email,
         phone: store.phone,
         facebook: store.facebook,
         instagram: store.instagram,
+        hours: store.hours,
       })
       .from(store)
       .where(sql`${store.id} = ${storeId} and ${store.status} = 'active'`)

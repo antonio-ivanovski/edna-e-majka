@@ -35,6 +35,8 @@ export const store = sqliteTable(
     phone: text('phone').notNull(),
     facebook: text('facebook'),
     instagram: text('instagram'),
+    city: text('city'),
+    hours: text('hours'),
     status: text('status', { enum: ['pending', 'active', 'suspended', 'archived'] })
       .notNull()
       .default('pending'),

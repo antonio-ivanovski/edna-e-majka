@@ -35,6 +35,8 @@ export type AdminStore = {
   facebook: string | null
   instagram: string | null
   avatarKey: string | null
+  city: string | null
+  hours: string | null
   createdAt: Date
   reviewedAt: Date | null
   owner: { id: string; name: string; email: string }
@@ -121,6 +123,8 @@ const storeColumns = {
   facebook: store.facebook,
   instagram: store.instagram,
   avatarKey: store.avatarKey,
+  city: store.city,
+  hours: store.hours,
   createdAt: store.createdAt,
   reviewedAt: store.reviewedAt,
   // The account behind the shop has columns with the same names as the shop's.
@@ -142,6 +146,8 @@ type StoreRow = {
   facebook: string | null
   instagram: string | null
   avatarKey: string | null
+  city: string | null
+  hours: string | null
   createdAt: Date
   reviewedAt: Date | null
   ownerId: string
@@ -163,6 +169,8 @@ function toAdminStore(row: StoreRow): AdminStore {
     facebook: row.facebook,
     instagram: row.instagram,
     avatarKey: row.avatarKey,
+    city: row.city,
+    hours: row.hours,
     createdAt: row.createdAt,
     reviewedAt: row.reviewedAt,
     owner: { id: row.ownerId, name: row.ownerName, email: row.ownerEmail },

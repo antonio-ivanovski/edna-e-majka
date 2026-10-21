@@ -47,6 +47,7 @@ function ProducersPage() {
               <Avatar src={imageUrl(store.avatarKey)} alt={store.name} size={96} />
               <span className="text-lg font-bold text-black/[0.87]">{store.name}</span>
               <span className="line-clamp-3 text-black/60">{store.description}</span>
+              {store.city ? <span className="text-sm text-black/45">{store.city}</span> : null}
               <span className="text-sm text-black/45">
                 {formatCount(store.productCount, 'производ', 'производи')}
               </span>

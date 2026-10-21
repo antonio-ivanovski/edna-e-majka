@@ -158,6 +158,8 @@ export const adminUpdateStore = createServerFn({ method: 'POST' })
         phone: data.phone,
         facebook: optionalText(data.facebook),
         instagram: optionalText(data.instagram),
+        city: optionalText(data.city),
+        hours: optionalText(data.hours),
       })
       .where(eq(store.id, data.storeId))
 

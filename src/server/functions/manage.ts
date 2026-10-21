@@ -151,6 +151,8 @@ export const applyForStore = createServerFn({ method: 'POST' })
         phone: data.phone,
         facebook: optionalText(data.facebook),
         instagram: optionalText(data.instagram),
+        city: optionalText(data.city),
+        hours: optionalText(data.hours),
         status: verdict.status,
         statusNote: verdict.status === 'pending' ? verdict.note : null,
       })
@@ -181,6 +183,8 @@ export const updateStore = createServerFn({ method: 'POST' })
         phone: data.phone,
         facebook: optionalText(data.facebook),
         instagram: optionalText(data.instagram),
+        city: optionalText(data.city),
+        hours: optionalText(data.hours),
       })
       .where(eq(store.id, data.storeId))
 

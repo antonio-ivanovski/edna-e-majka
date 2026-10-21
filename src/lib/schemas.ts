@@ -65,6 +65,8 @@ export const storeDetailsSchema = z.object({
   phone: z.string().trim().min(6, 'Внесете телефонски број.').max(60),
   facebook: z.string().trim().max(300).optional(),
   instagram: z.string().trim().max(300).optional(),
+  city: z.string().trim().max(120).optional(),
+  hours: z.string().trim().max(200).optional(),
 })
 
 export type StoreDetails = z.infer<typeof storeDetailsSchema>

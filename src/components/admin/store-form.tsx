@@ -31,6 +31,8 @@ export function AdminStoreForm({ store }: { store: AdminStore }) {
       phone: store.phone,
       facebook: store.facebook ?? '',
       instagram: store.instagram ?? '',
+      city: store.city ?? '',
+      hours: store.hours ?? '',
     },
   })
 
