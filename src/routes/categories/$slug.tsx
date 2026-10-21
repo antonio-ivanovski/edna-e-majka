@@ -6,24 +6,24 @@ import { Breadcrumbs } from '#/components/ui/breadcrumbs'
 import { findCategory } from '#/lib/categories'
 import type { ProductSort, SortDirection } from '#/api/schemas'
 import { toValidator, ProductSearch } from '#/api/schemas'
-import { listProducts } from '#/server/functions/products'
+import { productQueries } from '#/lib/queries/products'
 import { PRODUCT_PAGE_SIZE } from '#/lib/pagination'
 
 export const Route = createFileRoute('/categories/$slug')({
   validateSearch: toValidator(ProductSearch),
   loaderDeps: ({ search }) => search,
-  loader: async ({ params, deps }) => {
+  loader: async ({ context: { queryClient }, params, deps }) => {
     const category = findCategory(params.slug)
 
     if (!category) {
       throw notFound()
     }
 
-    return {
-      category,
-      params: deps,
-      page: await listProducts({ data: { ...deps, page: String(deps.page), categorySlug: category.slug } }),
-    }
+    const page = await queryClient.ensureQueryData(
+      productQueries.list({ ...deps, page: String(deps.page), categorySlug: category.slug }),
+    )
+
+    return { category, params: deps, page }
   },
   head: ({ loaderData }) => ({
     meta: [
