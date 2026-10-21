@@ -10,13 +10,15 @@ import { Table, TableBody, TableHead, TableHeaderCell, TableRow } from '#/compon
 import { formatCount } from '#/lib/format'
 import { MANAGE_PAGE_SIZE } from '#/lib/pagination'
 import { toValidator, ProductSearch } from '#/api/schemas'
-import { getManageProducts } from '#/server/functions/manage'
+import { manageQueries } from '#/lib/queries/manage'
 
 export const Route = createFileRoute('/manage/$storeId/products/')({
   validateSearch: toValidator(ProductSearch),
   loaderDeps: ({ search }) => ({ page: search.page ?? 1 }),
-  loader: ({ params, deps }) =>
-    getManageProducts({ data: { storeId: params.storeId, page: String(deps.page) } }),
+  loader: async ({ context: { queryClient }, params, deps }) => {
+    const data = await queryClient.ensureQueryData(manageQueries.products(params.storeId, deps.page))
+    return data
+  },
   head: ({ loaderData }) => ({
     meta: [
       {
