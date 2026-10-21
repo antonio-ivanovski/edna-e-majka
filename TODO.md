@@ -47,7 +47,7 @@ Goal: one typed contract layer, Effect everywhere on the server, one client cach
   `Effect.timeout` on external calls, `Effect.withSpan` for tracing into
   Cloudflare observability, `Effect.log*` instead of `console`, `Effect.Clock`
   instead of `src/lib/clock.ts`. Blockers: T0-02, T0-03.
-- [ ] **T0-07** One write path per concern. `functions/admin.ts` and
+- [x] **T0-07** One write path per concern. `functions/admin.ts` and
   `functions/manage.ts` currently duplicate five writes (store details,
   product + variants + categories, archive, delete product, delete store) and
   admin repeats the "row not found" check eight times. One parameterised Effect
