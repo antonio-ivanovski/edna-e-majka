@@ -1,9 +1,12 @@
 import { Link, createFileRoute } from '@tanstack/react-router'
+import { useEffect, useState } from 'react'
 
 import { CatalogueList } from '#/components/catalogue/catalogue-list'
 import { ContactDialog } from '#/components/shell/contact-dialog'
 import { Message } from '#/components/ui/message'
 import { CATEGORIES } from '#/lib/categories'
+import { imageUrl } from '#/lib/images'
+import { readRecentlyViewed, type RecentProduct } from '#/lib/recently-viewed'
 import { parseProductSearch, resolveProductSearch } from '#/lib/search-params'
 import { listProducts } from '#/server/functions/products'
 import { PRODUCT_PAGE_SIZE } from '#/lib/pagination'
@@ -24,6 +27,11 @@ export const Route = createFileRoute('/')({
 function HomePage() {
   const { page, params } = Route.useLoaderData()
   const navigate = Route.useNavigate()
+  const [recent, setRecent] = useState<RecentProduct[]>([])
+
+  useEffect(() => {
+    setRecent(readRecentlyViewed())
+  }, [])
 
   return (
     <div>
@@ -69,6 +77,33 @@ function HomePage() {
           </Link>
         ))}
       </div>
+
+      {recent.length > 0 ? (
+        <section className="px-4 pt-4">
+          <h2 className="font-display text-xl font-semibold">Неодамна прегледани</h2>
+          <div className="mt-3 grid grid-cols-[repeat(auto-fill,minmax(140px,1fr))] gap-3">
+            {recent.map((item) => (
+              <Link
+                key={item.id}
+                to="/products/$productId"
+                params={{ productId: item.id }}
+                className="flex flex-col items-center gap-2 rounded border border-line bg-white p-3 text-center hover:shadow"
+              >
+                {item.imageKey ? (
+                  <img
+                    src={imageUrl(item.imageKey)}
+                    alt={item.title}
+                    width={120}
+                    height={90}
+                    className="h-[90px] w-full rounded object-cover"
+                  />
+                ) : null}
+                <span className="line-clamp-2 text-sm font-semibold">{item.title}</span>
+              </Link>
+            ))}
+          </div>
+        </section>
+      ) : null}
 
       <CatalogueList
         products={page.items}

@@ -19,7 +19,7 @@ Legend: `[ ]` todo, `[x]` done. **Blockers** = dependencies on other items or pr
 - [ ] **T1-07** Store cover image (banner) separate from avatar. Blockers: upload handling (reuse avatar pattern).
 - [ ] **T1-08** "Similar products" + "more from this producer" on product page. Blockers: query additions.
 - [x] **T1-09** Breadcrumbs on product/category/producer pages. Blockers: none.
-- [ ] **T1-10** Recently viewed (client) + "new arrivals" section on home. Blockers: none.
+- [x] **T1-10** Recently viewed (client) + "new arrivals" section on home. Blockers: none.
 - [ ] **T1-11** Paginate manage products + endless scroll on public catalogue. Blockers: paginated API for owner products.
 - [ ] **T1-12** Admin edit product details (title/description/price/categories/images). Blockers: admin form reuse.
 - [ ] **T1-13** Store deletion (owner request + admin) with propagation across all store assets (R2 objects, products, variants, images, categories). Blockers: cascade R2 cleanup.

@@ -1,5 +1,8 @@
 import { Link, createFileRoute } from '@tanstack/react-router'
 import { Info } from 'lucide-react'
+import { useEffect } from 'react'
+
+import { recordRecentlyViewed } from '#/lib/recently-viewed'
 
 import { ProducerContacts } from '#/components/catalogue/producer-contacts'
 import { Avatar } from '#/components/ui/avatar'
@@ -41,6 +44,14 @@ export const Route = createFileRoute('/products/$productId')({
 
 function ProductPage() {
   const { product } = Route.useLoaderData()
+
+  useEffect(() => {
+    recordRecentlyViewed({
+      id: product.id,
+      title: product.title,
+      imageKey: product.images[0]?.key ?? null,
+    })
+  }, [product.id, product.title, product.images])
   const categories = product.categorySlugs.flatMap((slug) => {
     const category = findCategory(slug)
 
