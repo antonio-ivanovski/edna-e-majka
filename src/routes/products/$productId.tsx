@@ -17,19 +17,19 @@ import { findCategory } from '#/lib/categories'
 import { formatPrice, truncate } from '#/lib/format'
 import { imageUrl } from '#/lib/images'
 import { getProduct, getRelatedProducts } from '#/server/functions/products'
+import { productQueries } from '#/lib/queries/products'
 
 export const Route = createFileRoute('/products/$productId')({
-  loader: async ({ params }) => {
-    const [product, related] = await Promise.all([
-      getProduct({ data: { productId: params.productId } }),
-      getRelatedProducts({ data: { productId: params.productId } }),
-    ])
+  loader: async ({ context: { queryClient }, params }) => {
+    const product = await queryClient.ensureQueryData(productQueries.detail(params.productId))
 
     // One address per listing: the slug. Links with the id still work, they
     // only take one extra step.
     if (product.slug && params.productId !== product.slug) {
       throw redirect({ to: '/products/$productId', params: { productId: product.slug } })
     }
+
+    const related = await queryClient.ensureQueryData(productQueries.related(params.productId))
 
     return { product, related }
   },
