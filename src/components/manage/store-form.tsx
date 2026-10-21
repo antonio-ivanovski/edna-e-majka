@@ -1,15 +1,14 @@
-import { zodResolver } from '@hookform/resolvers/zod'
 import { useRouter } from '@tanstack/react-router'
 import { useRef, useState } from 'react'
 import { useForm, type FieldErrors, type UseFormRegister } from 'react-hook-form'
 import { toast } from 'sonner'
-import { z } from 'zod'
 
+import { Schema } from 'effect'
 import { Button } from '#/components/ui/button'
 import { Field, Input, Textarea } from '#/components/ui/field'
 import { Message } from '#/components/ui/message'
 import { imageUrl } from '#/lib/images'
-import { storeDetailsSchema } from '#/lib/schemas'
+import { effectResolver } from '#/lib/effect-resolver'
 import {
   deleteStoreAvatar,
   deleteStoreCover,
@@ -23,14 +22,18 @@ import type { OwnerStore } from '#/server/queries/manage'
  * The form always has a value for the two optional addresses: an empty string.
  * Exported because the admin dashboard edits a shop with the same fields.
  */
-export const storeFormSchema = storeDetailsSchema.extend({
-  facebook: z.string().trim().max(300),
-  instagram: z.string().trim().max(300),
-  city: z.string().trim().max(120),
-  hours: z.string().trim().max(200),
+export const storeFormSchema = Schema.Struct({
+  name: Schema.Trim.pipe(Schema.check(Schema.isMinLength(3)), Schema.check(Schema.isMaxLength(120))),
+  description: Schema.Trim.pipe(Schema.check(Schema.isMinLength(30)), Schema.check(Schema.isMaxLength(4000))),
+  email: Schema.String.pipe(Schema.check(Schema.isPattern(/^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/)), Schema.check(Schema.isMaxLength(200))),
+  phone: Schema.Trim.pipe(Schema.check(Schema.isMinLength(6)), Schema.check(Schema.isMaxLength(60))),
+  facebook: Schema.Trim.pipe(Schema.check(Schema.isMaxLength(300))),
+  instagram: Schema.Trim.pipe(Schema.check(Schema.isMaxLength(300))),
+  city: Schema.Trim.pipe(Schema.check(Schema.isMaxLength(120))),
+  hours: Schema.Trim.pipe(Schema.check(Schema.isMaxLength(200))),
 })
 
-export type StoreFormValues = z.infer<typeof storeFormSchema>
+export type StoreFormValues = Schema.Schema.Type<typeof storeFormSchema>
 
 /** The six fields of a shop, without the form around them. */
 export function StoreFields({
@@ -156,7 +159,7 @@ export function StoreForm({
     handleSubmit,
     formState: { errors, isSubmitting },
   } = useForm<StoreFormValues>({
-    resolver: zodResolver(storeFormSchema),
+    resolver: effectResolver(storeFormSchema),
     defaultValues: {
       name: store?.name ?? '',
       description: store?.description ?? '',

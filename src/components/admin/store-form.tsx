@@ -1,4 +1,4 @@
-import { zodResolver } from '@hookform/resolvers/zod'
+import { effectResolver } from '#/lib/effect-resolver'
 import { useRouter } from '@tanstack/react-router'
 import { useState } from 'react'
 import { useForm } from 'react-hook-form'
@@ -23,7 +23,7 @@ export function AdminStoreForm({ store }: { store: AdminStore }) {
     handleSubmit,
     formState: { errors, isSubmitting },
   } = useForm<StoreFormValues>({
-    resolver: zodResolver(storeFormSchema),
+    resolver: effectResolver(storeFormSchema),
     defaultValues: {
       name: store.name,
       description: store.description,
