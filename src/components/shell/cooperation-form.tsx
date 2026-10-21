@@ -41,12 +41,12 @@ export function CooperationForm({ onSent }: { onSent: () => void }) {
     try {
       const result = await submitCooperationMessage({ data: { ...values, startedAt } })
 
-      if (result.ok) {
+      if (result._tag === 'Success') {
         onSent()
         return
       }
 
-      setServerError(result.message)
+      setServerError(result.failure.message)
     } catch {
       setServerError('Грешка при праќање на пораката. Обидете се повторно.')
     }

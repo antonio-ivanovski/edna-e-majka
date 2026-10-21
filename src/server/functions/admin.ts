@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 /**
  * The admin dashboard: moderation of shops and listings, account roles, and the
  * contact inbox.
@@ -37,7 +36,7 @@ import { selectOwnerProduct, selectOwnerStore } from '../queries/manage'
 export const getAdminStores = createServerFn({ method: 'GET', strict: { output: false } })
   .middleware([withAdmin])
   .validator(toValidator(AdminStoreList))
-  .handler(async ({ data }) => runEffect(selectAdminStores(data as any)))
+  .handler(async ({ data }) => runEffect(selectAdminStores(data)))
 
 export const getAdminStore = createServerFn({ method: 'GET', strict: { output: false } })
   .middleware([withAdmin])
@@ -51,24 +50,24 @@ export const getAdminStore = createServerFn({ method: 'GET', strict: { output: f
 
     return {
       store: found,
-      products: await runEffect(selectAdminProducts({ storeId: data.storeId, page: 1 } as any)),
+      products: await runEffect(selectAdminProducts({ storeId: data.storeId, page: 1 })),
     }
   })
 
 export const getAdminProducts = createServerFn({ method: 'GET', strict: { output: false } })
   .middleware([withAdmin])
   .validator(toValidator(AdminProductList))
-  .handler(async ({ data }) => runEffect(selectAdminProducts(data as any)))
+  .handler(async ({ data }) => runEffect(selectAdminProducts(data)))
 
 export const getAdminUsers = createServerFn({ method: 'GET', strict: { output: false } })
   .middleware([withAdmin])
   .validator(toValidator(AdminUserList))
-  .handler(async ({ data }) => runEffect(selectAdminUsers(data as any)))
+  .handler(async ({ data }) => runEffect(selectAdminUsers(data)))
 
 export const getAdminMessages = createServerFn({ method: 'GET', strict: { output: false } })
   .middleware([withAdmin])
   .validator(toValidator(AdminMessageList))
-  .handler(async ({ data }) => runEffect(selectAdminMessages(data as any)))
+  .handler(async ({ data }) => runEffect(selectAdminMessages(data)))
 
 /**
  * The moderation decision. The note is rewritten when it is sent and kept when

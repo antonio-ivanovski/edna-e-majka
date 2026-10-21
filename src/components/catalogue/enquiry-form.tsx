@@ -46,8 +46,8 @@ export function EnquiryForm({ storeId, productId }: { storeId: string; productId
       },
     })
 
-    if (!result.ok) {
-      setServerError(result.message)
+    if (result._tag === 'Failure') {
+      setServerError(result.failure.message)
       return
     }
     setSent(true)

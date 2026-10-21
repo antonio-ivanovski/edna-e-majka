@@ -83,7 +83,7 @@ function toAdminStore(row: StoreRow): AdminStore {
   }
 }
 
-export const selectAdminStores = Effect.fn('selectAdminStores')(function* (filters: { status?: StoreStatus; query?: string; page: number }): Effect.fn.Return<AdminPage<AdminStore>, DatabaseError, Db> {
+export const selectAdminStores = Effect.fn('selectAdminStores')(function* (filters: { status?: StoreStatus | undefined; query?: string | undefined; page: number }): Effect.fn.Return<AdminPage<AdminStore>, DatabaseError, Db> {
   const db = yield* Db
   const rows = yield* db.run((d) =>
     d.select(storeColumns).from(store).innerJoin(user, eq(user.id, store.ownerId))
@@ -109,7 +109,7 @@ export const selectAdminProductRow = Effect.fn('selectAdminProductRow')(function
   return (rows[0] as { id: string; storeId: string; title: string } | undefined) ?? null
 })
 
-export const selectAdminProducts = Effect.fn('selectAdminProducts')(function* (filters: { status?: ProductStatus; storeId?: string; query?: string; page: number }): Effect.fn.Return<AdminPage<AdminProduct>, DatabaseError, Db> {
+export const selectAdminProducts = Effect.fn('selectAdminProducts')(function* (filters: { status?: ProductStatus | undefined; storeId?: string | undefined; query?: string | undefined; page: number }): Effect.fn.Return<AdminPage<AdminProduct>, DatabaseError, Db> {
   const db = yield* Db
   const conditions: any[] = []
   if (filters.status) conditions.push(eq(product.status, filters.status))
@@ -141,7 +141,7 @@ export const selectAdminProducts = Effect.fn('selectAdminProducts')(function* (f
   return { items: rows as AdminProduct[], total: totalRows[0]?.total ?? 0 }
 })
 
-export const selectAdminUsers = Effect.fn('selectAdminUsers')(function* (filters: { query?: string; page: number }): Effect.fn.Return<AdminPage<AdminUser>, DatabaseError, Db> {
+export const selectAdminUsers = Effect.fn('selectAdminUsers')(function* (filters: { query?: string | undefined; page: number }): Effect.fn.Return<AdminPage<AdminUser>, DatabaseError, Db> {
   const db = yield* Db
   const rows = yield* db.run((d) =>
     d.select({
