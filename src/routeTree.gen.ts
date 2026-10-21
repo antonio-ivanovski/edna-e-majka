@@ -15,6 +15,7 @@ import { Route as CookiesRouteImport } from './routes/cookies'
 import { Route as GuidelinesRouteImport } from './routes/guidelines'
 import { Route as PrivacyRouteImport } from './routes/privacy'
 import { Route as RobotsDottxtRouteImport } from './routes/robots[.]txt'
+import { Route as RssDotxmlRouteImport } from './routes/rss[.]xml'
 import { Route as SearchRouteImport } from './routes/search'
 import { Route as SignInRouteImport } from './routes/sign-in'
 import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
@@ -69,6 +70,11 @@ const PrivacyRoute = PrivacyRouteImport.update({
 const RobotsDottxtRoute = RobotsDottxtRouteImport.update({
   id: '/robots.txt',
   path: '/robots.txt',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const RssDotxmlRoute = RssDotxmlRouteImport.update({
+  id: '/rss.xml',
+  path: '/rss.xml',
   getParentRoute: () => rootRouteImport,
 } as any)
 const SearchRoute = SearchRouteImport.update({
@@ -207,6 +213,7 @@ export interface FileRoutesByFullPath {
   '/guidelines': typeof GuidelinesRoute
   '/privacy': typeof PrivacyRoute
   '/robots.txt': typeof RobotsDottxtRoute
+  '/rss.xml': typeof RssDotxmlRoute
   '/search': typeof SearchRoute
   '/sign-in': typeof SignInRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
@@ -239,6 +246,7 @@ export interface FileRoutesByTo {
   '/guidelines': typeof GuidelinesRoute
   '/privacy': typeof PrivacyRoute
   '/robots.txt': typeof RobotsDottxtRoute
+  '/rss.xml': typeof RssDotxmlRoute
   '/search': typeof SearchRoute
   '/sign-in': typeof SignInRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
@@ -271,6 +279,7 @@ export interface FileRoutesById {
   '/guidelines': typeof GuidelinesRoute
   '/privacy': typeof PrivacyRoute
   '/robots.txt': typeof RobotsDottxtRoute
+  '/rss.xml': typeof RssDotxmlRoute
   '/search': typeof SearchRoute
   '/sign-in': typeof SignInRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
@@ -306,6 +315,7 @@ export interface FileRouteTypes {
     | '/guidelines'
     | '/privacy'
     | '/robots.txt'
+    | '/rss.xml'
     | '/search'
     | '/sign-in'
     | '/sitemap.xml'
@@ -338,6 +348,7 @@ export interface FileRouteTypes {
     | '/guidelines'
     | '/privacy'
     | '/robots.txt'
+    | '/rss.xml'
     | '/search'
     | '/sign-in'
     | '/sitemap.xml'
@@ -369,6 +380,7 @@ export interface FileRouteTypes {
     | '/guidelines'
     | '/privacy'
     | '/robots.txt'
+    | '/rss.xml'
     | '/search'
     | '/sign-in'
     | '/sitemap.xml'
@@ -403,6 +415,7 @@ export interface RootRouteChildren {
   GuidelinesRoute: typeof GuidelinesRoute
   PrivacyRoute: typeof PrivacyRoute
   RobotsDottxtRoute: typeof RobotsDottxtRoute
+  RssDotxmlRoute: typeof RssDotxmlRoute
   SearchRoute: typeof SearchRoute
   SignInRoute: typeof SignInRoute
   SitemapDotxmlRoute: typeof SitemapDotxmlRoute
@@ -461,6 +474,13 @@ declare module '@tanstack/react-router' {
       path: '/robots.txt'
       fullPath: '/robots.txt'
       preLoaderRoute: typeof RobotsDottxtRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/rss.xml': {
+      id: '/rss.xml'
+      path: '/rss.xml'
+      fullPath: '/rss.xml'
+      preLoaderRoute: typeof RssDotxmlRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/search': {
@@ -698,6 +718,7 @@ const rootRouteChildren: RootRouteChildren = {
   GuidelinesRoute: GuidelinesRoute,
   PrivacyRoute: PrivacyRoute,
   RobotsDottxtRoute: RobotsDottxtRoute,
+  RssDotxmlRoute: RssDotxmlRoute,
   SearchRoute: SearchRoute,
   SignInRoute: SignInRoute,
   SitemapDotxmlRoute: SitemapDotxmlRoute,

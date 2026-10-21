@@ -47,7 +47,7 @@ Legend: `[ ]` todo, `[x]` done. **Blockers** = dependencies on other items or pr
 - [ ] **T2-12** Structured data (JSON-LD: Product, Organization, BreadcrumbList, LocalBusiness). Blockers: T1-04 (slugs) for canonical URLs.
 - [x] **T2-13** Twitter card + richer OG meta (twitter:card, og:locale, per-product). Blockers: none.
 - [ ] **T2-14** Canonical URLs + trailing-slash consistency. Blockers: none.
-- [ ] **T2-15** RSS/Atom feed of new products. Blockers: none.
+- [x] **T2-15** RSS/Atom feed of new products. Blockers: none.
 
 ## Tier 3 — Engagement & growth
 
