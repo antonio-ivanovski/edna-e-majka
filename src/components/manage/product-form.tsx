@@ -1,21 +1,34 @@
-import { zodResolver } from '@hookform/resolvers/zod'
 import { useNavigate, useRouter } from '@tanstack/react-router'
 import { Plus, X } from 'lucide-react'
 import { useRef, useState } from 'react'
 import { useFieldArray, useForm } from 'react-hook-form'
 import { toast } from 'sonner'
 
+import { Schema } from 'effect'
 import { Button } from '#/components/ui/button'
 import { Field, Input, Select, Textarea } from '#/components/ui/field'
 import { Message } from '#/components/ui/message'
 import { CATEGORIES, type CategorySlug } from '#/lib/categories'
 import type { ActionResult } from '#/lib/action'
 import { imageUrl } from '#/lib/images'
-import { productFormValuesSchema, type ProductFormValues } from '#/lib/schemas'
-import { type ProductForm as ProductFormSchema } from '#/api/schemas'
-import { type Schema } from 'effect'
-type ProductFormData = Schema.Schema.Type<typeof ProductFormSchema>
+import { effectResolver } from '#/lib/effect-resolver'
 import { deleteProductImage, reorderProductImages, uploadProductImage } from '#/lib/uploads'
+
+const productFormValuesSchema = Schema.Struct({
+  title: Schema.Trim.pipe(Schema.check(Schema.isMinLength(3)), Schema.check(Schema.isMaxLength(160))),
+  description: Schema.Trim.pipe(Schema.check(Schema.isMinLength(10)), Schema.check(Schema.isMaxLength(4000))),
+  categories: Schema.Array(Schema.String).pipe(Schema.check(Schema.isMinLength(1))),
+  availability: Schema.Literals(['in_stock', 'out_of_stock', 'on_order']),
+  variants: Schema.Array(
+    Schema.Struct({
+      title: Schema.Trim.pipe(Schema.check(Schema.isMinLength(1)), Schema.check(Schema.isMaxLength(60))),
+      price: Schema.String.pipe(Schema.check(Schema.isPattern(/^\\d{1,7}$/))),
+    }),
+  ).pipe(Schema.check(Schema.isMinLength(1))),
+})
+
+type ProductFormValues = Schema.Schema.Type<typeof productFormValuesSchema>
+type ProductFormData = { storeId: string; title: string; description: string; categories: string[]; availability: 'in_stock' | 'out_of_stock' | 'on_order'; variants: { title: string; price: number }[]; productId?: string }
 import { saveProduct, updateProductImageAlt } from '#/server/functions/manage'
 import type { OwnerProductDetail, OwnerProductImage } from '#/server/queries/manage'
 
@@ -55,7 +68,7 @@ export function ProductForm({
     handleSubmit,
     formState: { errors, isSubmitting },
   } = useForm<ProductFormValues>({
-    resolver: zodResolver(productFormValuesSchema),
+    resolver: effectResolver(productFormValuesSchema),
     defaultValues: {
       title: product?.title ?? '',
       description: product?.description ?? '',
