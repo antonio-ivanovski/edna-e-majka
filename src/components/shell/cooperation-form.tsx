@@ -1,22 +1,25 @@
-import { zodResolver } from '@hookform/resolvers/zod'
 import { useState } from 'react'
 import { useForm } from 'react-hook-form'
-import { z } from 'zod'
 
+import { Schema } from 'effect'
 import { nowMs } from '#/lib/clock'
-import { cooperationMessageSchema } from '#/lib/schemas'
+import { effectResolver } from '#/lib/effect-resolver'
 import { submitCooperationMessage } from '#/server/functions/contact'
 
 import { Button } from '#/components/ui/button'
 import { Field, Input, Textarea } from '#/components/ui/field'
 import { Message } from '#/components/ui/message'
 
-/** The honeypot and the start time are added on submit, not asked from anyone. */
-const formSchema = cooperationMessageSchema
-  .omit({ startedAt: true, honeypot: true })
-  .extend({ honeypot: z.string() })
+const formSchema = Schema.Struct({
+  name: Schema.Trim.pipe(Schema.check(Schema.isMinLength(2)), Schema.check(Schema.isMaxLength(120))),
+  email: Schema.String.pipe(Schema.check(Schema.isPattern(/^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/)), Schema.check(Schema.isMaxLength(200))),
+  phone: Schema.Trim.pipe(Schema.check(Schema.isMinLength(3)), Schema.check(Schema.isMaxLength(60))),
+  website: Schema.optional(Schema.Trim.pipe(Schema.check(Schema.isMaxLength(300)))),
+  message: Schema.optional(Schema.Trim.pipe(Schema.check(Schema.isMaxLength(4000)))),
+  honeypot: Schema.String.pipe(Schema.check(Schema.isMaxLength(0))),
+})
 
-type FormValues = z.input<typeof formSchema>
+type FormValues = Schema.Schema.Type<typeof formSchema>
 
 /** The form behind the amber bar's "Соработка", loaded only when it opens. */
 export function CooperationForm({ onSent }: { onSent: () => void }) {
@@ -28,7 +31,7 @@ export function CooperationForm({ onSent }: { onSent: () => void }) {
     handleSubmit,
     formState: { errors, isSubmitting },
   } = useForm<FormValues>({
-    resolver: zodResolver(formSchema),
+    resolver: effectResolver(formSchema),
     defaultValues: { name: '', email: '', phone: '', website: '', message: '', honeypot: '' },
   })
 

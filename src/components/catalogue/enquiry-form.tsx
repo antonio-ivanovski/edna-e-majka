@@ -1,23 +1,24 @@
-import { zodResolver } from '@hookform/resolvers/zod'
 import { useState } from 'react'
 import { useForm } from 'react-hook-form'
-import { z } from 'zod'
 
+import { Schema } from 'effect'
 import { nowMs } from '#/lib/clock'
-import { enquiryMessageSchema } from '#/lib/schemas'
+import { effectResolver } from '#/lib/effect-resolver'
 import { submitEnquiry } from '#/server/functions/contact'
 
 import { Button } from '#/components/ui/button'
 import { Field, Input, Textarea } from '#/components/ui/field'
 import { Message } from '#/components/ui/message'
 
-const formSchema = enquiryMessageSchema
-  .omit({ startedAt: true, honeypot: true, storeId: true, productId: true })
-  .extend({
-    honeypot: z.string(),
-  })
+const formSchema = Schema.Struct({
+  name: Schema.Trim.pipe(Schema.check(Schema.isMinLength(2)), Schema.check(Schema.isMaxLength(120))),
+  email: Schema.String.pipe(Schema.check(Schema.isPattern(/^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/)), Schema.check(Schema.isMaxLength(200))),
+  phone: Schema.optional(Schema.Trim.pipe(Schema.check(Schema.isMaxLength(60)))),
+  message: Schema.Trim.pipe(Schema.check(Schema.isMinLength(10)), Schema.check(Schema.isMaxLength(2000))),
+  honeypot: Schema.String.pipe(Schema.check(Schema.isMaxLength(0))),
+})
 
-type FormValues = z.infer<typeof formSchema>
+type FormValues = Schema.Schema.Type<typeof formSchema>
 
 export function EnquiryForm({ storeId, productId }: { storeId: string; productId?: string }) {
   const [sent, setSent] = useState(false)
@@ -28,7 +29,7 @@ export function EnquiryForm({ storeId, productId }: { storeId: string; productId
     register,
     handleSubmit,
     formState: { errors, isSubmitting },
-  } = useForm<FormValues>({ resolver: zodResolver(formSchema), defaultValues: { honeypot: '' } })
+  } = useForm<FormValues>({ resolver: effectResolver(formSchema), defaultValues: { honeypot: '' } })
 
   const onSubmit = handleSubmit(async (values) => {
     setServerError('')
