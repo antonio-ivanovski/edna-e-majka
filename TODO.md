@@ -33,7 +33,7 @@ Legend: `[ ]` todo, `[x]` done. **Blockers** = dependencies on other items or pr
 
 ## Tier 2 — Trust, safety, compliance (production blockers)
 
-- [ ] **T2-01** Legal pages: Terms of use, Privacy policy, Cookie policy (Macedonian). Blockers: none.
+- [x] **T2-01** Legal pages: Terms of use, Privacy policy, Cookie policy (Macedonian). Blockers: none.
 - [ ] **T2-02** Cookie consent banner + analytics gating. Blockers: T2-01.
 - [ ] **T2-03** Report abuse on product/store → admin inbox. Blockers: reuse contactMessage (add `report` kind) or new table.
 - [ ] **T2-04** Admin audit log (who/what/when for status changes, deletions, role changes). Blockers: new table + middleware hooks.
@@ -41,7 +41,7 @@ Legend: `[ ]` todo, `[x]` done. **Blockers** = dependencies on other items or pr
 - [ ] **T2-06** Admin user management (suspend/ban, role change, view sessions). Blockers: T2-04 (audit).
 - [ ] **T2-07** Admin moderation notes (internal comments on stores/products). Blockers: new table.
 - [ ] **T2-08** Data export — user data (GDPR) + store products CSV export/import. Blockers: T1-18 for attribute columns.
-- [ ] **T2-09** Content guidelines / producer onboarding guide page. Blockers: none.
+- [x] **T2-09** Content guidelines / producer onboarding guide page. Blockers: none.
 - [x] **T2-10** 404 page with suggestions + richer empty states. Blockers: none.
 - [ ] **T2-11** Accessibility audit (focus management, keyboard nav, aria-live, skip link, reduced motion). Blockers: none.
 - [ ] **T2-12** Structured data (JSON-LD: Product, Organization, BreadcrumbList, LocalBusiness). Blockers: T1-04 (slugs) for canonical URLs.
