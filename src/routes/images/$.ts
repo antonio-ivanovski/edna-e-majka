@@ -1,13 +1,9 @@
 import { createFileRoute } from '@tanstack/react-router'
-import { env } from 'cloudflare:workers'
+import { Effect } from 'effect'
 
-/**
- * Product and store images, read from R2 under opaque keys
- * (`stores/{storeId}/products/{productId}/{uuid}.jpg`).
- *
- * Keys never change once written — replacing a photo writes a new key — so the
- * response is immutable and can be cached at the edge for a year.
- */
+import { runEffect } from '#/server/runtime'
+import { Assets } from '#/server/services/assets'
+
 const KEY_PATTERN = /^[A-Za-z0-9/_.-]{1,512}$/
 
 export const Route = createFileRoute('/images/$')({
@@ -16,13 +12,16 @@ export const Route = createFileRoute('/images/$')({
       GET: async ({ params, request }) => {
         const key = params._splat ?? ''
 
-        // Reject anything that is not a plain key, so the bucket is not a
-        // general read-through for arbitrary paths.
         if (!KEY_PATTERN.test(key) || key.includes('..')) {
           return new Response('Не е најдена слика.', { status: 404 })
         }
 
-        const object = await env.BUCKET.get(key)
+        const object = await runEffect(
+          Effect.gen(function* () {
+            const assets = yield* Assets
+            return yield* assets.get(key)
+          }),
+        )
 
         if (!object) {
           return new Response('Не е најдена слика.', { status: 404 })
