@@ -2,7 +2,8 @@ import '#/styles/app.css'
 import '@fontsource-variable/literata'
 import '@fontsource-variable/onest'
 
-import { HeadContent, Link, Outlet, Scripts, createRootRoute } from '@tanstack/react-router'
+import { HeadContent, Link, Outlet, Scripts, createRootRouteWithContext } from '@tanstack/react-router'
+import type { QueryClient } from '@tanstack/react-query'
 import type { ReactNode } from 'react'
 import { Toaster } from 'sonner'
 
@@ -13,7 +14,11 @@ import { Button } from '#/components/ui/button'
 import { getShellConfig } from '#/server/functions/config'
 import { listStores } from '#/server/functions/stores'
 
-export const Route = createRootRoute({
+interface RouterContext {
+  queryClient: QueryClient
+}
+
+export const Route = createRootRouteWithContext<RouterContext>()({
   head: () => ({
     meta: [
       { charSet: 'utf-8' },
