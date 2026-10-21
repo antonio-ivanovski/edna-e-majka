@@ -1,7 +1,7 @@
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useRouter } from '@tanstack/react-router'
 import { useRef, useState } from 'react'
-import { useForm } from 'react-hook-form'
+import { useForm, type FieldErrors, type UseFormRegister } from 'react-hook-form'
 import { toast } from 'sonner'
 import { z } from 'zod'
 
@@ -14,13 +14,93 @@ import { deleteStoreAvatar, uploadStoreAvatar } from '#/lib/uploads'
 import { applyForStore, updateStore } from '#/server/functions/manage'
 import type { OwnerStore } from '#/server/queries/manage'
 
-/** The form always has a value for the two optional addresses: an empty string. */
-const storeFormSchema = storeDetailsSchema.extend({
+/**
+ * The form always has a value for the two optional addresses: an empty string.
+ * Exported because the admin dashboard edits a shop with the same fields.
+ */
+export const storeFormSchema = storeDetailsSchema.extend({
   facebook: z.string().trim().max(300),
   instagram: z.string().trim().max(300),
 })
 
-type StoreFormValues = z.infer<typeof storeFormSchema>
+export type StoreFormValues = z.infer<typeof storeFormSchema>
+
+/** The six fields of a shop, without the form around them. */
+export function StoreFields({
+  register,
+  errors,
+}: {
+  register: UseFormRegister<StoreFormValues>
+  errors: FieldErrors<StoreFormValues>
+}) {
+  return (
+    <>
+      <Field label="Име на продавницата" htmlFor="store-name" error={errors.name?.message}>
+        <Input id="store-name" aria-invalid={Boolean(errors.name)} {...register('name')} />
+      </Field>
+
+      <Field label="Опис" htmlFor="store-description" error={errors.description?.message}>
+        <Textarea
+          id="store-description"
+          rows={6}
+          aria-invalid={Boolean(errors.description)}
+          {...register('description')}
+        />
+      </Field>
+
+      <div className="grid gap-x-5 sm:grid-cols-2">
+        <Field label="Е-маил адреса" htmlFor="store-email" error={errors.email?.message}>
+          <Input
+            id="store-email"
+            type="email"
+            autoComplete="email"
+            aria-invalid={Boolean(errors.email)}
+            {...register('email')}
+          />
+        </Field>
+
+        <Field label="Телефонски број" htmlFor="store-phone" error={errors.phone?.message}>
+          <Input
+            id="store-phone"
+            type="tel"
+            autoComplete="tel"
+            placeholder="+389 70 000 000"
+            aria-invalid={Boolean(errors.phone)}
+            {...register('phone')}
+          />
+        </Field>
+
+        <Field
+          label="Facebook"
+          htmlFor="store-facebook"
+          error={errors.facebook?.message}
+          className="[&_label]:font-normal [&_label]:text-black/60"
+        >
+          <Input
+            id="store-facebook"
+            placeholder="facebook.com/…"
+            aria-invalid={Boolean(errors.facebook)}
+            {...register('facebook')}
+          />
+        </Field>
+
+        <Field
+          label="Instagram"
+          htmlFor="store-instagram"
+          error={errors.instagram?.message}
+          className="[&_label]:font-normal [&_label]:text-black/60"
+        >
+          <Input
+            id="store-instagram"
+            placeholder="instagram.com/…"
+            aria-invalid={Boolean(errors.instagram)}
+            {...register('instagram')}
+          />
+        </Field>
+      </div>
+    </>
+  )
+}
 
 /**
  * The shop, as the producer describes it. The same form applies for a shop and
@@ -83,74 +163,7 @@ export function StoreForm({
 
   return (
     <form onSubmit={onSubmit} noValidate>
-      <Field label="Име на продавницата" htmlFor="store-name" error={errors.name?.message}>
-        <Input id="store-name" aria-invalid={Boolean(errors.name)} {...register('name')} />
-      </Field>
-
-      <Field
-        label="Опис"
-        htmlFor="store-description"
-        error={errors.description?.message}
-        className="[&_label]:text-black/[0.87]"
-      >
-        <Textarea
-          id="store-description"
-          rows={6}
-          aria-invalid={Boolean(errors.description)}
-          {...register('description')}
-        />
-      </Field>
-
-      <div className="grid gap-x-5 sm:grid-cols-2">
-        <Field label="Е-маил адреса" htmlFor="store-email" error={errors.email?.message}>
-          <Input
-            id="store-email"
-            type="email"
-            autoComplete="email"
-            aria-invalid={Boolean(errors.email)}
-            {...register('email')}
-          />
-        </Field>
-
-        <Field label="Телефонски број" htmlFor="store-phone" error={errors.phone?.message}>
-          <Input
-            id="store-phone"
-            type="tel"
-            autoComplete="tel"
-            placeholder="+389 70 000 000"
-            aria-invalid={Boolean(errors.phone)}
-            {...register('phone')}
-          />
-        </Field>
-
-        <Field
-          label="Facebook"
-          htmlFor="store-facebook"
-          error={errors.facebook?.message}
-          className="[&_label]:font-normal [&_label]:text-black/60"
-        >
-          <Input
-            id="store-facebook"
-            placeholder="facebook.com/…"
-            aria-invalid={Boolean(errors.facebook)}
-            {...register('facebook')}
-          />
-        </Field>
-
-        <Field
-          label="Instagram"
-          htmlFor="store-instagram"
-          error={errors.instagram?.message}
-          className="[&_label]:font-normal [&_label]:text-black/60"
-        >
-          <Input
-            id="store-instagram"
-            placeholder="instagram.com/…"
-            aria-invalid={Boolean(errors.instagram)}
-            {...register('instagram')}
-          />
-        </Field>
-      </div>
+      <StoreFields register={register} errors={errors} />
 
       {serverError ? (
         <Message variant="error" className="mb-5">

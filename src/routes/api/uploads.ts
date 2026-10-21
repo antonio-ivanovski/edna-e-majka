@@ -5,6 +5,7 @@ import { eq } from 'drizzle-orm'
 import { NOT_SIGNED_IN, type ActionResult } from '#/lib/action'
 import { getDb } from '#/server/db/client'
 import { productImage, store } from '#/server/db/schema'
+import { selectAdminProductRow, selectAdminStore } from '#/server/queries/admin'
 import {
   selectNextImagePosition,
   selectOwnedProductRow,
@@ -17,8 +18,9 @@ import { getViewer } from '#/server/viewer'
  *
  * The browser has already shrunk the file and re-encoded it, but nothing sent
  * by a browser is trusted: the type and size are checked here, the product or
- * shop is confirmed to belong to the caller, and only the key is stored. Keys
- * never change, so `/images/$key` can serve them immutably for a year.
+ * shop is confirmed to belong to the caller — or the caller is an admin editing
+ * someone else's shop — and only the key is stored. Keys never change, so
+ * `/images/$key` can serve them immutably for a year.
  */
 const EXTENSIONS: Record<string, string> = {
   'image/jpeg': 'jpg',
@@ -80,7 +82,10 @@ export const Route = createFileRoute('/api/uploads')({
         }
 
         if (typeof productId === 'string' && productId) {
-          const owned = await selectOwnedProductRow(productId, viewer.id)
+          const owned =
+            viewer.role === 'admin'
+              ? await selectAdminProductRow(productId)
+              : await selectOwnedProductRow(productId, viewer.id)
 
           if (!owned) {
             return json({ ok: false, message: 'Немате дозвола за овој производ.' }, 403)
@@ -114,7 +119,10 @@ export const Route = createFileRoute('/api/uploads')({
         }
 
         if (typeof storeId === 'string' && storeId) {
-          const ownStore = await selectOwnerStoreById(storeId, viewer.id)
+          const ownStore =
+            viewer.role === 'admin'
+              ? await selectAdminStore(storeId)
+              : await selectOwnerStoreById(storeId, viewer.id)
 
           if (!ownStore) {
             return json({ ok: false, message: 'Немате дозвола за оваа продавница.' }, 403)
@@ -166,7 +174,12 @@ export const Route = createFileRoute('/api/uploads')({
             return json({ ok: false, message: 'Сликата не е најдена.' }, 404)
           }
 
-          if (!(await selectOwnedProductRow(image.productId, viewer.id))) {
+          const canManage =
+            viewer.role === 'admin'
+              ? await selectAdminProductRow(image.productId)
+              : await selectOwnedProductRow(image.productId, viewer.id)
+
+          if (!canManage) {
             return json({ ok: false, message: 'Немате дозвола за овој производ.' }, 403)
           }
 
@@ -177,7 +190,10 @@ export const Route = createFileRoute('/api/uploads')({
         }
 
         if (storeId) {
-          const ownStore = await selectOwnerStoreById(storeId, viewer.id)
+          const ownStore =
+            viewer.role === 'admin'
+              ? await selectAdminStore(storeId)
+              : await selectOwnerStoreById(storeId, viewer.id)
 
           if (!ownStore) {
             return json({ ok: false, message: 'Немате дозвола за оваа продавница.' }, 403)

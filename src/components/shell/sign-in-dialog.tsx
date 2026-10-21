@@ -1,8 +1,7 @@
-import { useState } from 'react'
+import { lazy, Suspense, useState } from 'react'
 
 import { Dialog } from '#/components/ui/dialog'
-
-import { SignInForm } from '../auth/sign-in-form'
+import { FormSkeleton } from '#/components/ui/skeleton'
 
 /** "Најави се" in the header: the magic-link form in a small dialog. */
 export function SignInDialog({ googleEnabled }: { googleEnabled: boolean }) {
@@ -23,7 +22,20 @@ export function SignInDialog({ googleEnabled }: { googleEnabled: boolean }) {
         </button>
       }
     >
-      <SignInForm googleEnabled={googleEnabled} />
+      {open ? (
+        <Suspense fallback={<FormSkeleton rows={2} />}>
+          <SignInFormLazy googleEnabled={googleEnabled} />
+        </Suspense>
+      ) : null}
     </Dialog>
   )
 }
+
+/**
+ * The form lives in its own chunk: it pulls in react-hook-form and Zod, which
+ * would otherwise load for everyone who opens any page. It is fetched the
+ * first time the dialog opens.
+ */
+const SignInFormLazy = lazy(async () => ({
+  default: (await import('../auth/sign-in-form')).SignInForm,
+}))

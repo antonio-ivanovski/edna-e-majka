@@ -134,3 +134,35 @@ export const manageProductSchema = z.object({
   storeId: z.string().min(1),
   productId: z.string().min(1),
 })
+
+/**
+ * The moderation decision. `note` is left out when an action should keep the
+ * note already on the shop, and sent as null when the note is cleared.
+ */
+export const adminStoreStatusSchema = z.object({
+  storeId: z.string().min(1),
+  status: z.enum(['pending', 'active', 'suspended', 'archived']),
+  note: z.string().trim().max(500).nullable().optional(),
+})
+
+/** An admin edits the same details the owner does. */
+export const adminStoreDetailsSchema = storeDetailsSchema.extend({
+  storeId: z.string().min(1),
+})
+
+export const adminTransferStoreSchema = z.object({
+  storeId: z.string().min(1),
+  email: z.email('Внесете валидна е-маил адреса.'),
+})
+
+export const adminUserRoleSchema = z.object({
+  userId: z.string().min(1),
+  role: z.enum(['user', 'admin']),
+})
+
+export const adminMessageSchema = z.object({ messageId: z.string().min(1) })
+
+export const adminMessageHandledSchema = z.object({
+  messageId: z.string().min(1),
+  handled: z.boolean(),
+})

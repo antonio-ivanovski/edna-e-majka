@@ -1,5 +1,5 @@
 import { Link, useRouter } from '@tanstack/react-router'
-import { ChevronDown, LogOut, Store } from 'lucide-react'
+import { ChevronDown, LogOut, ShieldCheck, Store } from 'lucide-react'
 
 import { Avatar } from '#/components/ui/avatar'
 import {
@@ -68,6 +68,15 @@ export function UserMenu({ googleEnabled }: { googleEnabled: boolean }) {
           Менаџирај продавница
         </Link>
       </DropdownMenuItem>
+
+      {user.role === 'admin' ? (
+        <DropdownMenuItem asChild>
+          <Link to="/admin/stores" className="w-full">
+            <ShieldCheck aria-hidden="true" className="size-4 text-black/40" />
+            Администрација
+          </Link>
+        </DropdownMenuItem>
+      ) : null}
 
       <DropdownMenuSeparator />
 

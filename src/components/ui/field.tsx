@@ -55,3 +55,7 @@ export function Input({ className, suffix, ...props }: InputProps) {
 export function Textarea({ className, ...props }: ComponentProps<'textarea'>) {
   return <textarea className={cn(controlStyles, 'py-2', className)} {...props} />
 }
+
+export function Select({ className, ...props }: ComponentProps<'select'>) {
+  return <select className={cn(controlStyles, 'h-9 pr-8', className)} {...props} />
+}

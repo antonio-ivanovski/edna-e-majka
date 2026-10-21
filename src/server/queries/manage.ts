@@ -254,18 +254,7 @@ export async function selectOwnedProductRow(
   return rows[0] ?? null
 }
 
-/** The images of a product, for the delete that also clears the bucket. */
-export async function selectProductImageKeys(productId: string): Promise<string[]> {
-  const db = getDb()
-
-  const rows = await db
-    .select({ r2Key: productImage.r2Key })
-    .from(productImage)
-    .where(eq(productImage.productId, productId))
-
-  return rows.map((row) => row.r2Key)
-}
-
+/** Where the next photo of this product goes, after the ones it already has. */
 export async function selectNextImagePosition(productId: string): Promise<number> {
   const db = getDb()
 

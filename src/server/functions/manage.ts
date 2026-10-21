@@ -11,7 +11,6 @@
 import { notFound, redirect } from '@tanstack/react-router'
 import { createServerFn } from '@tanstack/react-start'
 import type { BatchItem } from 'drizzle-orm/batch'
-import { env } from 'cloudflare:workers'
 import { eq } from 'drizzle-orm'
 
 import { NOT_ALLOWED, NOT_SIGNED_IN, type ActionResult } from '#/lib/action'
@@ -25,9 +24,10 @@ import {
   storeUpdateSchema,
 } from '#/lib/schemas'
 import { buildSearchText } from '#/lib/translit'
+import { optionalText } from '#/lib/text'
 
 import { getDb } from '../db/client'
-import { product, productCategory, productImage, productVariant, store } from '../db/schema'
+import { product, productCategory, productVariant, store } from '../db/schema'
 import { withViewer } from '../middleware'
 import { reviewShopApplication } from '../moderation'
 import {
@@ -36,8 +36,8 @@ import {
   selectOwnerProducts,
   selectOwnerStore,
   selectOwnerStoreById,
-  selectProductImageKeys,
 } from '../queries/manage'
+import { deleteProductCascade } from '../product-writes'
 
 /** No session, no page: the router turns this into the sign-in redirect. */
 async function requireOwner(ownerId: string | undefined): Promise<string> {
@@ -46,16 +46,6 @@ async function requireOwner(ownerId: string | undefined): Promise<string> {
   }
 
   return ownerId
-}
-
-/**
- * Free-text fields come from a form, so an empty address is stored as null
- * rather than as an empty string that later reads as a value.
- */
-function optionalText(value: string | undefined): string | null {
-  const trimmed = value?.trim()
-
-  return trimmed ? trimmed : null
 }
 
 /**
@@ -294,25 +284,11 @@ export const deleteProduct = createServerFn({ method: 'POST' })
       return NOT_SIGNED_IN
     }
 
-    const owned = await selectOwnedProductRow(data.productId, viewer.id)
-
-    if (!owned) {
+    if (!(await selectOwnedProductRow(data.productId, viewer.id))) {
       return NOT_ALLOWED
     }
 
-    const db = getDb()
-    const keys = await selectProductImageKeys(data.productId)
-
-    if (keys.length > 0) {
-      await env.BUCKET.delete(keys)
-    }
-
-    // Children first: the products table is the only one with a cascade, and
-    // relying on it would leave the bucket and the rows out of step.
-    await db.delete(productImage).where(eq(productImage.productId, data.productId))
-    await db.delete(productVariant).where(eq(productVariant.productId, data.productId))
-    await db.delete(productCategory).where(eq(productCategory.productId, data.productId))
-    await db.delete(product).where(eq(product.id, data.productId))
+    await deleteProductCascade(data.productId)
 
     return { ok: true, data: null }
   })
