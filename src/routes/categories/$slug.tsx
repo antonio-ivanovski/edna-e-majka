@@ -20,7 +20,7 @@ export const Route = createFileRoute('/categories/$slug')({
     }
 
     const page = await queryClient.ensureQueryData(
-      productQueries.list({ ...deps, page: String(deps.page), categorySlug: category.slug }),
+      productQueries.list({ ...deps, page: deps.page, categorySlug: category.slug }),
     )
 
     return { category, params: deps, page }
