@@ -21,7 +21,7 @@ import { toValidator, AdminStoreSearch } from '#/api/schemas'
 import { formatCount, formatDate } from '#/lib/format'
 import { imageUrl } from '#/lib/images'
 import { ADMIN_PAGE_SIZE } from '#/lib/pagination'
-import { getAdminStores } from '#/server/functions/admin'
+import { adminQueries } from '#/lib/queries/admin'
 import type { StoreStatus } from '#/server/queries/manage'
 
 const STATUS_FILTERS: { value?: StoreStatus; label: string }[] = [
@@ -39,7 +39,7 @@ export const Route = createFileRoute('/admin/stores/')({
     query: search.q,
     page: search.page ?? 1,
   }),
-  loader: ({ deps }) => getAdminStores({ data: deps }),
+  loader: ({ context: { queryClient }, deps }) => queryClient.ensureQueryData(adminQueries.stores(deps)),
   head: () => ({
     meta: [
       { title: 'Продавници · Администрација | ЕДНА Е МАЈКА' },

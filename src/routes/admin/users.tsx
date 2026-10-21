@@ -9,12 +9,12 @@ import { Table, TableBody, TableHead, TableHeaderCell, TableRow } from '#/compon
 import { toValidator, AdminListSearch } from '#/api/schemas'
 import { formatCount } from '#/lib/format'
 import { ADMIN_PAGE_SIZE } from '#/lib/pagination'
-import { getAdminUsers } from '#/server/functions/admin'
+import { adminQueries } from '#/lib/queries/admin'
 
 export const Route = createFileRoute('/admin/users')({
   validateSearch: toValidator(AdminListSearch),
   loaderDeps: ({ search }) => ({ query: search.q, page: search.page ?? 1 }),
-  loader: ({ deps }) => getAdminUsers({ data: deps }),
+  loader: ({ context: { queryClient }, deps }) => queryClient.ensureQueryData(adminQueries.users(deps)),
   head: () => ({
     meta: [
       { title: 'Корисници · Администрација | ЕДНА Е МАЈКА' },

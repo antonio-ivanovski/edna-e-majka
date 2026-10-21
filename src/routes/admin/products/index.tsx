@@ -9,7 +9,7 @@ import { Table, TableBody, TableHead, TableHeaderCell, TableRow } from '#/compon
 import { toValidator, AdminProductSearch } from '#/api/schemas'
 import { formatCount } from '#/lib/format'
 import { ADMIN_PAGE_SIZE } from '#/lib/pagination'
-import { getAdminProducts } from '#/server/functions/admin'
+import { adminQueries } from '#/lib/queries/admin'
 import type { ProductStatus } from '#/server/queries/manage'
 
 const STATUS_FILTERS: { value?: ProductStatus; label: string }[] = [
@@ -25,7 +25,7 @@ export const Route = createFileRoute('/admin/products/')({
     query: search.q,
     page: search.page ?? 1,
   }),
-  loader: ({ deps }) => getAdminProducts({ data: deps }),
+  loader: ({ context: { queryClient }, deps }) => queryClient.ensureQueryData(adminQueries.products(deps)),
   head: () => ({
     meta: [
       { title: 'Производи · Администрација | ЕДНА Е МАЈКА' },

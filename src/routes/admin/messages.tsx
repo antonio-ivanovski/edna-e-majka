@@ -9,7 +9,7 @@ import { toValidator, AdminMessageSearch } from "#/api/schemas"
 type MessageFilter = 'open' | 'done' | 'all'
 import { formatCount } from '#/lib/format'
 import { ADMIN_PAGE_SIZE } from '#/lib/pagination'
-import { getAdminMessages } from '#/server/functions/admin'
+import { adminQueries } from '#/lib/queries/admin'
 
 const FILTERS: { value: MessageFilter; label: string }[] = [
   { value: 'open', label: 'Непрочитани' },
@@ -23,7 +23,7 @@ export const Route = createFileRoute('/admin/messages')({
     filter: search.filter ?? 'open',
     page: search.page ?? 1,
   }),
-  loader: ({ deps }) => getAdminMessages({ data: deps }),
+  loader: ({ context: { queryClient }, deps }) => queryClient.ensureQueryData(adminQueries.messages(deps)),
   head: () => ({
     meta: [
       { title: 'Пораки · Администрација | ЕДНА Е МАЈКА' },
