@@ -1,4 +1,5 @@
 import { Link, createFileRoute } from '@tanstack/react-router'
+import { useSuspenseQuery } from '@tanstack/react-query'
 import { useCallback } from 'react'
 
 import { CatalogueList } from '#/components/catalogue/catalogue-list'
@@ -9,16 +10,16 @@ import { CATEGORIES } from '#/lib/categories'
 import { imageUrl } from '#/lib/images'
 import { toValidator, ProductSearch } from '#/api/schemas'
 import type { ProductSort, SortDirection } from '#/lib/schemas'
-import { listProducts } from '#/server/functions/products'
+import { productQueries } from '#/lib/queries/products'
 import { PRODUCT_PAGE_SIZE } from '#/lib/pagination'
 
 export const Route = createFileRoute('/')({
   validateSearch: toValidator(ProductSearch),
   loaderDeps: ({ search }) => search,
-  loader: async ({ deps }) => ({
-    params: deps,
-    page: await listProducts({ data: { ...deps, page: String(deps.page) } }),
-  }),
+  loader: async ({ context: { queryClient }, deps }) => {
+    await queryClient.ensureQueryData(productQueries.list(deps))
+    return { params: deps }
+  },
   head: () => ({
     meta: [{ title: 'ЕДНА Е МАЈКА' }],
   }),
@@ -26,7 +27,8 @@ export const Route = createFileRoute('/')({
 })
 
 function HomePage() {
-  const { page, params } = Route.useLoaderData()
+  const { params } = Route.useLoaderData()
+  const { data: page } = useSuspenseQuery(productQueries.list(params))
   const navigate = Route.useNavigate()
   const recent = useRecentlyViewed()
 
