@@ -47,7 +47,7 @@ export const ProductImageAlt = Schema.Struct({
 
 export const ProductVariantInput = Schema.Struct({
   title: Schema.Trim.pipe(Schema.check(Schema.isMinLength(1), Schema.isMaxLength(60))),
-  price: Schema.NumberFromString.pipe(
+  price: Schema.Number.pipe(
     Schema.check(Schema.isInt(), Schema.isGreaterThanOrEqualTo(1), Schema.isLessThanOrEqualTo(1_000_000)),
   ),
 })

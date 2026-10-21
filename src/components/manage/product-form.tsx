@@ -11,7 +11,10 @@ import { Message } from '#/components/ui/message'
 import { CATEGORIES, type CategorySlug } from '#/lib/categories'
 import type { ActionResult } from '#/lib/action'
 import { imageUrl } from '#/lib/images'
-import { productFormValuesSchema, type ProductForm, type ProductFormValues } from '#/lib/schemas'
+import { productFormValuesSchema, type ProductFormValues } from '#/lib/schemas'
+import { ProductForm as ProductFormSchema } from '#/api/schemas'
+import { Schema } from 'effect'
+type ProductFormData = Schema.Schema.Type<typeof ProductFormSchema>
 import { deleteProductImage, reorderProductImages, uploadProductImage } from '#/lib/uploads'
 import { saveProduct, updateProductImageAlt } from '#/server/functions/manage'
 import type { OwnerProductDetail, OwnerProductImage } from '#/server/queries/manage'
@@ -34,7 +37,7 @@ export function ProductForm({
 }: {
   storeId: string
   product?: OwnerProductDetail
-  save?: (args: { data: ProductForm }) => Promise<ActionResult<{ productId: string }>>
+  save?: (args: { data: ProductFormData }) => Promise<ActionResult<{ productId: string }>>
 }) {
   const router = useRouter()
   const navigate = useNavigate()
@@ -191,7 +194,7 @@ export function ProductForm({
         storeId,
         title: values.title,
         description: values.description,
-        categories: values.categories,
+        categories: [...values.categories],
         availability: values.availability,
         variants: values.variants.map((variant) => ({
           title: variant.title,

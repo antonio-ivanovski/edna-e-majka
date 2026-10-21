@@ -1,16 +1,9 @@
-/**
- * Reads for the owner dashboard: everything the signed-in producer may see
- * about their own shop, including the states the public never gets (pending,
- * suspended, archived, unpublished products).
- *
- * Ownership is always part of the `where` clause — a store is fetched *for* an
- * owner, never by id alone.
- */
+import { Effect } from 'effect'
 import { and, asc, count, desc, eq, inArray } from 'drizzle-orm'
 
+import { Db } from '../services/db'
+import { DatabaseError } from '../errors'
 import { MANAGE_PAGE_SIZE } from '#/lib/pagination'
-
-import { getDb } from '../db/client'
 import { product, productCategory, productImage, productVariant, store } from '../db/schema'
 
 export type StoreStatus = 'pending' | 'active' | 'suspended' | 'archived'
@@ -40,29 +33,13 @@ export type OwnerProduct = {
   status: ProductStatus
   createdAt: Date
   imageKey: string | null
-  /** Cheapest and dearest packaging; both null while no variant exists. */
   minPrice: number | null
   maxPrice: number | null
   variantCount: number
 }
 
-export type OwnerProductImage = {
-  id: string
-  key: string
-  alt: string | null
-  width: number
-  height: number
-}
-
-/** Just enough to know a product exists and whose shop it lives in. */
-export type OwnedProductRow = {
-  id: string
-  storeId: string
-  title: string
-  storeName: string
-  status: ProductStatus
-}
-
+export type OwnerProductImage = { id: string; key: string; alt: string | null; width: number; height: number }
+export type OwnedProductRow = { id: string; storeId: string; title: string; storeName: string; status: ProductStatus }
 export type OwnerProductDetail = {
   id: string
   storeId: string
@@ -93,200 +70,88 @@ const storeColumns = {
   createdAt: store.createdAt,
 }
 
-/** The owner's shop. There is one per person, so the oldest wins. */
-export async function selectOwnerStore(ownerId: string): Promise<OwnerStore | null> {
-  const db = getDb()
+export const selectOwnerStore = Effect.fn('selectOwnerStore')(function* (ownerId: string): Effect.fn.Return<OwnerStore | null, DatabaseError, Db> {
+  const db = yield* Db
+  const rows = yield* db.run((d) => d.select(storeColumns).from(store).where(eq(store.ownerId, ownerId)).orderBy(store.createdAt).limit(1))
+  return (rows[0] as OwnerStore | undefined) ?? null
+})
 
-  const rows = await db
-    .select(storeColumns)
-    .from(store)
-    .where(eq(store.ownerId, ownerId))
-    .orderBy(asc(store.createdAt))
-    .limit(1)
+export const selectOwnerStoreById = Effect.fn('selectOwnerStoreById')(function* (storeId: string, ownerId: string): Effect.fn.Return<OwnerStore | null, DatabaseError, Db> {
+  const db = yield* Db
+  const rows = yield* db.run((d) => d.select(storeColumns).from(store).where(and(eq(store.id, storeId), eq(store.ownerId, ownerId))).limit(1))
+  return (rows[0] as OwnerStore | undefined) ?? null
+})
 
-  return rows[0] ?? null
-}
-
-export async function selectOwnerStoreById(
-  storeId: string,
-  ownerId: string,
-): Promise<OwnerStore | null> {
-  const db = getDb()
-
-  const rows = await db
-    .select(storeColumns)
-    .from(store)
-    .where(and(eq(store.id, storeId), eq(store.ownerId, ownerId)))
-    .limit(1)
-
-  return rows[0] ?? null
-}
-
-export async function selectOwnerProducts(
-  storeId: string,
-  page = 1,
-): Promise<{ items: OwnerProduct[]; total: number }> {
-  const db = getDb()
+export const selectOwnerProducts = Effect.fn('selectOwnerProducts')(function* (storeId: string, page = 1): Effect.fn.Return<{ items: OwnerProduct[]; total: number }, DatabaseError, Db> {
+  const db = yield* Db
   const offset = (page - 1) * MANAGE_PAGE_SIZE
-
-  const [rows, totalRows] = await db.batch([
-    db
-      .select({
-        id: product.id,
-        title: product.title,
-        status: product.status,
-        createdAt: product.createdAt,
-      })
-      .from(product)
-      .where(eq(product.storeId, storeId))
-      .orderBy(desc(product.createdAt))
-      .limit(MANAGE_PAGE_SIZE)
-      .offset(offset),
-    db.select({ total: count() }).from(product).where(eq(product.storeId, storeId)),
-  ])
-
-  const total = totalRows[0]?.total ?? 0
-
-  if (rows.length === 0) {
-    return { items: [], total }
+  const [rows, countRows] = yield* db.run((d) =>
+    d.batch([
+      d.select({ id: product.id, title: product.title, status: product.status, createdAt: product.createdAt, imageKey: productImage.r2Key }).from(product).leftJoin(productImage, and(eq(productImage.productId, product.id), eq(productImage.position, 0))).where(eq(product.storeId, storeId)).orderBy(desc(product.createdAt)).limit(MANAGE_PAGE_SIZE).offset(offset),
+      d.select({ total: count() }).from(product).where(eq(product.storeId, storeId)),
+    ]) as unknown as Promise<[any[], { total: number }[]]>,
+  )
+  // aggregate variants per product
+  const ids = rows.map((r: any) => r.id)
+  const variants = ids.length
+    ? yield* db.run((d) => d.select({ productId: productVariant.productId, price: productVariant.price }).from(productVariant).where(inArray(productVariant.productId, ids)))
+    : []
+  const byProduct = new Map<string, number[]>()
+  for (const v of variants) {
+    if (!byProduct.has(v.productId)) byProduct.set(v.productId, [])
+    byProduct.get(v.productId)!.push(v.price)
   }
-
-  const productIds = rows.map((row) => row.id)
-
-  const [variantRows, imageRows] = await db.batch([
-    db
-      .select({
-        productId: productVariant.productId,
-        price: productVariant.price,
-      })
-      .from(productVariant)
-      .where(inArray(productVariant.productId, productIds)),
-    db
-      .select({
-        productId: productImage.productId,
-        r2Key: productImage.r2Key,
-        position: productImage.position,
-      })
-      .from(productImage)
-      .where(inArray(productImage.productId, productIds))
-      .orderBy(asc(productImage.position)),
-  ])
-
-  const items = rows.map((row) => {
-    const prices = variantRows.filter((variant) => variant.productId === row.id).map((v) => v.price)
-    const firstImage = imageRows.find((image) => image.productId === row.id)
-
+  const items: OwnerProduct[] = rows.map((r: any) => {
+    const prices = byProduct.get(r.id) ?? []
     return {
-      ...row,
-      imageKey: firstImage?.r2Key ?? null,
-      minPrice: prices.length > 0 ? Math.min(...prices) : null,
-      maxPrice: prices.length > 0 ? Math.max(...prices) : null,
+      id: r.id,
+      title: r.title,
+      status: r.status,
+      createdAt: r.createdAt,
+      imageKey: r.imageKey ?? null,
+      minPrice: prices.length ? Math.min(...prices) : null,
+      maxPrice: prices.length ? Math.max(...prices) : null,
       variantCount: prices.length,
     }
   })
+  return { items, total: countRows[0]?.total ?? 0 }
+})
 
-  return { items, total }
-}
-
-export async function selectOwnerProduct(
-  productId: string,
-  storeId: string,
-): Promise<OwnerProductDetail | null> {
-  const db = getDb()
-
-  const [rows, imageRows, variantRows, categoryRows] = await db.batch([
-    db
-      .select({
-        id: product.id,
-        storeId: product.storeId,
-        title: product.title,
-        description: product.description,
-        status: product.status,
-        availability: product.availability,
-      })
-      .from(product)
-      .where(and(eq(product.id, productId), eq(product.storeId, storeId)))
-      .limit(1),
-    db
-      .select({
-        id: productImage.id,
-        r2Key: productImage.r2Key,
-        alt: productImage.alt,
-        width: productImage.width,
-        height: productImage.height,
-      })
-      .from(productImage)
-      .where(eq(productImage.productId, productId))
-      .orderBy(asc(productImage.position)),
-    db
-      .select({
-        id: productVariant.id,
-        title: productVariant.title,
-        price: productVariant.price,
-      })
-      .from(productVariant)
-      .where(eq(productVariant.productId, productId))
-      .orderBy(asc(productVariant.position)),
-    db
-      .select({ categorySlug: productCategory.categorySlug })
-      .from(productCategory)
-      .where(eq(productCategory.productId, productId)),
-  ])
-
-  const row = rows[0]
-
-  if (!row) {
-    return null
-  }
-
+export const selectOwnerProduct = Effect.fn('selectOwnerProduct')(function* (productId: string, storeId: string): Effect.fn.Return<OwnerProductDetail | null, DatabaseError, Db> {
+  const db = yield* Db
+  const [prodRows, imageRows, variantRows, categoryRows] = yield* db.run((d) =>
+    d.batch([
+      d.select({ id: product.id, storeId: product.storeId, title: product.title, description: product.description, status: product.status, availability: product.availability }).from(product).where(and(eq(product.id, productId), eq(product.storeId, storeId))).limit(1),
+      d.select({ id: productImage.id, key: productImage.r2Key, alt: productImage.alt, width: productImage.width, height: productImage.height }).from(productImage).where(eq(productImage.productId, productId)).orderBy(asc(productImage.position)),
+      d.select({ id: productVariant.id, title: productVariant.title, price: productVariant.price }).from(productVariant).where(eq(productVariant.productId, productId)).orderBy(asc(productVariant.position)),
+      d.select({ categorySlug: productCategory.categorySlug }).from(productCategory).where(eq(productCategory.productId, productId)),
+    ]) as unknown as Promise<[any[], any[], any[], any[]]>,
+  )
+  const prod = prodRows[0]
+  if (!prod) return null
   return {
-    ...row,
-    categories: categoryRows.map((category) => category.categorySlug),
-    variants: variantRows,
-    images: imageRows.map((image) => ({
-      id: image.id,
-      key: image.r2Key,
-      alt: image.alt,
-      width: image.width,
-      height: image.height,
-    })),
+    id: prod.id,
+    storeId: prod.storeId,
+    title: prod.title,
+    description: prod.description,
+    status: prod.status,
+    availability: prod.availability,
+    categories: categoryRows.map((c: any) => c.categorySlug),
+    variants: variantRows.map(({ id, title, price }: any) => ({ id, title, price })),
+    images: imageRows.map(({ id, key, alt, width, height }: any) => ({ id, key, alt, width, height })),
   }
-}
+})
 
-/**
- * A product is only ever looked up as belonging to someone: the join through
- * the shop is what makes it theirs.
- */
-export async function selectOwnedProductRow(
-  productId: string,
-  ownerId: string,
-): Promise<OwnedProductRow | null> {
-  const db = getDb()
+export const selectOwnedProductRow = Effect.fn('selectOwnedProductRow')(function* (productId: string, ownerId: string): Effect.fn.Return<OwnedProductRow | null, DatabaseError, Db> {
+  const db = yield* Db
+  const rows = yield* db.run((d) =>
+    d.select({ id: product.id, storeId: product.storeId, title: product.title, storeName: store.name, status: product.status }).from(product).innerJoin(store, eq(store.id, product.storeId)).where(and(eq(product.id, productId), eq(store.ownerId, ownerId))).limit(1),
+  )
+  return (rows[0] as OwnedProductRow | undefined) ?? null
+})
 
-  const rows = await db
-    .select({
-      id: product.id,
-      storeId: product.storeId,
-      title: product.title,
-      status: product.status,
-      storeName: store.name,
-    })
-    .from(product)
-    .innerJoin(store, eq(store.id, product.storeId))
-    .where(and(eq(product.id, productId), eq(store.ownerId, ownerId)))
-    .limit(1)
-
-  return rows[0] ?? null
-}
-
-/** Where the next photo of this product goes, after the ones it already has. */
-export async function selectNextImagePosition(productId: string): Promise<number> {
-  const db = getDb()
-
-  const rows = await db
-    .select({ position: productImage.position })
-    .from(productImage)
-    .where(eq(productImage.productId, productId))
-
-  return rows.reduce((next, row) => Math.max(next, row.position + 1), 0)
-}
+export const selectNextImagePosition = Effect.fn('selectNextImagePosition')(function* (productId: string): Effect.fn.Return<number, DatabaseError, Db> {
+  const db = yield* Db
+  const rows = yield* db.run((d) => d.select({ position: productImage.position }).from(productImage).where(eq(productImage.productId, productId)).orderBy(desc(productImage.position)).limit(1))
+  return rows.length ? ((rows[0]?.position ?? 0) + 1) : 0
+})

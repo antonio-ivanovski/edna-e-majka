@@ -1,30 +1,10 @@
-/**
- * The owner dashboard: applying for a shop, editing it, and everything a
- * producer does with their products.
- *
- * Reads are called from route loaders and establish who the caller is from the
- * session cookie alone. Writes answer with an `ActionResult`, so a form can
- * show the reason instead of tripping the route error boundary — and every one
- * of them re-checks that the shop belongs to the caller, because a route guard
- * protects the page, not the endpoint.
- */
 import { notFound, redirect } from '@tanstack/react-router'
 import { createServerFn } from '@tanstack/react-start'
 import type { BatchItem } from 'drizzle-orm/batch'
 import { eq } from 'drizzle-orm'
 
 import { NOT_ALLOWED, NOT_SIGNED_IN, type ActionResult } from '#/lib/action'
-import {
-  manageProductSchema,
-  manageProductsSchema,
-  productDeleteSchema,
-  productFormSchema,
-  productImageAltSchema,
-  productStatusSchema,
-  storeDetailsSchema,
-  storeIdSchema,
-  storeUpdateSchema,
-} from '#/lib/schemas'
+import { toValidator, ManageProduct, ManageProducts, ProductDelete, ProductForm, ProductImageAlt, ProductStatusSchema as ProductStatus, StoreDetails, StoreId, StoreUpdate } from '#/api/schemas'
 import { buildSearchText } from '#/lib/translit'
 import { optionalText } from '#/lib/text'
 
@@ -33,343 +13,186 @@ import { product, productCategory, productImage, productVariant, store } from '.
 import { withViewer } from '../middleware'
 import { reviewShopApplication } from '../moderation'
 import { selectAdminProductRow } from '../queries/admin'
-import {
-  selectOwnedProductRow,
-  selectOwnerProduct,
-  selectOwnerProducts,
-  selectOwnerStore,
-  selectOwnerStoreById,
-} from '../queries/manage'
+import { selectOwnedProductRow, selectOwnerProduct, selectOwnerProducts, selectOwnerStore, selectOwnerStoreById } from '../queries/manage'
 import { deleteProductCascade, deleteStoreCascade } from '../product-writes'
 import { claimProductSlug, claimStoreSlug } from '../slug'
+import { runEffect } from '../runtime'
 
-/** No session, no page: the router turns this into the sign-in redirect. */
-async function requireOwner(ownerId: string | undefined): Promise<string> {
-  if (!ownerId) {
-    throw redirect({ to: '/sign-in' })
-  }
-
+function requireOwner(ownerId: string | undefined): string {
+  if (!ownerId) throw redirect({ to: '/sign-in' })
   return ownerId
 }
 
-/**
- * One statement per row: D1 allows a hundred bound parameters per statement and
- * a product's variants are unbounded, so batching rows would eventually fail.
- */
-function rowStatements<Statement extends BatchItem<'sqlite'>>(
-  statements: Statement[],
-): [Statement, ...Statement[]] | null {
+function rowStatements<Statement extends BatchItem<'sqlite'>>(statements: Statement[]): [Statement, ...Statement[]] | null {
   const [first, ...rest] = statements
-
   return first ? [first, ...rest] : null
 }
 
 export const getManageHome = createServerFn({ method: 'GET' })
   .middleware([withViewer])
   .handler(async ({ context }) => {
-    const ownerId = await requireOwner(context.viewer?.id)
-    const ownStore = await selectOwnerStore(ownerId)
-
+    const ownerId = requireOwner(context.viewer?.id)
+    const ownStore = await runEffect(selectOwnerStore(ownerId))
     return {
       store: ownStore,
-      // The overview only shows the newest few; the table has the rest.
-      products: ownStore ? (await selectOwnerProducts(ownStore.id)).items : [],
+      products: ownStore ? (await runEffect(selectOwnerProducts(ownStore.id))).items : [],
     }
   })
 
 export const getManageStore = createServerFn({ method: 'GET' })
   .middleware([withViewer])
-  .validator(storeIdSchema)
+  .validator(toValidator(StoreId))
   .handler(async ({ context, data }) => {
-    const ownerId = await requireOwner(context.viewer?.id)
-    const ownStore = await selectOwnerStoreById(data.storeId, ownerId)
-
-    if (!ownStore) {
-      throw notFound()
-    }
-
+    const ownerId = requireOwner(context.viewer?.id)
+    const ownStore = await runEffect(selectOwnerStoreById(data.storeId, ownerId))
+    if (!ownStore) throw notFound()
     return { store: ownStore }
   })
 
 export const getManageProducts = createServerFn({ method: 'GET' })
   .middleware([withViewer])
-  .validator(manageProductsSchema)
+  .validator(toValidator(ManageProducts))
   .handler(async ({ context, data }) => {
-    const ownerId = await requireOwner(context.viewer?.id)
-    const ownStore = await selectOwnerStoreById(data.storeId, ownerId)
-
-    if (!ownStore) {
-      throw notFound()
-    }
-
-    const page = await selectOwnerProducts(ownStore.id, data.page)
-
+    const ownerId = requireOwner(context.viewer?.id)
+    const ownStore = await runEffect(selectOwnerStoreById(data.storeId, ownerId))
+    if (!ownStore) throw notFound()
+    const page = await runEffect(selectOwnerProducts(ownStore.id, data.page))
     return { store: ownStore, products: page.items, total: page.total }
   })
 
 export const getManageProduct = createServerFn({ method: 'GET' })
   .middleware([withViewer])
-  .validator(manageProductSchema)
+  .validator(toValidator(ManageProduct))
   .handler(async ({ context, data }) => {
-    const ownerId = await requireOwner(context.viewer?.id)
-    const ownStore = await selectOwnerStoreById(data.storeId, ownerId)
-
-    if (!ownStore) {
-      throw notFound()
-    }
-
-    const owned = await selectOwnerProduct(data.productId, ownStore.id)
-
-    if (!owned) {
-      throw notFound()
-    }
-
+    const ownerId = requireOwner(context.viewer?.id)
+    const ownStore = await runEffect(selectOwnerStoreById(data.storeId, ownerId))
+    if (!ownStore) throw notFound()
+    const owned = await runEffect(selectOwnerProduct(data.productId, ownStore.id))
+    if (!owned) throw notFound()
     return { store: ownStore, product: owned }
   })
 
-/** A shop is applied for, never created by a form that claims to own it. */
 export const applyForStore = createServerFn({ method: 'POST' })
   .middleware([withViewer])
-  .validator(storeDetailsSchema)
+  .validator(toValidator(StoreDetails))
   .handler(async ({ context, data }): Promise<ActionResult<{ storeId: string }>> => {
     const viewer = context.viewer
-
-    if (!viewer) {
-      return NOT_SIGNED_IN
-    }
-
-    if (await selectOwnerStore(viewer.id)) {
-      return { ok: false, message: 'Веќе имате регистрирано продавница.' }
-    }
-
+    if (!viewer) return NOT_SIGNED_IN
+    const existing = await runEffect(selectOwnerStore(viewer.id))
+    if (existing) return { ok: false, message: 'Веќе имате регистрирано продавница.' }
     const verdict = reviewShopApplication({ name: data.name, description: data.description })
     const storeId = crypto.randomUUID()
-
-    await getDb()
-      .insert(store)
-      .values({
-        id: storeId,
-        ownerId: viewer.id,
-        name: data.name,
-        description: data.description,
-        email: data.email,
-        phone: data.phone,
-        facebook: optionalText(data.facebook),
-        instagram: optionalText(data.instagram),
-        city: optionalText(data.city),
-        hours: optionalText(data.hours),
-        slug: await claimStoreSlug(data.name),
-        status: verdict.status,
-        statusNote: verdict.status === 'pending' ? verdict.note : null,
-      })
-
+    await getDb().insert(store).values({
+      id: storeId,
+      ownerId: viewer.id,
+      name: data.name,
+      description: data.description,
+      email: data.email,
+      phone: data.phone,
+      facebook: optionalText(data.facebook),
+      instagram: optionalText(data.instagram),
+      city: optionalText(data.city),
+      hours: optionalText(data.hours),
+      slug: await claimStoreSlug(data.name),
+      status: verdict.status,
+      statusNote: verdict.status === 'pending' ? verdict.note : null,
+    })
     return { ok: true, data: { storeId } }
   })
 
 export const updateStore = createServerFn({ method: 'POST' })
   .middleware([withViewer])
-  .validator(storeUpdateSchema)
+  .validator(toValidator(StoreUpdate))
   .handler(async ({ context, data }): Promise<ActionResult> => {
     const viewer = context.viewer
-
-    if (!viewer) {
-      return NOT_SIGNED_IN
-    }
-
-    if (!(await selectOwnerStoreById(data.storeId, viewer.id))) {
-      return NOT_ALLOWED
-    }
-
-    await getDb()
-      .update(store)
-      .set({
-        name: data.name,
-        description: data.description,
-        email: data.email,
-        phone: data.phone,
-        facebook: optionalText(data.facebook),
-        instagram: optionalText(data.instagram),
-        city: optionalText(data.city),
-        hours: optionalText(data.hours),
-      })
-      .where(eq(store.id, data.storeId))
-
+    if (!viewer) return NOT_SIGNED_IN
+    if (!(await runEffect(selectOwnerStoreById(data.storeId, viewer.id)))) return NOT_ALLOWED
+    await getDb().update(store).set({
+      name: data.name,
+      description: data.description,
+      email: data.email,
+      phone: data.phone,
+      facebook: optionalText(data.facebook),
+      instagram: optionalText(data.instagram),
+      city: optionalText(data.city),
+      hours: optionalText(data.hours),
+    }).where(eq(store.id, data.storeId))
     return { ok: true, data: null }
   })
 
 export const saveProduct = createServerFn({ method: 'POST' })
   .middleware([withViewer])
-  .validator(productFormSchema)
+  .validator(toValidator(ProductForm))
   .handler(async ({ context, data }): Promise<ActionResult<{ productId: string }>> => {
     const viewer = context.viewer
-
-    if (!viewer) {
-      return NOT_SIGNED_IN
-    }
-
-    if (!(await selectOwnerStoreById(data.storeId, viewer.id))) {
-      return NOT_ALLOWED
-    }
-
+    if (!viewer) return NOT_SIGNED_IN
+    if (!(await runEffect(selectOwnerStoreById(data.storeId, viewer.id)))) return NOT_ALLOWED
     const db = getDb()
     const searchText = buildSearchText(data.title, data.description)
     const productId = data.productId ?? crypto.randomUUID()
-
     if (data.productId) {
-      if (!(await selectOwnerProduct(data.productId, data.storeId))) {
-        return NOT_ALLOWED
-      }
-
-      await db
-        .update(product)
-        .set({
-          title: data.title,
-          description: data.description,
-          searchText,
-          availability: data.availability,
-        })
-        .where(eq(product.id, productId))
+      if (!(await runEffect(selectOwnerProduct(data.productId, data.storeId)))) return NOT_ALLOWED
+      await db.update(product).set({ title: data.title, description: data.description, searchText, availability: data.availability }).where(eq(product.id, productId))
     } else {
-      await db.insert(product).values({
-        id: productId,
-        storeId: data.storeId,
-        title: data.title,
-        description: data.description,
-        searchText,
-        availability: data.availability,
-        slug: await claimProductSlug(data.title),
-      })
+      await db.insert(product).values({ id: productId, storeId: data.storeId, title: data.title, description: data.description, searchText, availability: data.availability, slug: await claimProductSlug(data.title) })
     }
-
-    // The packagings are replaced wholesale: the form is the whole truth.
     await db.delete(productVariant).where(eq(productVariant.productId, productId))
     await db.delete(productCategory).where(eq(productCategory.productId, productId))
-
     const statements = rowStatements([
-      ...data.variants.map((variant, position) =>
-        db.insert(productVariant).values({
-          id: crypto.randomUUID(),
-          productId,
-          title: variant.title,
-          price: variant.price,
-          position,
-        }),
-      ),
-      ...data.categories.map((categorySlug) =>
-        db.insert(productCategory).values({ productId, categorySlug }),
-      ),
+      ...data.variants.map((variant, position) => db.insert(productVariant).values({ id: crypto.randomUUID(), productId, title: variant.title, price: variant.price, position })),
+      ...data.categories.map((categorySlug) => db.insert(productCategory).values({ productId, categorySlug })),
     ])
-
-    if (statements) {
-      await db.batch(statements)
-    }
-
+    if (statements) await db.batch(statements)
     return { ok: true, data: { productId } }
   })
 
 export const setProductArchived = createServerFn({ method: 'POST' })
   .middleware([withViewer])
-  .validator(productStatusSchema)
+  .validator(toValidator(ProductStatus))
   .handler(async ({ context, data }): Promise<ActionResult> => {
     const viewer = context.viewer
-
-    if (!viewer) {
-      return NOT_SIGNED_IN
-    }
-
-    if (!(await selectOwnedProductRow(data.productId, viewer.id))) {
-      return NOT_ALLOWED
-    }
-
-    await getDb()
-      .update(product)
-      .set({
-        status: data.archived ? 'archived' : 'published',
-        archivedAt: data.archived ? new Date() : null,
-        archivedBy: data.archived ? viewer.id : null,
-      })
-      .where(eq(product.id, data.productId))
-
+    if (!viewer) return NOT_SIGNED_IN
+    if (!(await runEffect(selectOwnedProductRow(data.productId, viewer.id)))) return NOT_ALLOWED
+    await getDb().update(product).set({ status: data.archived ? 'archived' : 'published', archivedAt: data.archived ? new Date() : null, archivedBy: data.archived ? viewer.id : null }).where(eq(product.id, data.productId))
     return { ok: true, data: null }
   })
 
 export const deleteProduct = createServerFn({ method: 'POST' })
   .middleware([withViewer])
-  .validator(productDeleteSchema)
+  .validator(toValidator(ProductDelete))
   .handler(async ({ context, data }): Promise<ActionResult> => {
     const viewer = context.viewer
-
-    if (!viewer) {
-      return NOT_SIGNED_IN
-    }
-
-    if (!(await selectOwnedProductRow(data.productId, viewer.id))) {
-      return NOT_ALLOWED
-    }
-
+    if (!viewer) return NOT_SIGNED_IN
+    if (!(await runEffect(selectOwnedProductRow(data.productId, viewer.id)))) return NOT_ALLOWED
     await deleteProductCascade(data.productId)
-
     return { ok: true, data: null }
   })
 
-/**
- * The owner closes their own shop for good. The listings, their photos and the
- * shop's own files go with it.
- */
 export const deleteStore = createServerFn({ method: 'POST' })
   .middleware([withViewer])
-  .validator(storeIdSchema)
+  .validator(toValidator(StoreId))
   .handler(async ({ context, data }): Promise<ActionResult> => {
     const viewer = context.viewer
-
-    if (!viewer) {
-      return NOT_SIGNED_IN
-    }
-
-    if (!(await selectOwnerStoreById(data.storeId, viewer.id))) {
-      return NOT_ALLOWED
-    }
-
+    if (!viewer) return NOT_SIGNED_IN
+    if (!(await runEffect(selectOwnerStoreById(data.storeId, viewer.id)))) return NOT_ALLOWED
     await deleteStoreCascade(data.storeId)
-
     return { ok: true, data: null }
   })
 
 export const updateProductImageAlt = createServerFn({ method: 'POST' })
   .middleware([withViewer])
-  .validator(productImageAltSchema)
+  .validator(toValidator(ProductImageAlt))
   .handler(async ({ context, data }): Promise<ActionResult> => {
     const viewer = context.viewer
-
-    if (!viewer) {
-      return NOT_SIGNED_IN
-    }
-
-    const rows = await getDb()
-      .select({ productId: productImage.productId })
-      .from(productImage)
-      .where(eq(productImage.id, data.imageId))
-      .limit(1)
-
+    if (!viewer) return NOT_SIGNED_IN
+    const db = getDb()
+    const rows = await db.select({ productId: productImage.productId }).from(productImage).where(eq(productImage.id, data.imageId)).limit(1)
     const image = rows[0]
-
-    if (!image) {
-      return { ok: false, message: 'Сликата не е најдена.' }
-    }
-
-    const owned =
-      viewer.role === 'admin'
-        ? await selectAdminProductRow(image.productId)
-        : await selectOwnedProductRow(image.productId, viewer.id)
-
-    if (!owned) {
-      return NOT_ALLOWED
-    }
-
-    await getDb()
-      .update(productImage)
-      .set({ alt: data.alt.trim() ? data.alt.trim() : null })
-      .where(eq(productImage.id, data.imageId))
-
+    if (!image) return { ok: false, message: 'Сликата не е најдена.' }
+    const owned = viewer.role === 'admin'
+      ? await selectAdminProductRow(image.productId)
+      : await runEffect(selectOwnedProductRow(image.productId, viewer.id))
+    if (!owned) return NOT_ALLOWED
+    await db.update(productImage).set({ alt: data.alt.trim() ? data.alt.trim() : null }).where(eq(productImage.id, data.imageId))
     return { ok: true, data: null }
   })

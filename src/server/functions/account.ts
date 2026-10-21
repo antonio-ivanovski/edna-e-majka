@@ -16,6 +16,7 @@ import { account, session, user } from '../db/auth-schema'
 import { getDb } from '../db/client'
 import { store } from '../db/schema'
 import { withViewer } from '../middleware'
+import { runEffect } from '../runtime'
 import { deleteStoreCascade } from '../product-writes'
 import { selectOwnerStore } from '../queries/manage'
 
@@ -85,7 +86,7 @@ export const deleteAccount = createServerFn({ method: 'POST' })
     }
 
     const db = getDb()
-    const ownStore = await selectOwnerStore(viewer.id)
+    const ownStore = await runEffect(selectOwnerStore(viewer.id))
 
     // The shop goes first, so its files leave the bucket before the rows go.
     if (ownStore) {
@@ -110,7 +111,7 @@ export const getAccountStore = createServerFn({ method: 'GET' })
       return null
     }
 
-    const ownStore = await selectOwnerStore(viewer.id)
+    const ownStore = await runEffect(selectOwnerStore(viewer.id))
 
     return ownStore ? { id: ownStore.id, name: ownStore.name } : null
   })

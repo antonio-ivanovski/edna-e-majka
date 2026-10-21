@@ -12,6 +12,7 @@ import {
   selectOwnedProductRow,
   selectOwnerStoreById,
 } from '#/server/queries/manage'
+import { runEffect } from '#/server/runtime'
 import { getViewer } from '#/server/viewer'
 
 /**
@@ -120,7 +121,7 @@ export const Route = createFileRoute('/api/uploads')({
           const owned =
             viewer.role === 'admin'
               ? await selectAdminProductRow(productId)
-              : await selectOwnedProductRow(productId, viewer.id)
+              : await runEffect(selectOwnedProductRow(productId, viewer.id))
 
           if (!owned) {
             return json({ ok: false, message: 'Немате дозвола за овој производ.' }, 403)
@@ -141,7 +142,7 @@ export const Route = createFileRoute('/api/uploads')({
             alt,
             width: dimension(form.get('width'), 1200),
             height: dimension(form.get('height'), 900),
-            position: await selectNextImagePosition(productId),
+            position: await runEffect(selectNextImagePosition(productId)),
           }
 
           await getDb().insert(productImage).values({
@@ -161,7 +162,7 @@ export const Route = createFileRoute('/api/uploads')({
           const ownStore =
             viewer.role === 'admin'
               ? await selectAdminStore(storeId)
-              : await selectOwnerStoreById(storeId, viewer.id)
+              : await runEffect(selectOwnerStoreById(storeId, viewer.id))
 
           if (!ownStore) {
             return json({ ok: false, message: 'Немате дозвола за оваа продавница.' }, 403)
@@ -221,7 +222,7 @@ export const Route = createFileRoute('/api/uploads')({
         const owned =
           viewer.role === 'admin'
             ? await selectAdminProductRow(productId)
-            : await selectOwnedProductRow(productId, viewer.id)
+            : await runEffect(selectOwnedProductRow(productId, viewer.id))
 
         if (!owned) {
           return json({ ok: false, message: 'Немате дозвола за овој производ.' }, 403)
@@ -304,7 +305,7 @@ export const Route = createFileRoute('/api/uploads')({
           const canManage =
             viewer.role === 'admin'
               ? await selectAdminProductRow(image.productId)
-              : await selectOwnedProductRow(image.productId, viewer.id)
+              : await runEffect(selectOwnedProductRow(image.productId, viewer.id))
 
           if (!canManage) {
             return json({ ok: false, message: 'Немате дозвола за овој производ.' }, 403)
@@ -320,7 +321,7 @@ export const Route = createFileRoute('/api/uploads')({
           const ownStore =
             viewer.role === 'admin'
               ? await selectAdminStore(storeId)
-              : await selectOwnerStoreById(storeId, viewer.id)
+              : await runEffect(selectOwnerStoreById(storeId, viewer.id))
 
           if (!ownStore) {
             return json({ ok: false, message: 'Немате дозвола за оваа продавница.' }, 403)

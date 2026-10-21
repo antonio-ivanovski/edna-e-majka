@@ -31,6 +31,7 @@ import { user } from '../db/auth-schema'
 import { getDb } from '../db/client'
 import { contactMessage, product, productCategory, productVariant, store } from '../db/schema'
 import { withAdmin } from '../middleware'
+import { runEffect } from '../runtime'
 import { deleteProductCascade, deleteStoreCascade } from '../product-writes'
 import {
   selectAdminMessages,
@@ -365,7 +366,7 @@ export const getAdminProduct = createServerFn({ method: 'GET' })
       throw notFound()
     }
 
-    const product = await selectOwnerProduct(data.productId, row.storeId)
+    const product = await runEffect(selectOwnerProduct(data.productId, row.storeId))
 
     if (!product) {
       throw notFound()
