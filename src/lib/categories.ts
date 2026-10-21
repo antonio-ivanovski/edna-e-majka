@@ -1,4 +1,4 @@
-import { z } from 'zod'
+
 
 /**
  * Categories are application content, not database rows: they change with a
@@ -44,7 +44,7 @@ export const CATEGORIES: readonly Category[] = CATEGORY_SLUGS.map((slug) => ({
   icon: `/assets/category-icons/${slug}.svg`,
 }))
 
-export const categorySlugSchema = z.enum(CATEGORY_SLUGS)
+
 
 export function findCategory(slug: string): Category | undefined {
   return CATEGORIES.find((category) => category.slug === slug)

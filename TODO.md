@@ -29,7 +29,7 @@ Goal: one typed contract layer, Effect everywhere on the server, one client cach
   `Invalid`, `RateLimited`, `Storage` as `Schema.TaggedError`. Replace
   `src/lib/action.ts` (`ActionResult`, `NOT_SIGNED_IN`, `NOT_ALLOWED`) with
   `Effect.Result` + tagged errors. Blockers: T0-01.
-- [ ] **T0-04** One schema source of truth. Port every zod schema to Effect
+- [x] **T0-04** One schema source of truth. Port every zod schema to Effect
   Schema under `src/api/schemas/*`; expose them via `Schema.toStandardSchemaV1`
   so TanStack `.validator()`, route `validateSearch` and react-hook-form all
   accept the same definition. Drop `zod` from the app. Blockers: T0-01.

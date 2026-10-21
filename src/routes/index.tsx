@@ -9,7 +9,7 @@ import { useRecentlyViewed } from '#/hooks/use-recently-viewed'
 import { CATEGORIES } from '#/lib/categories'
 import { imageUrl } from '#/lib/images'
 import { toValidator, ProductSearch } from '#/api/schemas'
-import type { ProductSort, SortDirection } from '#/lib/schemas'
+import type { ProductSort, SortDirection } from '#/api/schemas'
 import { productQueries } from '#/lib/queries/products'
 import { PRODUCT_PAGE_SIZE } from '#/lib/pagination'
 

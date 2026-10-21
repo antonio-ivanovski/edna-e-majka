@@ -4,7 +4,7 @@ import { useCallback } from 'react'
 import { Button } from '#/components/ui/button'
 import { formatCount } from '#/lib/format'
 import { MAX_CATALOGUE_ITEMS } from '#/lib/pagination'
-import type { ProductSort, SortDirection } from '#/lib/schemas'
+import type { ProductSort, SortDirection } from '#/api/schemas'
 import type { ProductSummary } from '#/server/queries/products'
 import { cn } from '#/lib/utils'
 

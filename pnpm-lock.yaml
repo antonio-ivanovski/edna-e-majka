@@ -226,9 +226,6 @@ importers:
       tailwind-merge:
         specifier: 3.7.0
         version: 3.7.0
-      zod:
-        specifier: 4.6.7
-        version: 4.6.7
     devDependencies:
       '@cloudflare/vite-plugin':
         specifier: 1.64.0

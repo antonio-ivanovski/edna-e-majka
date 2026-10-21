@@ -8,7 +8,6 @@
 import { notFound } from '@tanstack/react-router'
 import { createServerFn } from '@tanstack/react-start'
 import { eq } from 'drizzle-orm'
-import { z } from 'zod'
 
 import { NOT_SIGNED_IN, type ActionResult } from '#/lib/action'
 
@@ -20,9 +19,8 @@ import { runEffect } from '../runtime'
 import { deleteStoreCascade } from '../product-writes'
 import { selectOwnerStore } from '../queries/manage'
 
-const profileSchema = z.object({
-  name: z.string().trim().min(2, 'Внесете име.').max(120),
-})
+import { toValidator, Profile } from '#/api/schemas'
+const profileSchema = toValidator(Profile)
 
 export type AccountProfile = {
   id: string

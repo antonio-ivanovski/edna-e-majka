@@ -4,8 +4,7 @@ import { APIError, createAuthMiddleware } from 'better-auth/api'
 import { magicLink } from 'better-auth/plugins'
 import { tanstackStartCookies } from 'better-auth/tanstack-start'
 import { env } from 'cloudflare:workers'
-import { z } from 'zod'
-
+import { Schema } from 'effect'
 import * as authSchema from './db/auth-schema'
 import { getDb } from './db/client'
 import { sendMagicLinkEmail } from './email'
@@ -22,7 +21,7 @@ const MAGIC_LINK_EMAIL_QUOTA = { windowSeconds: 15 * 60, max: 3 }
 const THIRTY_DAYS = 60 * 60 * 24 * 30
 
 /** Better Auth validates the body itself; this only reads the address. */
-const magicLinkRequestBody = z.object({ email: z.email() })
+const magicLinkRequestBody = Schema.Struct({ email: Schema.String.pipe(Schema.check(Schema.isPattern(/^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/))) })
 
 /**
  * Google sign-in is offered only when credentials are configured; the button is
@@ -103,16 +102,18 @@ export const auth = betterAuth({
         return
       }
 
-      const body = magicLinkRequestBody.safeParse(ctx.body)
-      if (!body.success) {
+      const decoded = Schema.decodeUnknownOption(magicLinkRequestBody)(ctx.body)
+      if (decoded._tag === 'None') {
         return
       }
+
+      const body = decoded.value
 
       const verdict = await runEffect(
         Effect.gen(function* () {
           const rl = yield* RateLimiter
           return yield* rl.consume({
-            key: `magic-link:${body.data.email.toLowerCase()}`,
+            key: `magic-link:${body.email.toLowerCase()}`,
             ...MAGIC_LINK_EMAIL_QUOTA,
           })
         }),

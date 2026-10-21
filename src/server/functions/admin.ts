@@ -10,21 +10,8 @@
 import { notFound } from '@tanstack/react-router'
 import { createServerFn } from '@tanstack/react-start'
 import { eq, sql } from 'drizzle-orm'
-import { z } from 'zod'
-
 import type { ActionResult } from '#/lib/action'
-import {
-  adminMessageHandledSchema,
-  adminMessageSchema,
-  adminStoreDetailsSchema,
-  adminStoreStatusSchema,
-  adminTransferStoreSchema,
-  adminUserRoleSchema,
-  productDeleteSchema,
-  productFormSchema,
-  productStatusSchema,
-  storeIdSchema,
-} from '#/lib/schemas'
+import { toValidator, AdminMessage, AdminMessageHandled, AdminMessageList, AdminProductList, AdminStoreDetails, AdminStoreList, AdminStoreStatus, AdminTransferStore, AdminUserList, AdminUserRole, ProductDelete, ProductForm, ProductStatusSchema as ProductStatus, StoreId } from '#/api/schemas'
 import { buildSearchText } from '#/lib/translit'
 import { optionalText } from '#/lib/text'
 
@@ -44,39 +31,14 @@ import {
 } from '../queries/admin'
 import { selectOwnerProduct, selectOwnerStore } from '../queries/manage'
 
-const storeStatusSchema = z.enum(['pending', 'active', 'suspended', 'archived'])
-const productStatusEnum = z.enum(['published', 'archived'])
-
-const adminStoreListSchema = z.object({
-  status: storeStatusSchema.optional(),
-  query: z.string().trim().min(1).max(64).optional(),
-  page: z.coerce.number().int().min(1).max(500).default(1),
-})
-
-const adminProductListSchema = z.object({
-  status: productStatusEnum.optional(),
-  query: z.string().trim().min(1).max(64).optional(),
-  page: z.coerce.number().int().min(1).max(500).default(1),
-})
-
-const adminUserListSchema = z.object({
-  query: z.string().trim().min(1).max(64).optional(),
-  page: z.coerce.number().int().min(1).max(500).default(1),
-})
-
-const adminMessageListSchema = z.object({
-  filter: z.enum(['open', 'done', 'all']).default('open'),
-  page: z.coerce.number().int().min(1).max(500).default(1),
-})
-
 export const getAdminStores = createServerFn({ method: 'GET' })
   .middleware([withAdmin])
-  .validator(adminStoreListSchema)
+  .validator(toValidator(AdminStoreList))
   .handler(async ({ data }) => runEffect(selectAdminStores(data as any)))
 
 export const getAdminStore = createServerFn({ method: 'GET' })
   .middleware([withAdmin])
-  .validator(storeIdSchema)
+  .validator(toValidator(StoreId))
   .handler(async ({ data }) => {
     const found = await runEffect(selectAdminStore(data.storeId))
 
@@ -92,17 +54,17 @@ export const getAdminStore = createServerFn({ method: 'GET' })
 
 export const getAdminProducts = createServerFn({ method: 'GET' })
   .middleware([withAdmin])
-  .validator(adminProductListSchema)
+  .validator(toValidator(AdminProductList))
   .handler(async ({ data }) => runEffect(selectAdminProducts(data as any)))
 
 export const getAdminUsers = createServerFn({ method: 'GET' })
   .middleware([withAdmin])
-  .validator(adminUserListSchema)
+  .validator(toValidator(AdminUserList))
   .handler(async ({ data }) => runEffect(selectAdminUsers(data as any)))
 
 export const getAdminMessages = createServerFn({ method: 'GET' })
   .middleware([withAdmin])
-  .validator(adminMessageListSchema)
+  .validator(toValidator(AdminMessageList))
   .handler(async ({ data }) => runEffect(selectAdminMessages(data as any)))
 
 /**
@@ -112,7 +74,7 @@ export const getAdminMessages = createServerFn({ method: 'GET' })
  */
 export const setStoreStatus = createServerFn({ method: 'POST' })
   .middleware([withAdmin])
-  .validator(adminStoreStatusSchema)
+  .validator(toValidator(AdminStoreStatus))
   .handler(async ({ context, data }): Promise<ActionResult> => {
     const db = getDb()
 
@@ -142,7 +104,7 @@ export const setStoreStatus = createServerFn({ method: 'POST' })
 /** An admin may correct the details of any shop; ownership stays where it is. */
 export const adminUpdateStore = createServerFn({ method: 'POST' })
   .middleware([withAdmin])
-  .validator(adminStoreDetailsSchema)
+  .validator(toValidator(AdminStoreDetails))
   .handler(async ({ data }): Promise<ActionResult> => {
     const rows = await getDb()
       .select({ id: store.id })
@@ -177,7 +139,7 @@ export const adminUpdateStore = createServerFn({ method: 'POST' })
  */
 export const adminDeleteStore = createServerFn({ method: 'POST' })
   .middleware([withAdmin])
-  .validator(storeIdSchema)
+  .validator(toValidator(StoreId))
   .handler(async ({ data }): Promise<ActionResult> => {
     const rows = await getDb()
       .select({ id: store.id })
@@ -199,7 +161,7 @@ export const adminDeleteStore = createServerFn({ method: 'POST' })
  * itself. One shop per person still holds: the target must not have one.
  */ export const transferStoreOwner = createServerFn({ method: 'POST' })
   .middleware([withAdmin])
-  .validator(adminTransferStoreSchema)
+  .validator(toValidator(AdminTransferStore))
   .handler(async ({ data }): Promise<ActionResult> => {
     const db = getDb()
     const email = data.email.trim().toLowerCase()
@@ -243,7 +205,7 @@ export const adminDeleteStore = createServerFn({ method: 'POST' })
 
 export const adminSetProductArchived = createServerFn({ method: 'POST' })
   .middleware([withAdmin])
-  .validator(productStatusSchema)
+  .validator(toValidator(ProductStatus))
   .handler(async ({ context, data }): Promise<ActionResult> => {
     const db = getDb()
 
@@ -271,7 +233,7 @@ export const adminSetProductArchived = createServerFn({ method: 'POST' })
 
 export const adminDeleteProduct = createServerFn({ method: 'POST' })
   .middleware([withAdmin])
-  .validator(productDeleteSchema)
+  .validator(toValidator(ProductDelete))
   .handler(async ({ data }): Promise<ActionResult> => {
     const rows = await getDb()
       .select({ id: product.id })
@@ -295,7 +257,7 @@ export const adminDeleteProduct = createServerFn({ method: 'POST' })
  */
 export const setUserRole = createServerFn({ method: 'POST' })
   .middleware([withAdmin])
-  .validator(adminUserRoleSchema)
+  .validator(toValidator(AdminUserRole))
   .handler(async ({ context, data }): Promise<ActionResult> => {
     if (data.userId === context.admin.id) {
       return { ok: false, message: 'Не можете да ја смените сопствената улога.' }
@@ -318,7 +280,7 @@ export const setUserRole = createServerFn({ method: 'POST' })
 
 export const setMessageHandled = createServerFn({ method: 'POST' })
   .middleware([withAdmin])
-  .validator(adminMessageHandledSchema)
+  .validator(toValidator(AdminMessageHandled))
   .handler(async ({ data }): Promise<ActionResult> => {
     const rows = await getDb()
       .select({ id: contactMessage.id })
@@ -340,7 +302,7 @@ export const setMessageHandled = createServerFn({ method: 'POST' })
 
 export const deleteMessage = createServerFn({ method: 'POST' })
   .middleware([withAdmin])
-  .validator(adminMessageSchema)
+  .validator(toValidator(AdminMessage))
   .handler(async ({ data }): Promise<ActionResult> => {
     const rows = await getDb()
       .select({ id: contactMessage.id })
@@ -359,7 +321,7 @@ export const deleteMessage = createServerFn({ method: 'POST' })
 
 export const getAdminProduct = createServerFn({ method: 'GET' })
   .middleware([withAdmin])
-  .validator(productDeleteSchema)
+  .validator(toValidator(ProductDelete))
   .handler(async ({ data }) => {
     const row = await runEffect(selectAdminProductRow(data.productId))
 
@@ -384,7 +346,7 @@ export const getAdminProduct = createServerFn({ method: 'GET' })
 
 export const adminSaveProduct = createServerFn({ method: 'POST' })
   .middleware([withAdmin])
-  .validator(productFormSchema)
+  .validator(toValidator(ProductForm))
   .handler(async ({ data }): Promise<ActionResult<{ productId: string }>> => {
     if (!data.productId) {
       return { ok: false, message: 'Недостасува производ.' }

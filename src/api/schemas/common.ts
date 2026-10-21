@@ -13,8 +13,12 @@ export const PageNumber = Schema.Number.pipe(
 )
 
 export const SortDirection = Schema.Literals(['asc', 'desc'])
+export type SortDirection = Schema.Schema.Type<typeof SortDirection>
 
 export const ProductSort = Schema.Literals(['newest', 'alpha', 'price'])
+export type ProductSort = Schema.Schema.Type<typeof ProductSort>
+
+export const MIN_SEARCH_LENGTH = 2
 
 export const ProductAvailability = Schema.Literals(['in_stock', 'out_of_stock', 'on_order'])
 

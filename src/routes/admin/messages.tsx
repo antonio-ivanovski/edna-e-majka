@@ -6,7 +6,7 @@ import { AdminMessageCard } from '#/components/admin/message-card'
 import { EmptyState } from '#/components/ui/empty-state'
 import { Panel } from '#/components/ui/panel'
 import { toValidator, AdminMessageSearch } from "#/api/schemas"
-import type { MessageFilter } from "#/lib/admin-search"
+type MessageFilter = 'open' | 'done' | 'all'
 import { formatCount } from '#/lib/format'
 import { ADMIN_PAGE_SIZE } from '#/lib/pagination'
 import { getAdminMessages } from '#/server/functions/admin'
