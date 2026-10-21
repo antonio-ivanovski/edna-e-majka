@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { useForm } from 'react-hook-form'
 
 import { Schema } from 'effect'
-import { nowMs } from '#/lib/clock'
+// (inlined)
 import { effectResolver } from '#/lib/effect-resolver'
 import { submitEnquiry } from '#/server/functions/contact'
 
@@ -23,7 +23,7 @@ type FormValues = Schema.Schema.Type<typeof formSchema>
 export function EnquiryForm({ storeId, productId }: { storeId: string; productId?: string }) {
   const [sent, setSent] = useState(false)
   const [serverError, setServerError] = useState('')
-  const [startedAt] = useState(() => nowMs())
+  const [startedAt] = useState(() => Date.now())
 
   const {
     register,

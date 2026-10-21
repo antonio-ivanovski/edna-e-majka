@@ -3,7 +3,7 @@ import { getRequestHeader } from '@tanstack/react-start/server'
 
 import { Effect } from 'effect'
 import { toValidator, CooperationMessage, EnquiryMessage } from '#/api/schemas'
-import { submittedTooFast } from '#/lib/clock'
+// (inlined)
 
 import { getDb } from '../db/client'
 import { contactMessage } from '../db/schema'
@@ -21,7 +21,7 @@ export const submitCooperationMessage = createServerFn({ method: 'POST' })
   .handler(async ({ data }): Promise<CooperationResult> => {
     const ip = getRequestHeader('cf-connecting-ip')
 
-    if (data.honeypot || submittedTooFast(data.startedAt, MIN_FILL_TIME_MS)) {
+    if (data.honeypot || Date.now() - data.startedAt < MIN_FILL_TIME_MS) {
       return { ok: true }
     }
 
@@ -50,7 +50,7 @@ export const submitEnquiry = createServerFn({ method: 'POST' })
   .handler(async ({ data }): Promise<EnquiryResult> => {
     const ip = getRequestHeader('cf-connecting-ip')
 
-    if (submittedTooFast(data.startedAt, MIN_FILL_TIME_MS)) {
+    if (Date.now() - data.startedAt < MIN_FILL_TIME_MS) {
       return { ok: true }
     }
 

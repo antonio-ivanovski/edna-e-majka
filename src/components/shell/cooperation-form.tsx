@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { useForm } from 'react-hook-form'
 
 import { Schema } from 'effect'
-import { nowMs } from '#/lib/clock'
+// (inlined)
 import { effectResolver } from '#/lib/effect-resolver'
 import { submitCooperationMessage } from '#/server/functions/contact'
 
@@ -23,7 +23,7 @@ type FormValues = Schema.Schema.Type<typeof formSchema>
 
 /** The form behind the amber bar's "Соработка", loaded only when it opens. */
 export function CooperationForm({ onSent }: { onSent: () => void }) {
-  const [startedAt] = useState(() => nowMs())
+  const [startedAt] = useState(() => Date.now())
   const [serverError, setServerError] = useState('')
 
   const {
