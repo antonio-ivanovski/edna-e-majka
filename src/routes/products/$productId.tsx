@@ -5,6 +5,7 @@ import { useEffect } from 'react'
 import { recordRecentlyViewed } from '#/lib/recently-viewed'
 
 import { ProducerContacts } from '#/components/catalogue/producer-contacts'
+import { ShareButtons } from '#/components/catalogue/share-buttons'
 import { Avatar } from '#/components/ui/avatar'
 import { Breadcrumbs } from '#/components/ui/breadcrumbs'
 import { Label } from '#/components/ui/label'
@@ -152,6 +153,13 @@ function ProductPage() {
             Нарачај „{product.title}“ од {product.store.name} преку:
           </h2>
           <ProducerContacts contacts={product.store} className="mt-3" />
+        </section>
+
+        <section className="mt-6">
+          <h2 className="text-sm font-bold text-black/[0.87]">Сподели</h2>
+          <div className="mt-2">
+            <ShareButtons path={`/products/${product.id}`} title={product.title} />
+          </div>
         </section>
       </div>
     </div>
