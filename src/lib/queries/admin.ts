@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { queryOptions } from '@tanstack/react-query'
 
 import { getAdminStores, getAdminProducts, getAdminUsers, getAdminMessages, getAdminStore, getAdminProduct } from '#/server/functions/admin'
