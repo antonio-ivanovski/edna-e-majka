@@ -90,7 +90,7 @@ export const deleteAccount = createServerFn({ method: 'POST' })
 
     // The shop goes first, so its files leave the bucket before the rows go.
     if (ownStore) {
-      await deleteStoreCascade(ownStore.id)
+      await runEffect(deleteStoreCascade(ownStore.id))
     }
 
     await db.delete(session).where(eq(session.userId, viewer.id))

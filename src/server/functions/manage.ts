@@ -93,7 +93,7 @@ export const applyForStore = createServerFn({ method: 'POST' })
       instagram: optionalText(data.instagram),
       city: optionalText(data.city),
       hours: optionalText(data.hours),
-      slug: await claimStoreSlug(data.name),
+      slug: await runEffect(claimStoreSlug(data.name)),
       status: verdict.status,
       statusNote: verdict.status === 'pending' ? verdict.note : null,
     })
@@ -134,7 +134,7 @@ export const saveProduct = createServerFn({ method: 'POST' })
       if (!(await runEffect(selectOwnerProduct(data.productId, data.storeId)))) return NOT_ALLOWED
       await db.update(product).set({ title: data.title, description: data.description, searchText, availability: data.availability }).where(eq(product.id, productId))
     } else {
-      await db.insert(product).values({ id: productId, storeId: data.storeId, title: data.title, description: data.description, searchText, availability: data.availability, slug: await claimProductSlug(data.title) })
+      await db.insert(product).values({ id: productId, storeId: data.storeId, title: data.title, description: data.description, searchText, availability: data.availability, slug: await runEffect(claimProductSlug(data.title)) })
     }
     await db.delete(productVariant).where(eq(productVariant.productId, productId))
     await db.delete(productCategory).where(eq(productCategory.productId, productId))
@@ -164,7 +164,7 @@ export const deleteProduct = createServerFn({ method: 'POST' })
     const viewer = context.viewer
     if (!viewer) return NOT_SIGNED_IN
     if (!(await runEffect(selectOwnedProductRow(data.productId, viewer.id)))) return NOT_ALLOWED
-    await deleteProductCascade(data.productId)
+    await runEffect(deleteProductCascade(data.productId))
     return { ok: true, data: null }
   })
 
@@ -175,7 +175,7 @@ export const deleteStore = createServerFn({ method: 'POST' })
     const viewer = context.viewer
     if (!viewer) return NOT_SIGNED_IN
     if (!(await runEffect(selectOwnerStoreById(data.storeId, viewer.id)))) return NOT_ALLOWED
-    await deleteStoreCascade(data.storeId)
+    await runEffect(deleteStoreCascade(data.storeId))
     return { ok: true, data: null }
   })
 

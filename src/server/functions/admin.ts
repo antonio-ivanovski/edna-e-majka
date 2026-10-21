@@ -188,7 +188,7 @@ export const adminDeleteStore = createServerFn({ method: 'POST' })
       return { ok: false, message: 'Продавницата не е најдена.' }
     }
 
-    await deleteStoreCascade(data.storeId)
+    await runEffect(deleteStoreCascade(data.storeId))
 
     return { ok: true, data: null }
   })
@@ -282,7 +282,7 @@ export const adminDeleteProduct = createServerFn({ method: 'POST' })
       return { ok: false, message: 'Производот не е најден.' }
     }
 
-    await deleteProductCascade(data.productId)
+    await runEffect(deleteProductCascade(data.productId))
 
     return { ok: true, data: null }
   })

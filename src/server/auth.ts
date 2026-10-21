@@ -9,7 +9,9 @@ import { z } from 'zod'
 import * as authSchema from './db/auth-schema'
 import { getDb } from './db/client'
 import { sendMagicLinkEmail } from './email'
-import { consumeRateLimit } from './rate-limit'
+import { Effect } from 'effect'
+import { runEffect } from './runtime'
+import { RateLimiter } from './services/rate-limit'
 
 /** Short-lived and single use: the link is the credential. */
 const MAGIC_LINK_TTL_SECONDS = 15 * 60
@@ -106,10 +108,15 @@ export const auth = betterAuth({
         return
       }
 
-      const verdict = await consumeRateLimit({
-        key: `magic-link:${body.data.email.toLowerCase()}`,
-        ...MAGIC_LINK_EMAIL_QUOTA,
-      })
+      const verdict = await runEffect(
+        Effect.gen(function* () {
+          const rl = yield* RateLimiter
+          return yield* rl.consume({
+            key: `magic-link:${body.data.email.toLowerCase()}`,
+            ...MAGIC_LINK_EMAIL_QUOTA,
+          })
+        }),
+      )
 
       if (!verdict.allowed) {
         throw new APIError('TOO_MANY_REQUESTS', {

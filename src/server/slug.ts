@@ -1,40 +1,23 @@
-/**
- * Slugs are claimed, not chosen: the readable address is written once, when the
- * listing or the shop is created, and then kept so shared links keep working.
- */
+import { Effect } from 'effect'
 import { eq, like, or } from 'drizzle-orm'
 
 import { slugify, uniqueSlug } from '#/lib/slug'
-
-import { getDb } from './db/client'
+import { Db } from './services/db'
+import { DatabaseError } from './errors'
 import { product, store } from './db/schema'
 
-/** A free product slug for the given title. */
-export async function claimProductSlug(title: string): Promise<string> {
+export const claimProductSlug = Effect.fn('claimProductSlug')(function* (title: string): Effect.fn.Return<string, DatabaseError, Db> {
   const base = slugify(title)
-  const db = getDb()
-
-  const rows = await db
-    .select({ slug: product.slug })
-    .from(product)
-    .where(or(eq(product.slug, base), like(product.slug, `${base}-%`)))
-
-  const taken = new Set(rows.map((row) => row.slug).filter((slug): slug is string => !!slug))
-
+  const db = yield* Db
+  const rows = yield* db.run((d) => d.select({ slug: product.slug }).from(product).where(or(eq(product.slug, base), like(product.slug, `${base}-%`))))
+  const taken = new Set(rows.map((r) => r.slug).filter((s): s is string => !!s))
   return uniqueSlug(base, (candidate) => taken.has(candidate))
-}
+})
 
-/** A free shop slug for the given name. */
-export async function claimStoreSlug(name: string): Promise<string> {
+export const claimStoreSlug = Effect.fn('claimStoreSlug')(function* (name: string): Effect.fn.Return<string, DatabaseError, Db> {
   const base = slugify(name)
-  const db = getDb()
-
-  const rows = await db
-    .select({ slug: store.slug })
-    .from(store)
-    .where(or(eq(store.slug, base), like(store.slug, `${base}-%`)))
-
-  const taken = new Set(rows.map((row) => row.slug).filter((slug): slug is string => !!slug))
-
+  const db = yield* Db
+  const rows = yield* db.run((d) => d.select({ slug: store.slug }).from(store).where(or(eq(store.slug, base), like(store.slug, `${base}-%`))))
+  const taken = new Set(rows.map((r) => r.slug).filter((s): s is string => !!s))
   return uniqueSlug(base, (candidate) => taken.has(candidate))
-}
+})
