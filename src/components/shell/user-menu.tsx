@@ -1,7 +1,12 @@
-import { useRouter } from '@tanstack/react-router'
-import { LogOut } from 'lucide-react'
+import { Link, useRouter } from '@tanstack/react-router'
+import { ChevronDown, LogOut, Store } from 'lucide-react'
 
 import { Avatar } from '#/components/ui/avatar'
+import {
+  DropdownMenu,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+} from '#/components/ui/dropdown-menu'
 import { authClient } from '#/lib/auth-client'
 
 import { SignInDialog } from './sign-in-dialog'
@@ -27,23 +32,48 @@ export function UserMenu({ googleEnabled }: { googleEnabled: boolean }) {
   }
 
   const { user } = session
+  const label = user.name || user.email
+
+  const signOut = async () => {
+    await authClient.signOut()
+    await router.invalidate()
+  }
 
   return (
-    <div className="flex items-center gap-1.5 px-1.5 py-2">
-      <Avatar src={user.image} alt={user.name || user.email} />
-      <span className="max-w-[12rem] truncate">{user.name || user.email}</span>
-      <button
-        type="button"
-        title="Одјави се"
-        aria-label="Одјави се"
-        className="cursor-pointer rounded-[0.2857rem] p-1 text-black/40 hover:bg-black/[0.04] hover:text-black/70"
-        onClick={async () => {
-          await authClient.signOut()
-          await router.invalidate()
-        }}
-      >
-        <LogOut className="size-4" />
-      </button>
-    </div>
+    <DropdownMenu
+      align="end"
+      trigger={
+        <button
+          type="button"
+          className="flex max-w-[16rem] cursor-pointer items-center gap-1.5 rounded-[0.2857rem] px-1.5 py-2 text-black/[0.87] hover:bg-black/[0.03]"
+        >
+          <Avatar src={user.image} alt={label} />
+          <span className="max-w-[9rem] truncate">{label}</span>
+          <ChevronDown aria-hidden="true" className="size-4 text-black/40" />
+        </button>
+      }
+    >
+      <div className="px-3 py-2">
+        <p className="text-[0.7857rem] text-black/45">Најавени како</p>
+        <p className="max-w-[14rem] truncate text-sm font-semibold text-black/[0.87]">
+          {user.email}
+        </p>
+      </div>
+
+      <DropdownMenuSeparator />
+
+      <DropdownMenuItem asChild>
+        <Link to="/manage" className="w-full">
+          <Store aria-hidden="true" className="size-4 text-black/40" />
+          Менаџирај продавница
+        </Link>
+      </DropdownMenuItem>
+
+      <DropdownMenuSeparator />
+
+      <DropdownMenuItem icon={<LogOut className="size-4" />} onSelect={() => void signOut()}>
+        Одјави се
+      </DropdownMenuItem>
+    </DropdownMenu>
   )
 }

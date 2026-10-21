@@ -12,12 +12,20 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as SearchRouteImport } from './routes/search'
 import { Route as SignInRouteImport } from './routes/sign-in'
+import { Route as ApiUploadsRouteImport } from './routes/api/uploads'
 import { Route as CategoriesSlugRouteImport } from './routes/categories/$slug'
 import { Route as ImagesSplatRouteImport } from './routes/images/$'
+import { Route as ManageIndexRouteImport } from './routes/manage/index'
+import { Route as ManageStoreIdRouteImport } from './routes/manage/$storeId'
+import { Route as ManageNewRouteImport } from './routes/manage/new'
 import { Route as ProducersIndexRouteImport } from './routes/producers/index'
 import { Route as ProducersStoreIdRouteImport } from './routes/producers/$storeId'
 import { Route as ProductsProductIdRouteImport } from './routes/products/$productId'
 import { Route as ApiAuthSplatRouteImport } from './routes/api/auth/$'
+import { Route as ManageStoreIdIndexRouteImport } from './routes/manage/$storeId/index'
+import { Route as ManageStoreIdProductsIndexRouteImport } from './routes/manage/$storeId/products/index'
+import { Route as ManageStoreIdProductsProductIdRouteImport } from './routes/manage/$storeId/products/$productId'
+import { Route as ManageStoreIdProductsNewRouteImport } from './routes/manage/$storeId/products/new'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -34,6 +42,11 @@ const SignInRoute = SignInRouteImport.update({
   path: '/sign-in',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiUploadsRoute = ApiUploadsRouteImport.update({
+  id: '/api/uploads',
+  path: '/api/uploads',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const CategoriesSlugRoute = CategoriesSlugRouteImport.update({
   id: '/categories/$slug',
   path: '/categories/$slug',
@@ -42,6 +55,21 @@ const CategoriesSlugRoute = CategoriesSlugRouteImport.update({
 const ImagesSplatRoute = ImagesSplatRouteImport.update({
   id: '/images/$',
   path: '/images/$',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ManageIndexRoute = ManageIndexRouteImport.update({
+  id: '/manage/',
+  path: '/manage/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ManageStoreIdRoute = ManageStoreIdRouteImport.update({
+  id: '/manage/$storeId',
+  path: '/manage/$storeId',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ManageNewRoute = ManageNewRouteImport.update({
+  id: '/manage/new',
+  path: '/manage/new',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ProducersIndexRoute = ProducersIndexRouteImport.update({
@@ -64,40 +92,86 @@ const ApiAuthSplatRoute = ApiAuthSplatRouteImport.update({
   path: '/api/auth/$',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ManageStoreIdIndexRoute = ManageStoreIdIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => ManageStoreIdRoute,
+} as any)
+const ManageStoreIdProductsIndexRoute =
+  ManageStoreIdProductsIndexRouteImport.update({
+    id: '/products/',
+    path: '/products/',
+    getParentRoute: () => ManageStoreIdRoute,
+  } as any)
+const ManageStoreIdProductsProductIdRoute =
+  ManageStoreIdProductsProductIdRouteImport.update({
+    id: '/products/$productId',
+    path: '/products/$productId',
+    getParentRoute: () => ManageStoreIdRoute,
+  } as any)
+const ManageStoreIdProductsNewRoute =
+  ManageStoreIdProductsNewRouteImport.update({
+    id: '/products/new',
+    path: '/products/new',
+    getParentRoute: () => ManageStoreIdRoute,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/search': typeof SearchRoute
   '/sign-in': typeof SignInRoute
+  '/api/uploads': typeof ApiUploadsRoute
   '/categories/$slug': typeof CategoriesSlugRoute
   '/images/$': typeof ImagesSplatRoute
+  '/manage/$storeId': typeof ManageStoreIdRouteWithChildren
+  '/manage/new': typeof ManageNewRoute
   '/producers/$storeId': typeof ProducersStoreIdRoute
   '/products/$productId': typeof ProductsProductIdRoute
+  '/manage/': typeof ManageIndexRoute
   '/producers/': typeof ProducersIndexRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
+  '/manage/$storeId/': typeof ManageStoreIdIndexRoute
+  '/manage/$storeId/products/$productId': typeof ManageStoreIdProductsProductIdRoute
+  '/manage/$storeId/products/new': typeof ManageStoreIdProductsNewRoute
+  '/manage/$storeId/products/': typeof ManageStoreIdProductsIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/search': typeof SearchRoute
   '/sign-in': typeof SignInRoute
+  '/api/uploads': typeof ApiUploadsRoute
   '/categories/$slug': typeof CategoriesSlugRoute
   '/images/$': typeof ImagesSplatRoute
+  '/manage/new': typeof ManageNewRoute
   '/producers/$storeId': typeof ProducersStoreIdRoute
   '/products/$productId': typeof ProductsProductIdRoute
+  '/manage': typeof ManageIndexRoute
   '/producers': typeof ProducersIndexRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
+  '/manage/$storeId': typeof ManageStoreIdIndexRoute
+  '/manage/$storeId/products/$productId': typeof ManageStoreIdProductsProductIdRoute
+  '/manage/$storeId/products/new': typeof ManageStoreIdProductsNewRoute
+  '/manage/$storeId/products': typeof ManageStoreIdProductsIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/search': typeof SearchRoute
   '/sign-in': typeof SignInRoute
+  '/api/uploads': typeof ApiUploadsRoute
   '/categories/$slug': typeof CategoriesSlugRoute
   '/images/$': typeof ImagesSplatRoute
+  '/manage/$storeId': typeof ManageStoreIdRouteWithChildren
+  '/manage/new': typeof ManageNewRoute
   '/producers/$storeId': typeof ProducersStoreIdRoute
   '/products/$productId': typeof ProductsProductIdRoute
+  '/manage/': typeof ManageIndexRoute
   '/producers/': typeof ProducersIndexRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
+  '/manage/$storeId/': typeof ManageStoreIdIndexRoute
+  '/manage/$storeId/products/$productId': typeof ManageStoreIdProductsProductIdRoute
+  '/manage/$storeId/products/new': typeof ManageStoreIdProductsNewRoute
+  '/manage/$storeId/products/': typeof ManageStoreIdProductsIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -105,44 +179,71 @@ export interface FileRouteTypes {
     | '/'
     | '/search'
     | '/sign-in'
+    | '/api/uploads'
     | '/categories/$slug'
     | '/images/$'
+    | '/manage/$storeId'
+    | '/manage/new'
     | '/producers/$storeId'
     | '/products/$productId'
+    | '/manage/'
     | '/producers/'
     | '/api/auth/$'
+    | '/manage/$storeId/'
+    | '/manage/$storeId/products/$productId'
+    | '/manage/$storeId/products/new'
+    | '/manage/$storeId/products/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
     | '/search'
     | '/sign-in'
+    | '/api/uploads'
     | '/categories/$slug'
     | '/images/$'
+    | '/manage/new'
     | '/producers/$storeId'
     | '/products/$productId'
+    | '/manage'
     | '/producers'
     | '/api/auth/$'
+    | '/manage/$storeId'
+    | '/manage/$storeId/products/$productId'
+    | '/manage/$storeId/products/new'
+    | '/manage/$storeId/products'
   id:
     | '__root__'
     | '/'
     | '/search'
     | '/sign-in'
+    | '/api/uploads'
     | '/categories/$slug'
     | '/images/$'
+    | '/manage/$storeId'
+    | '/manage/new'
     | '/producers/$storeId'
     | '/products/$productId'
+    | '/manage/'
     | '/producers/'
     | '/api/auth/$'
+    | '/manage/$storeId/'
+    | '/manage/$storeId/products/$productId'
+    | '/manage/$storeId/products/new'
+    | '/manage/$storeId/products/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   SearchRoute: typeof SearchRoute
   SignInRoute: typeof SignInRoute
+  ApiUploadsRoute: typeof ApiUploadsRoute
   CategoriesSlugRoute: typeof CategoriesSlugRoute
   ImagesSplatRoute: typeof ImagesSplatRoute
+  ManageStoreIdRoute: typeof ManageStoreIdRouteWithChildren
+  ManageNewRoute: typeof ManageNewRoute
   ProducersStoreIdRoute: typeof ProducersStoreIdRoute
   ProductsProductIdRoute: typeof ProductsProductIdRoute
+  ManageIndexRoute: typeof ManageIndexRoute
   ProducersIndexRoute: typeof ProducersIndexRoute
   ApiAuthSplatRoute: typeof ApiAuthSplatRoute
 }
@@ -170,6 +271,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof SignInRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/uploads': {
+      id: '/api/uploads'
+      path: '/api/uploads'
+      fullPath: '/api/uploads'
+      preLoaderRoute: typeof ApiUploadsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/categories/$slug': {
       id: '/categories/$slug'
       path: '/categories/$slug'
@@ -182,6 +290,27 @@ declare module '@tanstack/react-router' {
       path: '/images/$'
       fullPath: '/images/$'
       preLoaderRoute: typeof ImagesSplatRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/manage/': {
+      id: '/manage/'
+      path: '/manage'
+      fullPath: '/manage/'
+      preLoaderRoute: typeof ManageIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/manage/$storeId': {
+      id: '/manage/$storeId'
+      path: '/manage/$storeId'
+      fullPath: '/manage/$storeId'
+      preLoaderRoute: typeof ManageStoreIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/manage/new': {
+      id: '/manage/new'
+      path: '/manage/new'
+      fullPath: '/manage/new'
+      preLoaderRoute: typeof ManageNewRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/producers/': {
@@ -212,17 +341,67 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiAuthSplatRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/manage/$storeId/': {
+      id: '/manage/$storeId/'
+      path: '/'
+      fullPath: '/manage/$storeId/'
+      preLoaderRoute: typeof ManageStoreIdIndexRouteImport
+      parentRoute: typeof ManageStoreIdRoute
+    }
+    '/manage/$storeId/products/': {
+      id: '/manage/$storeId/products/'
+      path: '/products'
+      fullPath: '/manage/$storeId/products/'
+      preLoaderRoute: typeof ManageStoreIdProductsIndexRouteImport
+      parentRoute: typeof ManageStoreIdRoute
+    }
+    '/manage/$storeId/products/$productId': {
+      id: '/manage/$storeId/products/$productId'
+      path: '/products/$productId'
+      fullPath: '/manage/$storeId/products/$productId'
+      preLoaderRoute: typeof ManageStoreIdProductsProductIdRouteImport
+      parentRoute: typeof ManageStoreIdRoute
+    }
+    '/manage/$storeId/products/new': {
+      id: '/manage/$storeId/products/new'
+      path: '/products/new'
+      fullPath: '/manage/$storeId/products/new'
+      preLoaderRoute: typeof ManageStoreIdProductsNewRouteImport
+      parentRoute: typeof ManageStoreIdRoute
+    }
   }
 }
+
+interface ManageStoreIdRouteChildren {
+  ManageStoreIdIndexRoute: typeof ManageStoreIdIndexRoute
+  ManageStoreIdProductsProductIdRoute: typeof ManageStoreIdProductsProductIdRoute
+  ManageStoreIdProductsNewRoute: typeof ManageStoreIdProductsNewRoute
+  ManageStoreIdProductsIndexRoute: typeof ManageStoreIdProductsIndexRoute
+}
+
+const ManageStoreIdRouteChildren: ManageStoreIdRouteChildren = {
+  ManageStoreIdIndexRoute: ManageStoreIdIndexRoute,
+  ManageStoreIdProductsProductIdRoute: ManageStoreIdProductsProductIdRoute,
+  ManageStoreIdProductsNewRoute: ManageStoreIdProductsNewRoute,
+  ManageStoreIdProductsIndexRoute: ManageStoreIdProductsIndexRoute,
+}
+
+const ManageStoreIdRouteWithChildren = ManageStoreIdRoute._addFileChildren(
+  ManageStoreIdRouteChildren,
+)
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   SearchRoute: SearchRoute,
   SignInRoute: SignInRoute,
+  ApiUploadsRoute: ApiUploadsRoute,
   CategoriesSlugRoute: CategoriesSlugRoute,
   ImagesSplatRoute: ImagesSplatRoute,
+  ManageStoreIdRoute: ManageStoreIdRouteWithChildren,
+  ManageNewRoute: ManageNewRoute,
   ProducersStoreIdRoute: ProducersStoreIdRoute,
   ProductsProductIdRoute: ProductsProductIdRoute,
+  ManageIndexRoute: ManageIndexRoute,
   ProducersIndexRoute: ProducersIndexRoute,
   ApiAuthSplatRoute: ApiAuthSplatRoute,
 }

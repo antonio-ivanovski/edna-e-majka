@@ -1,6 +1,14 @@
-/** Prices are whole denars. Macedonian grouping uses a dot: 1.200 МКД. */
+/**
+ * Prices are whole denars. Macedonian grouping uses a dot: 1.200 МКД.
+ *
+ * Grouped by hand rather than through `Intl.NumberFormat('mk-MK')`: locale data
+ * travels with the runtime, so a browser without mk data (or a test browser with
+ * a trimmed ICU) would print `1,200` where the server printed `1.200`.
+ */
 export function formatPrice(denars: number): string {
-  return `${new Intl.NumberFormat('mk-MK').format(denars)} МКД`
+  const digits = String(Math.abs(Math.trunc(denars))).replace(/\B(?=(\d{3})+(?!\d))/g, '.')
+
+  return `${denars < 0 ? '-' : ''}${digits} МКД`
 }
 
 /** The card's meta line date: 21.10.2026. */

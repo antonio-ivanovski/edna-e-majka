@@ -332,6 +332,15 @@ async function uploadImage(bucket: R2Bucket, key: string, source: ImageSource): 
   })
 }
 
+/** The file name an image source stands in with, kept in its key. */
+const sourceFile = (source: ImageSource) => IMAGE_SOURCES[source].path.split('/').pop() ?? 'image'
+
+const avatarKey = (store: DemoStore) =>
+  store.avatar ? `demo/stores/${store.id}/avatar-${sourceFile(store.avatar)}` : null
+
+const productImageKey = (productId: string, index: number, source: ImageSource) =>
+  `demo/products/${productId}/${index + 1}-${sourceFile(source)}`
+
 async function main() {
   const platform = await getPlatformProxy<{ DB: D1Database; BUCKET: R2Bucket }>({
     configPath: 'wrangler.jsonc',
@@ -351,14 +360,32 @@ async function main() {
   await db.delete(store)
   await db.delete(user).where(like(user.email, `%${DEMO_EMAIL_SUFFIX}`))
 
+  // The demo objects go too, so a re-seed never leaves orphans behind.
+  const existing = await bucket.list({ prefix: 'demo/' })
+
+  if (existing.objects.length > 0) {
+    await bucket.delete(existing.objects.map((object) => object.key))
+  }
+
   console.info('Uploading demo images…')
 
-  const imageKeys = new Map<string, string>()
-  for (const [name, source] of Object.entries(IMAGE_SOURCES)) {
-    const key = `demo/${name}-${source.path.split('/').pop()}`
-    await uploadImage(bucket, key, name as ImageSource)
-    imageKeys.set(name, key)
-  }
+  // Every store and every listing gets its own object: an owner who replaces a
+  // photo must not delete one that another page is showing.
+  const uploads = [
+    ...STORES.flatMap((store) => {
+      const key = avatarKey(store)
+
+      return key && store.avatar ? [{ key, source: store.avatar }] : []
+    }),
+    ...PRODUCTS.flatMap((product) =>
+      product.images.map((image, index) => ({
+        key: productImageKey(product.id, index, image.source),
+        source: image.source,
+      })),
+    ),
+  ]
+
+  await Promise.all(uploads.map(({ key, source }) => uploadImage(bucket, key, source)))
 
   console.info('Writing stores…')
 
@@ -379,7 +406,7 @@ async function main() {
       ownerId: demoStore.owner.id,
       name: demoStore.name,
       description: demoStore.description,
-      avatarKey: imageKeys.get(demoStore.avatar) ?? null,
+      avatarKey: avatarKey(demoStore),
       email: demoStore.owner.email,
       phone: demoStore.phone,
       facebook: demoStore.facebook,
@@ -430,7 +457,7 @@ async function main() {
       demoProduct.images.map((image, index) => ({
         id: `${demoProduct.id}-image-${index + 1}`,
         productId: demoProduct.id,
-        r2Key: imageKeys.get(image.source) ?? '',
+        r2Key: productImageKey(demoProduct.id, index, image.source),
         width: IMAGE_SOURCES[image.source].width,
         height: IMAGE_SOURCES[image.source].height,
         alt: image.alt,
