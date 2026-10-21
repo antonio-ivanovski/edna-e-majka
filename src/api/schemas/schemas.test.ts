@@ -35,6 +35,6 @@ describe('Effect schemas', () => {
       variants: [{ title: '500g', price: 100 }],
     })
     expect(result.title).toBe('Honey')
-    expect(result.variants[0].price).toBe(100)
+    expect(result.variants[0]?.price).toBe(100)
   })
 })
