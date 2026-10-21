@@ -140,6 +140,8 @@ export const contactMessage = sqliteTable(
     message: text('message').notNull(),
     ip: text('ip'),
     userAgent: text('user_agent'),
+    storeId: text('store_id'),
+    productId: text('product_id'),
     /** Set when an admin marks the message read in the dashboard. */
     handledAt: integer('handled_at', { mode: 'timestamp_ms' }),
     ...timestamps,

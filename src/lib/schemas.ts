@@ -41,6 +41,17 @@ export const productIdSchema = z.object({ productId: z.string().min(1) })
  * abuse signals that replace a captcha: a hidden field nobody types into, and
  * the moment the form was rendered.
  */
+export const enquiryMessageSchema = z.object({
+  storeId: z.string().min(1),
+  productId: z.string().min(1).optional(),
+  name: z.string().trim().min(2, 'Внесете име.').max(120),
+  email: z.email('Ве молиме внесете валидна е-маил адреса.').max(200),
+  phone: z.string().trim().max(60).optional(),
+  message: z.string().trim().min(10, 'Напишете порака од најмалку 10 знаци.').max(2000),
+  honeypot: z.string().max(0).optional(),
+  startedAt: z.number(),
+})
+
 export const cooperationMessageSchema = z.object({
   name: z.string().trim().min(2, 'Ве молиме внесете го вашето име.').max(120),
   email: z.email('Ве молиме внесете валидна е-маил адреса.').max(200),

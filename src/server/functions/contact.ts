@@ -2,7 +2,7 @@ import { createServerFn } from '@tanstack/react-start'
 import { getRequestHeader } from '@tanstack/react-start/server'
 
 import { submittedTooFast } from '#/lib/clock'
-import { cooperationMessageSchema } from '#/lib/schemas'
+import { cooperationMessageSchema, enquiryMessageSchema } from '#/lib/schemas'
 
 import { getDb } from '../db/client'
 import { contactMessage } from '../db/schema'
@@ -56,6 +56,47 @@ export const submitCooperationMessage = createServerFn({ method: 'POST' })
         message: data.message ?? '',
         ip,
         userAgent: getRequestHeader('user-agent'),
+      })
+
+    return { ok: true }
+  })
+
+export type EnquiryResult = { ok: true } | { ok: false; message: string }
+
+export const submitEnquiry = createServerFn({ method: 'POST' })
+  .validator(enquiryMessageSchema)
+  .handler(async ({ data }): Promise<EnquiryResult> => {
+    const ip = getRequestHeader('cf-connecting-ip')
+
+    if (submittedTooFast(data.startedAt, MIN_FILL_TIME_MS)) {
+      return { ok: true }
+    }
+
+    const verdict = await consumeRateLimit({
+      key: `enquiry:${ip ?? 'unknown'}`,
+      ...IP_QUOTA,
+    })
+
+    if (!verdict.allowed) {
+      return {
+        ok: false,
+        message: 'Примено е премногу пораки од вашата адреса. Обидете се повторно подоцна.',
+      }
+    }
+
+    await getDb()
+      .insert(contactMessage)
+      .values({
+        id: crypto.randomUUID(),
+        kind: 'contact',
+        name: data.name,
+        email: data.email,
+        phone: data.phone || null,
+        message: data.message,
+        ip,
+        userAgent: getRequestHeader('user-agent'),
+        storeId: data.storeId,
+        productId: data.productId ?? null,
       })
 
     return { ok: true }
