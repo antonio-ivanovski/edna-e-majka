@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { Schema } from 'effect'
 import type { FieldValues, Resolver } from 'react-hook-form'
 

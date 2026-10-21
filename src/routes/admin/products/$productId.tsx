@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { Link, createFileRoute } from '@tanstack/react-router'
 
 import { ProductForm } from '#/components/manage/product-form'

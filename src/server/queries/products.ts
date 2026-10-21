@@ -1,8 +1,9 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { Effect } from 'effect'
 import { and, asc, count, desc, eq, inArray, or, sql } from 'drizzle-orm'
 
 import { Db } from '../services/db'
-import { DatabaseError } from '../errors'
+import { type DatabaseError } from '../errors'
 import { buildSearchVariants } from '#/lib/translit'
 import { MAX_CATALOGUE_ITEMS, PRODUCT_PAGE_SIZE } from '#/lib/pagination'
 import type { ProductListFilters as ProductListFiltersType } from '#/api/schemas'

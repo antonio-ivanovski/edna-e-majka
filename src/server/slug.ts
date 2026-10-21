@@ -3,7 +3,7 @@ import { eq, like, or } from 'drizzle-orm'
 
 import { slugify, uniqueSlug } from '#/lib/slug'
 import { Db } from './services/db'
-import { DatabaseError } from './errors'
+import { type DatabaseError } from './errors'
 import { product, store } from './db/schema'
 
 export const claimProductSlug = Effect.fn('claimProductSlug')(function* (title: string): Effect.fn.Return<string, DatabaseError, Db> {

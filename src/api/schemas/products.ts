@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { Effect, Schema } from 'effect'
 
 import { ProductAvailability, ProductSort, SortDirection } from './common'

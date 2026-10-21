@@ -1,8 +1,9 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { Effect } from 'effect'
 import { and, asc, count, desc, eq, inArray } from 'drizzle-orm'
 
 import { Db } from '../services/db'
-import { DatabaseError } from '../errors'
+import { type DatabaseError } from '../errors'
 import { MANAGE_PAGE_SIZE } from '#/lib/pagination'
 import { product, productCategory, productImage, productVariant, store } from '../db/schema'
 

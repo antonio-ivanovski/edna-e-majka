@@ -2,7 +2,7 @@ import { Effect } from 'effect'
 import { and, asc, eq, or, sql } from 'drizzle-orm'
 
 import { Db } from '../services/db'
-import { DatabaseError } from '../errors'
+import { type DatabaseError } from '../errors'
 import { product, store } from '../db/schema'
 
 export type StoreSummary = {

@@ -3,7 +3,7 @@ import { eq, inArray } from 'drizzle-orm'
 
 import { env } from 'cloudflare:workers'
 import { Db } from './services/db'
-import { DatabaseError, StorageError } from './errors'
+import { type DatabaseError, StorageError } from './errors'
 import { product, productCategory, productImage, productVariant, contactMessage, store } from './db/schema'
 
 export const deleteProductCascade = Effect.fn('deleteProductCascade')(function* (productId: string): Effect.fn.Return<void, DatabaseError | StorageError, Db> {

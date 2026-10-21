@@ -1,8 +1,9 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { Effect } from 'effect'
 import { and, asc, count, desc, eq, inArray, isNotNull, isNull, or, sql } from 'drizzle-orm'
 
 import { Db } from '../services/db'
-import { DatabaseError } from '../errors'
+import { type DatabaseError } from '../errors'
 import { ADMIN_PAGE_SIZE } from '#/lib/pagination'
 import { buildSearchText, buildSearchVariants } from '#/lib/translit'
 
