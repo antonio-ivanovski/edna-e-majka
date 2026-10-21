@@ -71,13 +71,13 @@ const adminMessageListSchema = z.object({
 export const getAdminStores = createServerFn({ method: 'GET' })
   .middleware([withAdmin])
   .validator(adminStoreListSchema)
-  .handler(async ({ data }) => selectAdminStores(data))
+  .handler(async ({ data }) => runEffect(selectAdminStores(data as any)))
 
 export const getAdminStore = createServerFn({ method: 'GET' })
   .middleware([withAdmin])
   .validator(storeIdSchema)
   .handler(async ({ data }) => {
-    const found = await selectAdminStore(data.storeId)
+    const found = await runEffect(selectAdminStore(data.storeId))
 
     if (!found) {
       throw notFound()
@@ -85,24 +85,24 @@ export const getAdminStore = createServerFn({ method: 'GET' })
 
     return {
       store: found,
-      products: await selectAdminProducts({ storeId: data.storeId, page: 1 }),
+      products: await runEffect(selectAdminProducts({ storeId: data.storeId, page: 1 } as any)),
     }
   })
 
 export const getAdminProducts = createServerFn({ method: 'GET' })
   .middleware([withAdmin])
   .validator(adminProductListSchema)
-  .handler(async ({ data }) => selectAdminProducts(data))
+  .handler(async ({ data }) => runEffect(selectAdminProducts(data as any)))
 
 export const getAdminUsers = createServerFn({ method: 'GET' })
   .middleware([withAdmin])
   .validator(adminUserListSchema)
-  .handler(async ({ data }) => selectAdminUsers(data))
+  .handler(async ({ data }) => runEffect(selectAdminUsers(data as any)))
 
 export const getAdminMessages = createServerFn({ method: 'GET' })
   .middleware([withAdmin])
   .validator(adminMessageListSchema)
-  .handler(async ({ data }) => selectAdminMessages(data))
+  .handler(async ({ data }) => runEffect(selectAdminMessages(data as any)))
 
 /**
  * The moderation decision. The note is rewritten when it is sent and kept when
@@ -231,7 +231,7 @@ export const adminDeleteStore = createServerFn({ method: 'POST' })
       return { ok: false, message: 'Продавницата веќе е на таа адреса.' }
     }
 
-    if (await selectOwnerStore(target.id)) {
+    if (await runEffect(selectOwnerStore(target.id))) {
       return { ok: false, message: 'Тој корисник веќе има продавница.' }
     }
 
@@ -360,7 +360,7 @@ export const getAdminProduct = createServerFn({ method: 'GET' })
   .middleware([withAdmin])
   .validator(productDeleteSchema)
   .handler(async ({ data }) => {
-    const row = await selectAdminProductRow(data.productId)
+    const row = await runEffect(selectAdminProductRow(data.productId))
 
     if (!row) {
       throw notFound()
@@ -372,7 +372,7 @@ export const getAdminProduct = createServerFn({ method: 'GET' })
       throw notFound()
     }
 
-    const store = await selectAdminStore(row.storeId)
+    const store = await runEffect(selectAdminStore(row.storeId))
 
     if (!store) {
       throw notFound()
@@ -389,7 +389,7 @@ export const adminSaveProduct = createServerFn({ method: 'POST' })
       return { ok: false, message: 'Недостасува производ.' }
     }
 
-    const row = await selectAdminProductRow(data.productId)
+    const row = await runEffect(selectAdminProductRow(data.productId))
 
     if (!row) {
       return { ok: false, message: 'Производот не е најден.' }

@@ -120,7 +120,7 @@ export const Route = createFileRoute('/api/uploads')({
         if (typeof productId === 'string' && productId) {
           const owned =
             viewer.role === 'admin'
-              ? await selectAdminProductRow(productId)
+              ? await runEffect(selectAdminProductRow(productId))
               : await runEffect(selectOwnedProductRow(productId, viewer.id))
 
           if (!owned) {
@@ -161,7 +161,7 @@ export const Route = createFileRoute('/api/uploads')({
         if (typeof storeId === 'string' && storeId) {
           const ownStore =
             viewer.role === 'admin'
-              ? await selectAdminStore(storeId)
+              ? await runEffect(selectAdminStore(storeId))
               : await runEffect(selectOwnerStoreById(storeId, viewer.id))
 
           if (!ownStore) {
@@ -221,7 +221,7 @@ export const Route = createFileRoute('/api/uploads')({
 
         const owned =
           viewer.role === 'admin'
-            ? await selectAdminProductRow(productId)
+            ? await runEffect(selectAdminProductRow(productId))
             : await runEffect(selectOwnedProductRow(productId, viewer.id))
 
         if (!owned) {
@@ -304,7 +304,7 @@ export const Route = createFileRoute('/api/uploads')({
 
           const canManage =
             viewer.role === 'admin'
-              ? await selectAdminProductRow(image.productId)
+              ? await runEffect(selectAdminProductRow(image.productId))
               : await runEffect(selectOwnedProductRow(image.productId, viewer.id))
 
           if (!canManage) {
@@ -320,7 +320,7 @@ export const Route = createFileRoute('/api/uploads')({
         if (storeId) {
           const ownStore =
             viewer.role === 'admin'
-              ? await selectAdminStore(storeId)
+              ? await runEffect(selectAdminStore(storeId))
               : await runEffect(selectOwnerStoreById(storeId, viewer.id))
 
           if (!ownStore) {
