@@ -38,6 +38,7 @@ export type AdminStore = {
   coverKey: string | null
   city: string | null
   hours: string | null
+  slug: string | null
   createdAt: Date
   reviewedAt: Date | null
   owner: { id: string; name: string; email: string }
@@ -127,6 +128,7 @@ const storeColumns = {
   coverKey: store.coverKey,
   city: store.city,
   hours: store.hours,
+  slug: store.slug,
   createdAt: store.createdAt,
   reviewedAt: store.reviewedAt,
   // The account behind the shop has columns with the same names as the shop's.
@@ -151,6 +153,7 @@ type StoreRow = {
   coverKey: string | null
   city: string | null
   hours: string | null
+  slug: string | null
   createdAt: Date
   reviewedAt: Date | null
   ownerId: string
@@ -175,6 +178,7 @@ function toAdminStore(row: StoreRow): AdminStore {
     coverKey: row.coverKey,
     city: row.city,
     hours: row.hours,
+    slug: row.slug,
     createdAt: row.createdAt,
     reviewedAt: row.reviewedAt,
     owner: { id: row.ownerId, name: row.ownerName, email: row.ownerEmail },

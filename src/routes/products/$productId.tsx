@@ -1,4 +1,4 @@
-import { Link, createFileRoute } from '@tanstack/react-router'
+import { Link, createFileRoute, redirect } from '@tanstack/react-router'
 import { Info } from 'lucide-react'
 import { useEffect } from 'react'
 
@@ -24,6 +24,12 @@ export const Route = createFileRoute('/products/$productId')({
       getProduct({ data: { productId: params.productId } }),
       getRelatedProducts({ data: { productId: params.productId } }),
     ])
+
+    // One address per listing: the slug. Links with the id still work, they
+    // only take one extra step.
+    if (product.slug && params.productId !== product.slug) {
+      throw redirect({ to: '/products/$productId', params: { productId: product.slug } })
+    }
 
     return { product, related }
   },
@@ -58,8 +64,9 @@ function ProductPage() {
       id: product.id,
       title: product.title,
       imageKey: product.images[0]?.key ?? null,
+      slug: product.slug,
     })
-  }, [product.id, product.title, product.images])
+  }, [product.id, product.title, product.images, product.slug])
   const categories = product.categorySlugs.flatMap((slug) => {
     const category = findCategory(slug)
 
@@ -122,7 +129,7 @@ function ProductPage() {
         <div className="mt-3 flex flex-wrap items-center gap-2">
           <Link
             to="/producers/$storeId"
-            params={{ storeId: product.store.id }}
+            params={{ storeId: product.store.slug ?? product.store.id }}
             className="inline-flex items-center gap-2 font-bold hover:underline"
           >
             {product.store.name}

@@ -29,12 +29,12 @@ export const Route = createFileRoute('/sitemap.xml')({
         const db = getDb()
 
         const stores = await db
-          .select({ id: store.id, updatedAt: store.updatedAt })
+          .select({ id: store.id, slug: store.slug, updatedAt: store.updatedAt })
           .from(store)
           .where(eq(store.status, 'active'))
 
         const products = await db
-          .select({ id: product.id, updatedAt: product.updatedAt })
+          .select({ id: product.id, slug: product.slug, updatedAt: product.updatedAt })
           .from(product)
           .innerJoin(store, eq(store.id, product.storeId))
           .where(and(eq(product.status, 'published'), eq(store.status, 'active')))
@@ -46,11 +46,11 @@ export const Route = createFileRoute('/sitemap.xml')({
           { loc: `${base}/`, lastmod: now },
           { loc: `${base}/producers`, lastmod: now },
           ...stores.map((item) => ({
-            loc: `${base}/producers/${item.id}`,
+            loc: `${base}/producers/${item.slug ?? item.id}`,
             lastmod: item.updatedAt.toISOString(),
           })),
           ...products.map((item) => ({
-            loc: `${base}/products/${item.id}`,
+            loc: `${base}/products/${item.slug ?? item.id}`,
             lastmod: item.updatedAt.toISOString(),
           })),
         ]

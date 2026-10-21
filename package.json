@@ -29,7 +29,8 @@
     "db:migrate:local": "wrangler d1 migrations apply DB --local",
     "db:migrate:remote": "wrangler d1 migrations apply DB --remote",
     "db:studio": "drizzle-kit studio",
-    "db:seed": "tsx scripts/seed.ts"
+    "db:seed": "tsx scripts/seed.ts",
+    "db:backfill-slugs": "tsx scripts/backfill-slugs.ts"
   },
   "dependencies": {
     "@better-auth/drizzle-adapter": "1.7.12",

@@ -36,6 +36,13 @@
       "when": 1792604753070,
       "tag": "0004_flaky_nomad",
       "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "6",
+      "when": 1792616093771,
+      "tag": "0005_oval_magdalene",
+      "breakpoints": true
     }
   ]
 }

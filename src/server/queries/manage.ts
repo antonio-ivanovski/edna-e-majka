@@ -26,6 +26,7 @@ export type OwnerStore = {
   coverKey: string | null
   city: string | null
   hours: string | null
+  slug: string | null
   status: StoreStatus
   statusNote: string | null
   createdAt: Date
@@ -84,6 +85,7 @@ const storeColumns = {
   coverKey: store.coverKey,
   city: store.city,
   hours: store.hours,
+  slug: store.slug,
   status: store.status,
   statusNote: store.statusNote,
   createdAt: store.createdAt,

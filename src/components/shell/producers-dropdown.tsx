@@ -28,7 +28,11 @@ export function ProducersDropdown({ stores }: { stores: StoreSummary[] }) {
       ) : (
         stores.map((store) => (
           <DropdownMenuItem key={store.id} asChild>
-            <Link to="/producers/$storeId" params={{ storeId: store.id }} className="w-full">
+            <Link
+              to="/producers/$storeId"
+              params={{ storeId: store.slug ?? store.id }}
+              className="w-full"
+            >
               {store.name}
             </Link>
           </DropdownMenuItem>

@@ -1,4 +1,4 @@
-import { asc, count, eq, sql } from 'drizzle-orm'
+import { and, asc, eq, or, sql } from 'drizzle-orm'
 
 import { getDb } from '../db/client'
 import { product, store } from '../db/schema'
@@ -10,6 +10,8 @@ export type StoreSummary = {
   avatarKey: string | null
   coverKey: string | null
   city: string | null
+  /** The readable address; null only for rows written before slugs existed. */
+  slug: string | null
   createdAt: Date
   productCount: number
 }
@@ -37,6 +39,7 @@ export async function selectStores(): Promise<StoreSummary[]> {
       avatarKey: store.avatarKey,
       coverKey: store.coverKey,
       city: store.city,
+      slug: store.slug,
       createdAt: store.createdAt,
       productCount: publishedProductCount,
     })
@@ -50,30 +53,27 @@ export async function selectStores(): Promise<StoreSummary[]> {
 export async function selectStoreDetail(storeId: string): Promise<StoreDetail | null> {
   const db = getDb()
 
-  const [rows, productRows] = await db.batch([
-    db
-      .select({
-        id: store.id,
-        name: store.name,
-        description: store.description,
-        avatarKey: store.avatarKey,
-        coverKey: store.coverKey,
-        city: store.city,
-        createdAt: store.createdAt,
-        email: store.email,
-        phone: store.phone,
-        facebook: store.facebook,
-        instagram: store.instagram,
-        hours: store.hours,
-      })
-      .from(store)
-      .where(sql`${store.id} = ${storeId} and ${store.status} = 'active'`)
-      .limit(1),
-    db
-      .select({ total: count() })
-      .from(product)
-      .where(sql`${product.storeId} = ${storeId} and ${product.status} = 'published'`),
-  ])
+  const rows = await db
+    .select({
+      id: store.id,
+      name: store.name,
+      description: store.description,
+      avatarKey: store.avatarKey,
+      coverKey: store.coverKey,
+      city: store.city,
+      slug: store.slug,
+      createdAt: store.createdAt,
+      email: store.email,
+      phone: store.phone,
+      facebook: store.facebook,
+      instagram: store.instagram,
+      hours: store.hours,
+      productCount: publishedProductCount,
+    })
+    .from(store)
+    // The address in the URL may be the id or the slug; both find the shop.
+    .where(and(or(eq(store.id, storeId), eq(store.slug, storeId)), eq(store.status, 'active')))
+    .limit(1)
 
   const row = rows[0]
 
@@ -81,8 +81,5 @@ export async function selectStoreDetail(storeId: string): Promise<StoreDetail | 
     return null
   }
 
-  return {
-    ...row,
-    productCount: productRows[0]?.total ?? 0,
-  }
+  return row
 }

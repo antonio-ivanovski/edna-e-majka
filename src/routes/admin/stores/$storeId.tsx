@@ -64,7 +64,7 @@ function AdminStorePage() {
         {store.status === 'active' ? (
           <Link
             to="/producers/$storeId"
-            params={{ storeId: store.id }}
+            params={{ storeId: store.slug ?? store.id }}
             className="text-sm font-semibold text-accent-strong hover:underline"
           >
             Јавна страница

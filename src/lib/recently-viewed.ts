@@ -10,6 +10,8 @@ export type RecentProduct = {
   id: string
   title: string
   imageKey: string | null
+  /** The readable address of the listing, when it has one. */
+  slug?: string | null
 }
 
 const EMPTY: RecentProduct[] = []

@@ -16,7 +16,7 @@ export function ProductCard({ product }: { product: ProductSummary }) {
     <article className="flex h-full flex-col overflow-hidden rounded-[0.2857rem] border border-t-2 border-[#d4d4d5] border-t-accent bg-white shadow-[0_1px_3px_0_#d4d4d5] transition-shadow hover:shadow-[0_2px_8px_0_#d4d4d5]">
       <Link
         to="/products/$productId"
-        params={{ productId: product.id }}
+        params={{ productId: product.slug ?? product.id }}
         className="flex flex-1 flex-col hover:bg-black/[0.01] focus-visible:outline-offset-[-2px]"
       >
         <div className="relative aspect-4/3 overflow-hidden bg-black/[0.04]">
@@ -68,7 +68,7 @@ export function ProductCard({ product }: { product: ProductSummary }) {
       <div className="border-t border-line/60 px-4 py-3">
         <Link
           to="/producers/$storeId"
-          params={{ storeId: product.store.id }}
+          params={{ storeId: product.store.slug ?? product.store.id }}
           className="inline-flex items-center gap-2 text-black/50 hover:text-black/[0.85]"
         >
           <Avatar src={imageUrl(product.store.avatarKey)} alt={product.store.name} />

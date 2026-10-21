@@ -40,6 +40,7 @@ import {
   selectOwnerStoreById,
 } from '../queries/manage'
 import { deleteProductCascade } from '../product-writes'
+import { claimProductSlug, claimStoreSlug } from '../slug'
 
 /** No session, no page: the router turns this into the sign-in redirect. */
 async function requireOwner(ownerId: string | undefined): Promise<string> {
@@ -153,6 +154,7 @@ export const applyForStore = createServerFn({ method: 'POST' })
         instagram: optionalText(data.instagram),
         city: optionalText(data.city),
         hours: optionalText(data.hours),
+        slug: await claimStoreSlug(data.name),
         status: verdict.status,
         statusNote: verdict.status === 'pending' ? verdict.note : null,
       })
@@ -231,6 +233,7 @@ export const saveProduct = createServerFn({ method: 'POST' })
         description: data.description,
         searchText,
         availability: data.availability,
+        slug: await claimProductSlug(data.title),
       })
     }
 

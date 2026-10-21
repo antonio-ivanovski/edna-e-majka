@@ -1,4 +1,4 @@
-import { createFileRoute } from '@tanstack/react-router'
+import { createFileRoute, redirect } from '@tanstack/react-router'
 
 import { CatalogueList } from '#/components/catalogue/catalogue-list'
 import { ProducerContacts } from '#/components/catalogue/producer-contacts'
@@ -15,10 +15,14 @@ export const Route = createFileRoute('/producers/$storeId')({
   validateSearch: parseProductSearch,
   loaderDeps: ({ search }) => resolveProductSearch(search),
   loader: async ({ params, deps }) => {
-    const [store, page] = await Promise.all([
-      getStore({ data: { storeId: params.storeId } }),
-      listProducts({ data: { ...deps, storeId: params.storeId } }),
-    ])
+    const store = await getStore({ data: { storeId: params.storeId } })
+
+    // One address per shop: the slug.
+    if (store.slug && params.storeId !== store.slug) {
+      throw redirect({ to: '/producers/$storeId', params: { storeId: store.slug } })
+    }
+
+    const page = await listProducts({ data: { ...deps, storeId: store.id } })
 
     return { store, params: deps, page }
   },

@@ -215,7 +215,7 @@ function StoreOverview({ store, products }: { store: OwnerStore; products: Owner
         {store.status === 'active' ? (
           <Link
             to="/producers/$storeId"
-            params={{ storeId: store.id }}
+            params={{ storeId: store.slug ?? store.id }}
             className="inline-flex items-center gap-1 font-semibold text-accent-strong hover:underline"
           >
             Јавна страница

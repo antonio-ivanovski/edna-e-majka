@@ -14,6 +14,7 @@ import { drizzle } from 'drizzle-orm/d1'
 import { getPlatformProxy } from 'wrangler'
 
 import type { CategorySlug } from '#/lib/categories'
+import { slugify, uniqueSlug } from '#/lib/slug'
 import { buildSearchText } from '#/lib/translit'
 import { user } from '#/server/db/auth-schema'
 import { product, productCategory, productImage, productVariant, store } from '#/server/db/schema'
@@ -341,6 +342,19 @@ const avatarKey = (store: DemoStore) =>
 const productImageKey = (productId: string, index: number, source: ImageSource) =>
   `demo/products/${productId}/${index + 1}-${sourceFile(source)}`
 
+/** Readable addresses for the demo rows, unique across the demo set. */
+function assignSlugs(names: readonly string[]): string[] {
+  const taken = new Set<string>()
+
+  return names.map((name) => {
+    const slug = uniqueSlug(slugify(name), (candidate) => taken.has(candidate))
+
+    taken.add(slug)
+
+    return slug
+  })
+}
+
 async function main() {
   const platform = await getPlatformProxy<{ DB: D1Database; BUCKET: R2Bucket }>({
     configPath: 'wrangler.jsonc',
@@ -389,6 +403,8 @@ async function main() {
 
   console.info('Writing stores…')
 
+  const storeSlugs = assignSlugs(STORES.map((demoStore) => demoStore.name))
+
   await insertInChunks(
     STORES.map((demoStore) => ({
       id: demoStore.owner.id,
@@ -401,10 +417,11 @@ async function main() {
   )
 
   await insertInChunks(
-    STORES.map((demoStore) => ({
+    STORES.map((demoStore, index) => ({
       id: demoStore.id,
       ownerId: demoStore.owner.id,
       name: demoStore.name,
+      slug: storeSlugs[index] ?? slugify(demoStore.name),
       description: demoStore.description,
       avatarKey: avatarKey(demoStore),
       email: demoStore.owner.email,
@@ -416,17 +433,20 @@ async function main() {
       createdAt: daysAgoDate(60),
       updatedAt: daysAgoDate(1),
     })),
-    13,
+    14,
     (chunk) => db.insert(store).values(chunk),
   )
 
   console.info('Writing products…')
 
+  const productSlugs = assignSlugs(PRODUCTS.map((demoProduct) => demoProduct.title))
+
   await insertInChunks(
-    PRODUCTS.map((demoProduct) => ({
+    PRODUCTS.map((demoProduct, index) => ({
       id: demoProduct.id,
       storeId: demoProduct.storeId,
       title: demoProduct.title,
+      slug: productSlugs[index] ?? slugify(demoProduct.title),
       description: demoProduct.description,
       searchText: buildSearchText(demoProduct.title, demoProduct.description),
       status: demoProduct.status ?? 'published',
@@ -434,7 +454,7 @@ async function main() {
       createdAt: daysAgoDate(demoProduct.daysAgo),
       updatedAt: daysAgoDate(demoProduct.daysAgo),
     })),
-    9,
+    10,
     (chunk) => db.insert(product).values(chunk),
   )
 

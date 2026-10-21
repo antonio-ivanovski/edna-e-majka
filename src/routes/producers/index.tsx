@@ -41,7 +41,7 @@ function ProducersPage() {
             <Link
               key={store.id}
               to="/producers/$storeId"
-              params={{ storeId: store.id }}
+              params={{ storeId: store.slug ?? store.id }}
               className="flex flex-col items-center gap-3 rounded-[0.2857rem] border border-line bg-white p-6 text-center shadow-[0_1px_2px_0_rgba(34,36,38,0.15)] transition-shadow hover:shadow-[0_2px_8px_0_rgba(34,36,38,0.2)]"
             >
               <Avatar src={imageUrl(store.avatarKey)} alt={store.name} size={96} />

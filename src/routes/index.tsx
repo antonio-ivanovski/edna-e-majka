@@ -81,7 +81,7 @@ function HomePage() {
               <Link
                 key={item.id}
                 to="/products/$productId"
-                params={{ productId: item.id }}
+                params={{ productId: item.slug ?? item.id }}
                 className="flex flex-col items-center gap-2 rounded border border-line bg-white p-3 text-center hover:shadow"
               >
                 {item.imageKey ? (

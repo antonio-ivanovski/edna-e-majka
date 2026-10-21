@@ -29,6 +29,8 @@ export const store = sqliteTable(
       .notNull()
       .references(() => user.id, { onDelete: 'cascade' }),
     name: text('name').notNull(),
+    /** The readable address of the shop; written once, when it is created. */
+    slug: text('slug').unique(),
     description: text('description').notNull(),
     avatarKey: text('avatar_key'),
     coverKey: text('cover_key'),
@@ -61,6 +63,8 @@ export const product = sqliteTable(
       .notNull()
       .references(() => store.id, { onDelete: 'cascade' }),
     title: text('title').notNull(),
+    /** The readable address of the listing; written once, when it is created. */
+    slug: text('slug').unique(),
     description: text('description').notNull(),
     /**
      * Lowercased title plus transliterated variants, so a Latin query matches

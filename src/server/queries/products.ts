@@ -25,6 +25,8 @@ export type ProductStore = {
   id: string
   name: string
   avatarKey: string | null
+  /** The readable address of the shop. */
+  slug: string | null
 }
 
 export type ProductSummary = {
@@ -32,6 +34,8 @@ export type ProductSummary = {
   title: string
   description: string
   availability: 'in_stock' | 'out_of_stock' | 'on_order'
+  /** The readable address; null only for rows written before slugs existed. */
+  slug: string | null
   createdAt: Date
   /** First image by position, or null while a listing has no photo yet. */
   image: ProductImage | null
@@ -69,9 +73,11 @@ const productColumns = {
   description: product.description,
   createdAt: product.createdAt,
   availability: product.availability,
+  slug: product.slug,
   storeId: sql<string>`${store.id}`.as('store_id'),
   storeName: sql<string>`${store.name}`.as('store_name'),
   storeAvatarKey: sql<string | null>`${store.avatarKey}`.as('store_avatar_key'),
+  storeSlug: sql<string | null>`${store.slug}`.as('store_slug'),
 }
 
 /**
@@ -226,6 +232,7 @@ export async function selectProductSummaries(
         title: row.title,
         description: row.description,
         availability: row.availability,
+        slug: row.slug,
         createdAt: row.createdAt,
         image: images[0] ?? null,
         variants: variantRows
@@ -239,6 +246,7 @@ export async function selectProductSummaries(
           id: row.storeId,
           name: row.storeName,
           avatarKey: row.storeAvatarKey,
+          slug: row.storeSlug,
         },
       },
     ]
@@ -326,7 +334,13 @@ export async function selectProductDetail(productId: string): Promise<ProductDet
       .from(product)
       .innerJoin(store, eq(store.id, product.storeId))
       .where(
-        and(eq(product.id, productId), eq(product.status, 'published'), eq(store.status, 'active')),
+        and(
+          // The address in the URL may be the id or the slug; both find the
+          // listing, so old links keep working.
+          or(eq(product.id, productId), eq(product.slug, productId)),
+          eq(product.status, 'published'),
+          eq(store.status, 'active'),
+        ),
       )
       .limit(1),
     db
@@ -365,6 +379,7 @@ export async function selectProductDetail(productId: string): Promise<ProductDet
     title: row.title,
     description: row.description,
     availability: row.availability,
+    slug: row.slug,
     createdAt: row.createdAt,
     image: imageRows[0] ?? null,
     images: imageRows,
@@ -374,6 +389,7 @@ export async function selectProductDetail(productId: string): Promise<ProductDet
       id: row.storeId,
       name: row.storeName,
       avatarKey: row.storeAvatarKey,
+      slug: row.storeSlug,
       description: row.storeDescription,
       email: row.storeEmail,
       phone: row.storePhone,
