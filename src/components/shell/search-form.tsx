@@ -19,7 +19,8 @@ export function SearchForm() {
   const containerRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
-    setRecent(readRecentSearches())
+    const handle = setTimeout(() => setRecent(readRecentSearches()), 0)
+    return () => clearTimeout(handle)
   }, [])
 
   // Fetch suggestions as the term changes, with a short delay.
@@ -27,8 +28,8 @@ export function SearchForm() {
     const query = term.trim()
 
     if (query.length < 2) {
-      setSuggestions(null)
-      return
+      const handle = setTimeout(() => setSuggestions(null), 0)
+      return () => clearTimeout(handle)
     }
 
     const handle = setTimeout(() => {
