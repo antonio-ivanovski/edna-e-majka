@@ -52,6 +52,40 @@ export const Route = createFileRoute('/products/$productId')({
             : '/edna-e-majka-og.jpg',
         },
       ],
+      links: loaderData
+        ? [
+            {
+              rel: 'canonical',
+              href: '/products/' + (loaderData.product.slug ?? loaderData.product.id),
+            },
+          ]
+        : [],
+      scripts: loaderData
+        ? [
+            {
+              type: 'application/ld+json',
+              children: JSON.stringify({
+                '@context': 'https://schema.org',
+                '@type': 'Product',
+                name: loaderData.product.title,
+                description: loaderData.product.description,
+                image: loaderData.product.image
+                  ? imageUrl(loaderData.product.image.key)
+                  : undefined,
+                offers: {
+                  '@type': 'Offer',
+                  priceCurrency: 'MKD',
+                  price: loaderData.product.variants?.[0]?.price,
+                  availability:
+                    loaderData.product.availability === 'in_stock'
+                      ? 'https://schema.org/InStock'
+                      : 'https://schema.org/OutOfStock',
+                },
+                brand: { '@type': 'Brand', name: loaderData.product.store.name },
+              }),
+            },
+          ]
+        : [],
     }
   },
   component: ProductPage,

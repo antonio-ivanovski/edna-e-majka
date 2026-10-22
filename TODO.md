@@ -136,9 +136,9 @@ Goal: one typed contract layer, Effect everywhere on the server, one client cach
 - [x] **T2-09** Content guidelines / producer onboarding guide page. Blockers: none.
 - [x] **T2-10** 404 page with suggestions + richer empty states. Blockers: none.
 - [x] **T2-11** Accessibility audit (focus management, keyboard nav, aria-live, skip link, reduced motion). Blockers: none.
-- [ ] **T2-12** Structured data (JSON-LD: Product, Organization, BreadcrumbList, LocalBusiness). Blockers: T1-04 (slugs) for canonical URLs.
+- [x] **T2-12** Structured data (JSON-LD: Product, Organization, BreadcrumbList, LocalBusiness). Blockers: T1-04 (slugs) for canonical URLs.
 - [x] **T2-13** Twitter card + richer OG meta (twitter:card, og:locale, per-product). Blockers: none.
-- [ ] **T2-14** Canonical URLs + trailing-slash consistency. Blockers: none.
+- [x] **T2-14** Canonical URLs + trailing-slash consistency. Blockers: none.
 - [x] **T2-15** RSS/Atom feed of new products. Blockers: none.
 
 ## Tier 3 — Engagement & growth

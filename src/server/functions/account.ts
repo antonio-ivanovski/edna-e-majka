@@ -104,8 +104,7 @@ export const exportUserData = createServerFn({ method: 'GET' })
     let products: OwnerProduct[] = []
 
     if (ownStore) {
-      products = (await runEffect(selectOwnerProducts(ownStore.id)))
-        .items as OwnerProduct[]
+      products = (await runEffect(selectOwnerProducts(ownStore.id))).items as OwnerProduct[]
     }
 
     return { account, store: ownStore, products }
