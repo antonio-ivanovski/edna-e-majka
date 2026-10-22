@@ -14,6 +14,7 @@ import { Label } from '#/components/ui/label'
 import { Popover } from '#/components/ui/popover'
 import { Statistic, StatisticGroup } from '#/components/ui/statistic'
 import { findCategory } from '#/lib/categories'
+import { attributesForCategories } from '#/lib/attributes'
 import { formatPrice, truncate } from '#/lib/format'
 import { imageUrl } from '#/lib/images'
 import { productQueries } from '#/lib/queries/products'
@@ -123,6 +124,25 @@ function ProductPage() {
           <p className="mt-2 inline-block rounded bg-black/5 px-2 py-1 text-sm font-semibold text-black/60">
             По нарачка
           </p>
+        ) : null}
+
+        {Object.keys(product.attributes).length > 0 ? (
+          <dl className="mt-3 grid grid-cols-2 gap-x-4 gap-y-1 text-sm sm:grid-cols-3">
+            {Object.entries(product.attributes).map(([key, value]) => {
+              const def = attributesForCategories(product.categorySlugs).find(
+                (entry) => entry.key === key,
+              )
+              return (
+                <div key={key} className="flex flex-col">
+                  <dt className="text-black/45">
+                    {def?.label ?? key}
+                    {def?.unit ? ' (' + def.unit + ')' : ''}
+                  </dt>
+                  <dd className="font-semibold">{String(value)}</dd>
+                </div>
+              )
+            })}
+          </dl>
         ) : null}
 
         <div className="mt-3 flex flex-wrap items-center gap-2">

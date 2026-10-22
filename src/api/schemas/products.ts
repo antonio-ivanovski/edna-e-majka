@@ -75,6 +75,7 @@ export const ProductForm = Schema.Struct({
     Schema.withDecodingDefault(Effect.succeed('in_stock' as any)),
   ),
   variants: Schema.Array(ProductVariantInput).pipe(Schema.check(Schema.isMinLength(1))),
+  attributes: Schema.optional(Schema.String),
 })
 
 export const ProductFormValues = Schema.Struct({

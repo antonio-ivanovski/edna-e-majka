@@ -1,7 +1,7 @@
 import { useNavigate, useRouter } from '@tanstack/react-router'
 import { Plus, X } from 'lucide-react'
 import { useRef, useState } from 'react'
-import { useFieldArray, useForm } from 'react-hook-form'
+import { useFieldArray, useForm, useWatch } from 'react-hook-form'
 import { toast } from 'sonner'
 
 import { Schema } from 'effect'
@@ -9,6 +9,7 @@ import { Button } from '#/components/ui/button'
 import { Field, Input, Select, Textarea } from '#/components/ui/field'
 import { Message } from '#/components/ui/message'
 import { CATEGORIES, type CategorySlug } from '#/lib/categories'
+import { attributesForCategories, serializeAttributes } from '#/lib/attributes'
 import type { Result } from 'effect'
 import type { DomainError } from '#/server/errors'
 import { imageUrl } from '#/lib/images'
@@ -44,6 +45,7 @@ type ProductFormData = {
   description: string
   categories: string[]
   availability: 'in_stock' | 'out_of_stock' | 'on_order'
+  attributes?: string
   variants: { title: string; price: number }[]
   productId?: string
 }
@@ -105,6 +107,18 @@ export function ProductForm({
   })
 
   const variants = useFieldArray({ control, name: 'variants' })
+
+  const selectedCategories = (useWatch({ control, name: 'categories' }) ?? []) as string[]
+  const [attributes, setAttributes] = useState<Record<string, string>>(() => {
+    const source = (product?.attributes ?? {}) as Record<string, string | number>
+    const result: Record<string, string> = {}
+    for (const [key, value] of Object.entries(source)) {
+      result[key] = String(value)
+    }
+    return result
+  })
+
+  const attributeDefs = attributesForCategories(selectedCategories)
 
   const addImages = async (files: FileList | null) => {
     const picked = Array.from(files ?? [])
@@ -229,6 +243,7 @@ export function ProductForm({
         description: values.description,
         categories: [...values.categories],
         availability: values.availability,
+        attributes: serializeAttributes(attributes),
         variants: values.variants.map((variant) => ({
           title: variant.title,
           price: Number(variant.price),
@@ -294,6 +309,39 @@ export function ProductForm({
           ))}
         </div>
       </Field>
+
+      {attributeDefs.length > 0 ? (
+        <fieldset className="mb-6 space-y-3 rounded border border-line p-4">
+          <legend className="px-1 text-sm font-semibold text-black/70">Атрибути</legend>
+          {attributeDefs.map((def) => (
+            <Field key={def.key} label={def.label + (def.unit ? ' (' + def.unit + ')' : '')}>
+              {def.type === 'select' ? (
+                <Select
+                  value={attributes[def.key] ?? ''}
+                  onChange={(event) =>
+                    setAttributes((current) => ({ ...current, [def.key]: event.target.value }))
+                  }
+                >
+                  <option value="">—</option>
+                  {def.options?.map((option) => (
+                    <option key={option} value={option}>
+                      {option}
+                    </option>
+                  ))}
+                </Select>
+              ) : (
+                <Input
+                  type={def.type === 'number' ? 'number' : 'text'}
+                  value={attributes[def.key] ?? ''}
+                  onChange={(event) =>
+                    setAttributes((current) => ({ ...current, [def.key]: event.target.value }))
+                  }
+                />
+              )}
+            </Field>
+          ))}
+        </fieldset>
+      ) : null}
 
       <Field label="Достапност" htmlFor="product-availability" error={errors.availability?.message}>
         <Select

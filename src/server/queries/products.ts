@@ -5,6 +5,7 @@ import { and, asc, count, desc, eq, inArray, or, sql } from 'drizzle-orm'
 import { Db } from '../services/db'
 import { type DatabaseError } from '../errors'
 import { buildSearchVariants } from '#/lib/translit'
+import { parseAttributes, type ProductAttributes } from '#/lib/attributes'
 import { MAX_CATALOGUE_ITEMS, PRODUCT_PAGE_SIZE } from '#/lib/pagination'
 import type { ProductListFilters as ProductListFiltersType } from '#/api/schemas'
 import { product, productCategory, productImage, productVariant, store } from '../db/schema'
@@ -30,6 +31,7 @@ export type ProductSummary = {
   store: ProductStore
 }
 export type ProductDetail = ProductSummary & {
+  attributes: ProductAttributes
   images: ProductImage[]
   store: ProductStore & {
     description: string
@@ -47,6 +49,7 @@ const productColumns = {
   description: product.description,
   createdAt: product.createdAt,
   availability: product.availability,
+  attributes: product.attributes,
   slug: product.slug,
   storeId: sql<string>`${store.id}`.as('store_id'),
   storeName: sql<string>`${store.name}`.as('store_name'),
@@ -192,6 +195,7 @@ export const selectProductSummaries = Effect.fn('selectProductSummaries')(functi
         title: row.title,
         description: row.description,
         availability: row.availability,
+        attributes: parseAttributes(row.attributes),
         slug: row.slug,
         createdAt: row.createdAt,
         image: images[0] ?? null,
@@ -323,6 +327,7 @@ export const selectProductDetail = Effect.fn('selectProductDetail')(function* (
     title: row.title,
     description: row.description,
     availability: row.availability,
+    attributes: parseAttributes(row.attributes),
     slug: row.slug,
     createdAt: row.createdAt,
     image: imageRows[0] ?? null,

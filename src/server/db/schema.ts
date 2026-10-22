@@ -77,6 +77,8 @@ export const product = sqliteTable(
     availability: text('availability', { enum: ['in_stock', 'out_of_stock', 'on_order'] })
       .notNull()
       .default('in_stock'),
+    /** Structured per-category attributes, stored as JSON. */
+    attributes: text('attributes'),
     archivedAt: integer('archived_at', { mode: 'timestamp_ms' }),
     archivedBy: text('archived_by').references(() => user.id, { onDelete: 'set null' }),
     ...timestamps,

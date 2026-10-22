@@ -401,6 +401,7 @@ export const adminSaveProduct = createServerFn({ method: 'POST', strict: { outpu
         description: data.description,
         searchText,
         availability: data.availability,
+        attributes: data.attributes ?? null,
       })
       .where(eq(product.id, productId))
 

@@ -198,6 +198,7 @@ export const saveProduct = createServerFn({ method: 'POST', strict: { output: fa
             description: data.description,
             searchText,
             availability: data.availability,
+            attributes: data.attributes ?? null,
           })
           .where(eq(product.id, productId))
       } else {
@@ -208,6 +209,7 @@ export const saveProduct = createServerFn({ method: 'POST', strict: { output: fa
           description: data.description,
           searchText,
           availability: data.availability,
+          attributes: data.attributes ?? null,
           slug: await runEffect(claimProductSlug(data.title)),
         })
       }

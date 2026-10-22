@@ -5,6 +5,7 @@ import { and, asc, count, desc, eq, inArray } from 'drizzle-orm'
 import { Db } from '../services/db'
 import { type DatabaseError } from '../errors'
 import { MANAGE_PAGE_SIZE } from '#/lib/pagination'
+import { parseAttributes } from '#/lib/attributes'
 import { product, productCategory, productImage, productVariant, store } from '../db/schema'
 
 export type StoreStatus = 'pending' | 'active' | 'suspended' | 'archived'
@@ -60,6 +61,7 @@ export type OwnerProductDetail = {
   description: string
   status: ProductStatus
   availability: 'in_stock' | 'out_of_stock' | 'on_order'
+  attributes: Record<string, string | number>
   categories: string[]
   variants: { id: string; title: string; price: number }[]
   images: OwnerProductImage[]
@@ -189,6 +191,7 @@ export const selectOwnerProduct = Effect.fn('selectOwnerProduct')(function* (
             description: product.description,
             status: product.status,
             availability: product.availability,
+            attributes: product.attributes,
           })
           .from(product)
           .where(and(eq(product.id, productId), eq(product.storeId, storeId)))
@@ -228,6 +231,7 @@ export const selectOwnerProduct = Effect.fn('selectOwnerProduct')(function* (
     description: prod.description,
     status: prod.status,
     availability: prod.availability,
+    attributes: parseAttributes(prod.attributes),
     categories: categoryRows.map((c: any) => c.categorySlug),
     variants: variantRows.map(({ id, title, price }: any) => ({ id, title, price })),
     images: imageRows.map(({ id, key, alt, width, height }: any) => ({
