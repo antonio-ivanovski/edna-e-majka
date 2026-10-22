@@ -8,6 +8,7 @@ import { favoriteProduct, favoriteStore, storeFollower } from '../db/schema'
 import { getDb } from '../db/client'
 import { withViewer } from '../middleware'
 import { NotSignedInError } from '../errors'
+import type { DomainError } from '../errors'
 import { Result } from 'effect'
 
 const productIdSchema = Schema.Struct({
@@ -20,7 +21,7 @@ const storeIdSchema = Schema.Struct({
 export const toggleFavoriteProduct = createServerFn({ method: 'POST', strict: { output: false } })
   .middleware([withViewer])
   .validator(toValidator(productIdSchema))
-  .handler(async ({ context, data }): Promise<Result.Result<{ favorited: boolean }, any>> => {
+  .handler(async ({ context, data }): Promise<Result.Result<{ favorited: boolean }, DomainError>> => {
     const viewer = context.viewer
     if (!viewer) return Result.fail(new NotSignedInError({ message: 'Не сте најавени.' }))
 
@@ -49,7 +50,7 @@ export const toggleFavoriteProduct = createServerFn({ method: 'POST', strict: { 
 export const toggleFavoriteStore = createServerFn({ method: 'POST', strict: { output: false } })
   .middleware([withViewer])
   .validator(toValidator(storeIdSchema))
-  .handler(async ({ context, data }): Promise<Result.Result<{ favorited: boolean }, any>> => {
+  .handler(async ({ context, data }): Promise<Result.Result<{ favorited: boolean }, DomainError>> => {
     const viewer = context.viewer
     if (!viewer) return Result.fail(new NotSignedInError({ message: 'Не сте најавени.' }))
 
@@ -74,7 +75,7 @@ export const toggleFavoriteStore = createServerFn({ method: 'POST', strict: { ou
 export const isFavoriteProduct = createServerFn({ method: 'GET', strict: { output: false } })
   .middleware([withViewer])
   .validator(toValidator(productIdSchema))
-  .handler(async ({ context, data }): Promise<Result.Result<{ favorited: boolean }, any>> => {
+  .handler(async ({ context, data }): Promise<Result.Result<{ favorited: boolean }, DomainError>> => {
     const viewer = context.viewer
     if (!viewer) return Result.succeed({ favorited: false })
 
@@ -93,7 +94,7 @@ export const isFavoriteProduct = createServerFn({ method: 'GET', strict: { outpu
 export const isFavoriteStore = createServerFn({ method: 'GET', strict: { output: false } })
   .middleware([withViewer])
   .validator(toValidator(storeIdSchema))
-  .handler(async ({ context, data }): Promise<Result.Result<{ favorited: boolean }, any>> => {
+  .handler(async ({ context, data }): Promise<Result.Result<{ favorited: boolean }, DomainError>> => {
     const viewer = context.viewer
     if (!viewer) return Result.succeed({ favorited: false })
 
@@ -110,7 +111,7 @@ export const isFavoriteStore = createServerFn({ method: 'GET', strict: { output:
 export const toggleFollowStore = createServerFn({ method: 'POST', strict: { output: false } })
   .middleware([withViewer])
   .validator(toValidator(storeIdSchema))
-  .handler(async ({ context, data }): Promise<Result.Result<{ following: boolean }, any>> => {
+  .handler(async ({ context, data }): Promise<Result.Result<{ following: boolean }, DomainError>> => {
     const viewer = context.viewer
     if (!viewer) return Result.fail(new NotSignedInError({ message: 'Не сте најавени.' }))
 
@@ -135,7 +136,7 @@ export const toggleFollowStore = createServerFn({ method: 'POST', strict: { outp
 export const isFollowingStore = createServerFn({ method: 'GET', strict: { output: false } })
   .middleware([withViewer])
   .validator(toValidator(storeIdSchema))
-  .handler(async ({ context, data }): Promise<Result.Result<{ following: boolean }, any>> => {
+  .handler(async ({ context, data }): Promise<Result.Result<{ following: boolean }, DomainError>> => {
     const viewer = context.viewer
     if (!viewer) return Result.succeed({ following: false })
 
