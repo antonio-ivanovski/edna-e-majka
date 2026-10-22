@@ -212,6 +212,7 @@ export const saveProduct = createServerFn({ method: 'POST', strict: { output: fa
           })
           .where(eq(product.id, productId))
       } else {
+        const slug = await runEffect(claimProductSlug(data.title))
         await db.insert(product).values({
           id: productId,
           storeId: data.storeId,
@@ -220,7 +221,7 @@ export const saveProduct = createServerFn({ method: 'POST', strict: { output: fa
           searchText,
           availability: data.availability,
           attributes: data.attributes ?? null,
-          slug: await runEffect(claimProductSlug(data.title)),
+          slug,
         })
 
         // Notify followers. Best-effort.
@@ -237,7 +238,7 @@ export const saveProduct = createServerFn({ method: 'POST', strict: { output: fa
               return e.APP_URL
             }),
           )) ?? ''
-        const productUrl = appUrl + '/products/' + (await runEffect(claimProductSlug(data.title)))
+        const productUrl = appUrl + '/products/' + slug
 
         for (const follower of followers) {
           await createNotification({
@@ -245,7 +246,7 @@ export const saveProduct = createServerFn({ method: 'POST', strict: { output: fa
             kind: 'new_product',
             title: 'Нов производ',
             body: data.title,
-            link: '/products',
+            link: '/products/' + slug,
           })
           await runEffect(
             sendNewProductNotification({
