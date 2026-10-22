@@ -22,6 +22,7 @@ import { buildSearchText } from '#/lib/translit'
 import { optionalText } from '#/lib/text'
 
 import { getDb } from '../db/client'
+import { createNotification } from '../functions/notifications'
 import { user } from '../db/auth-schema'
 import { Env } from '../services/env'
 import {
@@ -224,7 +225,7 @@ export const saveProduct = createServerFn({ method: 'POST', strict: { output: fa
 
         // Notify followers. Best-effort.
         const followers = await db
-          .select({ email: user.email })
+          .select({ id: user.id, email: user.email })
           .from(storeFollower)
           .innerJoin(user, eq(user.id, storeFollower.userId))
           .where(eq(storeFollower.storeId, data.storeId))
@@ -239,6 +240,13 @@ export const saveProduct = createServerFn({ method: 'POST', strict: { output: fa
         const productUrl = appUrl + '/products/' + (await runEffect(claimProductSlug(data.title)))
 
         for (const follower of followers) {
+          await createNotification({
+            userId: follower.id,
+            kind: 'new_product',
+            title: 'Нов производ',
+            body: data.title,
+            link: '/products',
+          })
           await runEffect(
             sendNewProductNotification({
               to: follower.email,

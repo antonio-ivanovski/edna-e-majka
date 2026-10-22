@@ -13,6 +13,7 @@ import { contactMessage, product, store } from '../db/schema'
 import { user } from '../db/auth-schema'
 import { eq } from 'drizzle-orm'
 import { sendEnquiryNotification } from '../notifications'
+import { createNotification } from '../functions/notifications'
 import { runEffect } from '../runtime'
 import { Env } from '../services/env'
 import { RateLimiter } from '../services/rate-limit'
@@ -116,6 +117,14 @@ export const submitEnquiry = createServerFn({ method: 'POST', strict: { output: 
     const storeRow = storeRows[0]
 
     if (storeRow) {
+      await createNotification({
+        userId: storeRow.ownerId,
+        kind: 'enquiry',
+        title: 'Ново барање',
+        body: data.message.slice(0, 120),
+        link: '/manage',
+      })
+
       const ownerRows = await getDb()
         .select({ email: user.email })
         .from(user)

@@ -48,6 +48,7 @@ import {
 } from '../db/schema'
 import { withAdmin } from '../middleware'
 import { runEffect } from '../runtime'
+import { createNotification } from '../functions/notifications'
 import { recordAudit } from '../audit'
 import { sendModerationDecision } from '../notifications'
 import { deleteProductCascade, deleteStoreCascade } from '../product-writes'
@@ -139,6 +140,14 @@ export const setStoreStatus = createServerFn({ method: 'POST', strict: { output:
       const row = rows[0]
 
       if (row) {
+        await createNotification({
+          userId: row.ownerId,
+          kind: 'moderation',
+          title: 'Измена на статусот',
+          body: data.status,
+          link: '/manage',
+        })
+
         const ownerRows = await getDb()
           .select({ email: user.email })
           .from(user)

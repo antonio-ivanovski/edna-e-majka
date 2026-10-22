@@ -219,3 +219,16 @@ export const storeFollower = sqliteTable(
   },
   (table) => [primaryKey({ columns: [table.userId, table.storeId] })],
 )
+
+export const notification = sqliteTable('notification', {
+  id: text('id').primaryKey(),
+  userId: text('user_id')
+    .notNull()
+    .references(() => user.id, { onDelete: 'cascade' }),
+  kind: text('kind').notNull(),
+  title: text('title').notNull(),
+  body: text('body'),
+  link: text('link'),
+  readAt: integer('read_at', { mode: 'timestamp_ms' }),
+  createdAt: integer('created_at', { mode: 'timestamp_ms' }).notNull().default(now),
+})

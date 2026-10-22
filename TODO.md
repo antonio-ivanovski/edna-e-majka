@@ -146,7 +146,7 @@ Goal: one typed contract layer, Effect everywhere on the server, one client cach
 - [x] **T3-01** Favorites / wishlist (products + stores) with account sync. Blockers: new tables.
 - [x] **T3-02** Follow store + notify on new products. Blockers: T1-15 (notifications), T3-01.
 - [x] **T3-03** Share buttons (copy link, Facebook, Viber, WhatsApp). Blockers: none.
-- [ ] **T3-04** In-app notification center (web push deferred). Blockers: T1-15.
+- [x] **T3-04** In-app notification center (web push deferred). Blockers: T1-15.
 - [x] **T3-06** Dark mode. Blockers: theme tokens + toggle.
 - [ ] **T3-09** i18n extraction: move all Macedonian UI strings into react-i18n `mk` TS file (single source; future languages later). Blockers: install react-i18next + i18next; refactor components.
 
