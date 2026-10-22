@@ -3,6 +3,7 @@ import { useCallback } from 'react'
 
 import { CatalogueList } from '#/components/catalogue/catalogue-list'
 import { ProducerContacts } from '#/components/catalogue/producer-contacts'
+import { FollowButton } from '#/components/catalogue/follow-button'
 import { Avatar } from '#/components/ui/avatar'
 import { Breadcrumbs } from '#/components/ui/breadcrumbs'
 import { Panel } from '#/components/ui/panel'
@@ -80,6 +81,7 @@ function ProducerPage() {
           <div className="flex items-center gap-2.5">
             <Avatar src={imageUrl(store.avatarKey)} alt={store.name} size={32} />
             <h1 className="text-[1.2857rem] font-bold text-black/[0.87]">{store.name}</h1>
+            <FollowButton storeId={store.id} />
           </div>
           <p className="whitespace-pre-wrap text-black/[0.68]">{store.description}</p>
           {store.city ? <p className="text-sm text-black/45">📍 {store.city}</p> : null}

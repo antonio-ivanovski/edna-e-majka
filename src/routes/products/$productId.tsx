@@ -9,6 +9,7 @@ import { ReportButton } from '#/components/catalogue/report-button'
 import { ProductGrid } from '#/components/catalogue/product-grid'
 import { ProducerContacts } from '#/components/catalogue/producer-contacts'
 import { ShareButtons } from '#/components/catalogue/share-buttons'
+import { FavoriteButton } from '#/components/catalogue/favorite-button'
 import { Avatar } from '#/components/ui/avatar'
 import { Breadcrumbs } from '#/components/ui/breadcrumbs'
 import { Label } from '#/components/ui/label'
@@ -150,7 +151,10 @@ function ProductPage() {
           </div>
         ) : null}
 
-        <h1 className="mt-3 font-display text-3xl leading-tight font-semibold">{product.title}</h1>
+        <div className="mt-3 flex items-center gap-3">
+          <h1 className="font-display text-3xl leading-tight font-semibold">{product.title}</h1>
+          <FavoriteButton productId={product.id} />
+        </div>
         {product.availability === 'out_of_stock' ? (
           <p className="mt-2 inline-block rounded bg-danger/10 px-2 py-1 text-sm font-semibold text-danger">
             Нема на залиха

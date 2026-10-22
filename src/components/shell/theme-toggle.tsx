@@ -10,7 +10,9 @@ export function ThemeToggle() {
     const handle = setTimeout(() => {
       try {
         const stored = window.localStorage.getItem('edna-theme')
-        const isDark = stored === 'dark' || (!stored && window.matchMedia('(prefers-color-scheme: dark)').matches)
+        const isDark =
+          stored === 'dark' ||
+          (!stored && window.matchMedia('(prefers-color-scheme: dark)').matches)
 
         setDark(isDark)
         document.documentElement.classList.toggle('dark', isDark)

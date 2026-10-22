@@ -22,11 +22,19 @@ import { buildSearchText } from '#/lib/translit'
 import { optionalText } from '#/lib/text'
 
 import { getDb } from '../db/client'
+import { user } from '../db/auth-schema'
 import { Env } from '../services/env'
-import { product, productCategory, productImage, productVariant, store } from '../db/schema'
+import {
+  product,
+  productCategory,
+  productImage,
+  productVariant,
+  store,
+  storeFollower,
+} from '../db/schema'
 import { withViewer } from '../middleware'
 import { reviewShopApplication } from '../moderation'
-import { sendNewApplicationNotification } from '../notifications'
+import { sendNewApplicationNotification, sendNewProductNotification } from '../notifications'
 import { selectAdminProductRow } from '../queries/admin'
 import {
   selectOwnedProductRow,
@@ -183,7 +191,8 @@ export const saveProduct = createServerFn({ method: 'POST', strict: { output: fa
     async ({ context, data }): Promise<Result.Result<{ productId: string }, DomainError>> => {
       const viewer = context.viewer
       if (!viewer) return Result.fail(new NotSignedInError({ message: 'Не сте најавени.' }))
-      if (!(await runEffect(selectOwnerStoreById(data.storeId, viewer.id))))
+      const ownStore = await runEffect(selectOwnerStoreById(data.storeId, viewer.id))
+      if (!ownStore)
         return Result.fail(new NotAllowedError({ message: 'Немате дозвола за оваа акција.' }))
       const db = getDb()
       const searchText = buildSearchText(data.title, data.description)
@@ -212,6 +221,33 @@ export const saveProduct = createServerFn({ method: 'POST', strict: { output: fa
           attributes: data.attributes ?? null,
           slug: await runEffect(claimProductSlug(data.title)),
         })
+
+        // Notify followers. Best-effort.
+        const followers = await db
+          .select({ email: user.email })
+          .from(storeFollower)
+          .innerJoin(user, eq(user.id, storeFollower.userId))
+          .where(eq(storeFollower.storeId, data.storeId))
+
+        const appUrl =
+          (await runEffect(
+            Effect.gen(function* () {
+              const e = yield* Env
+              return e.APP_URL
+            }),
+          )) ?? ''
+        const productUrl = appUrl + '/products/' + (await runEffect(claimProductSlug(data.title)))
+
+        for (const follower of followers) {
+          await runEffect(
+            sendNewProductNotification({
+              to: follower.email,
+              storeName: ownStore.name,
+              productTitle: data.title,
+              productUrl,
+            }),
+          ).catch(() => undefined)
+        }
       }
       await db.delete(productVariant).where(eq(productVariant.productId, productId))
       await db.delete(productCategory).where(eq(productCategory.productId, productId))

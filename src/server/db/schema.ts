@@ -177,3 +177,45 @@ export const moderationNote = sqliteTable('moderation_note', {
   body: text('body').notNull(),
   createdAt: integer('created_at', { mode: 'timestamp_ms' }).notNull().default(now),
 })
+
+export const favoriteProduct = sqliteTable(
+  'favorite_product',
+  {
+    userId: text('user_id')
+      .notNull()
+      .references(() => user.id, { onDelete: 'cascade' }),
+    productId: text('product_id')
+      .notNull()
+      .references(() => product.id, { onDelete: 'cascade' }),
+    createdAt: integer('created_at', { mode: 'timestamp_ms' }).notNull().default(now),
+  },
+  (table) => [primaryKey({ columns: [table.userId, table.productId] })],
+)
+
+export const favoriteStore = sqliteTable(
+  'favorite_store',
+  {
+    userId: text('user_id')
+      .notNull()
+      .references(() => user.id, { onDelete: 'cascade' }),
+    storeId: text('store_id')
+      .notNull()
+      .references(() => store.id, { onDelete: 'cascade' }),
+    createdAt: integer('created_at', { mode: 'timestamp_ms' }).notNull().default(now),
+  },
+  (table) => [primaryKey({ columns: [table.userId, table.storeId] })],
+)
+
+export const storeFollower = sqliteTable(
+  'store_follower',
+  {
+    userId: text('user_id')
+      .notNull()
+      .references(() => user.id, { onDelete: 'cascade' }),
+    storeId: text('store_id')
+      .notNull()
+      .references(() => store.id, { onDelete: 'cascade' }),
+    createdAt: integer('created_at', { mode: 'timestamp_ms' }).notNull().default(now),
+  },
+  (table) => [primaryKey({ columns: [table.userId, table.storeId] })],
+)
