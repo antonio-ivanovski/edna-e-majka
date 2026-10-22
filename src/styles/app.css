@@ -1,6 +1,8 @@
 @import 'tailwindcss';
 @import 'tw-animate-css';
 
+@custom-variant dark (&:where(.dark, .dark *));
+
 /*
  * The palette the site has always used, kept as design tokens. Amber is the
  * shop front, red is the action colour, and the muted colours are the contact
@@ -78,4 +80,9 @@
     transition-duration: 0.01ms !important;
     scroll-behavior: auto !important;
   }
+}
+
+.dark body {
+  background-color: #18181b;
+  color: rgb(255 255 255 / 87%);
 }

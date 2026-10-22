@@ -5,6 +5,7 @@ import type { StoreSummary } from '#/server/queries/stores'
 import { ProducersDropdown } from './producers-dropdown'
 import { SearchForm } from './search-form'
 import { UserMenu } from './user-menu'
+import { ThemeToggle } from './theme-toggle'
 
 export function SiteHeader({
   stores,
@@ -20,6 +21,7 @@ export function SiteHeader({
       </Link>
       <ProducersDropdown stores={stores} />
       <SearchForm />
+      <ThemeToggle />
       <UserMenu googleEnabled={googleEnabled} />
     </header>
   )
