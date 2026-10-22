@@ -17,11 +17,16 @@ export function effectResolver<S extends Schema.Top>(schema: S): Resolver<any> {
           return
         }
         const path = Array.isArray(node.path)
-          ? node.path.map((p: any) => (typeof p === 'object' && p !== null && 'key' in p ? p.key : p))
+          ? node.path.map((p: any) =>
+              typeof p === 'object' && p !== null && 'key' in p ? p.key : p,
+            )
           : []
         const key = path.length ? path.join('.') : ''
         if (key && !errors[key]) {
-          errors[key] = { type: 'validation', message: String(node.message ?? 'Невалидна вредност.') }
+          errors[key] = {
+            type: 'validation',
+            message: String(node.message ?? 'Невалидна вредност.'),
+          }
         }
       }
       collect(issue)

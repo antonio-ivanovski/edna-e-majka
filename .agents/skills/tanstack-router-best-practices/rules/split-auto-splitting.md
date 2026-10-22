@@ -55,8 +55,8 @@ import { createFileRoute } from '@tanstack/react-router'
 
 export const Route = createFileRoute('/posts')({
   loader: () => fetchPosts(),
-  component: PostsPage,       // Auto-split into a lazy chunk
-  errorComponent: PostsError,  // Auto-split into a separate chunk
+  component: PostsPage, // Auto-split into a lazy chunk
+  errorComponent: PostsError, // Auto-split into a separate chunk
 })
 
 // Do NOT export component functions — they must stay internal
@@ -78,9 +78,7 @@ tanstackRouter({
   autoCodeSplitting: true,
   codeSplittingOptions: {
     // Put all component types in one chunk instead of separate chunks
-    defaultBehavior: [
-      ['component', 'pendingComponent', 'errorComponent', 'notFoundComponent'],
-    ],
+    defaultBehavior: [['component', 'pendingComponent', 'errorComponent', 'notFoundComponent']],
   },
 })
 ```

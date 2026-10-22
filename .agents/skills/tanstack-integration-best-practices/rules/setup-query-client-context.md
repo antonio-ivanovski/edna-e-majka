@@ -141,9 +141,7 @@ function renderWithProviders(route: string) {
     routeTree,
     context: { queryClient },
     Wrap: ({ children }) => (
-      <QueryClientProvider client={queryClient}>
-        {children}
-      </QueryClientProvider>
+      <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
     ),
   })
 

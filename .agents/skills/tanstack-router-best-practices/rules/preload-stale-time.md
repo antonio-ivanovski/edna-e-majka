@@ -38,32 +38,32 @@ const router = createRouter({
 const router = createRouter({
   routeTree,
   defaultPreload: 'intent',
-  defaultPreloadStaleTime: 10_000,  // Preloaded data fresh for 10 seconds
-  defaultStaleTime: 5_000,          // Navigation data fresh for 5 seconds
+  defaultPreloadStaleTime: 10_000, // Preloaded data fresh for 10 seconds
+  defaultStaleTime: 5_000, // Navigation data fresh for 5 seconds
 })
 
 // Per-route override for frequently changing data
 export const Route = createFileRoute('/live-feed')({
   loader: () => fetchLiveFeed(),
-  preloadStaleTime: 5_000,   // Refresh preloaded data after 5 seconds
-  staleTime: 0,              // Always reload on navigation
+  preloadStaleTime: 5_000, // Refresh preloaded data after 5 seconds
+  staleTime: 0, // Always reload on navigation
 })
 
 // Per-route override for rarely changing data
 export const Route = createFileRoute('/about')({
   loader: () => fetchAboutContent(),
-  preloadStaleTime: 60_000,  // Preloaded data good for 1 minute
-  staleTime: Infinity,       // Never auto-reload
+  preloadStaleTime: 60_000, // Preloaded data good for 1 minute
+  staleTime: Infinity, // Never auto-reload
 })
 ```
 
 ## Cache Time Comparison
 
-| Option | Default | Controls |
-|---|---|---|
-| `preloadStaleTime` | `30_000` (30s) | How long preloaded data is fresh before another preload triggers |
-| `staleTime` | `0` | How long navigated data is fresh before background reload on re-match |
-| `gcTime` | `1_800_000` (30min) | How long unused cached data is kept before garbage collection |
+| Option             | Default             | Controls                                                              |
+| ------------------ | ------------------- | --------------------------------------------------------------------- |
+| `preloadStaleTime` | `30_000` (30s)      | How long preloaded data is fresh before another preload triggers      |
+| `staleTime`        | `0`                 | How long navigated data is fresh before background reload on re-match |
+| `gcTime`           | `1_800_000` (30min) | How long unused cached data is kept before garbage collection         |
 
 ## Context
 

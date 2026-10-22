@@ -12,16 +12,15 @@ Middleware communicates with downstream handlers and other middleware through co
 // Using global state instead of context
 let currentUser: User | null = null
 
-const authMiddleware = createMiddleware({ type: 'function' })
-  .server(async ({ next }) => {
-    currentUser = await getUser()  // Global mutable state - race conditions!
-    return next()
-  })
+const authMiddleware = createMiddleware({ type: 'function' }).server(async ({ next }) => {
+  currentUser = await getUser() // Global mutable state - race conditions!
+  return next()
+})
 
 export const getProfile = createServerFn()
   .middleware([authMiddleware])
   .handler(async () => {
-    return currentUser  // May be wrong user in concurrent requests
+    return currentUser // May be wrong user in concurrent requests
   })
 ```
 
@@ -30,14 +29,13 @@ export const getProfile = createServerFn()
 ```tsx
 import { createMiddleware, createServerFn } from '@tanstack/react-start'
 
-const authMiddleware = createMiddleware({ type: 'function' })
-  .server(async ({ next }) => {
-    const user = await getCurrentUser()
-    // Pass through context — type-safe and request-scoped
-    return next({
-      context: { user },
-    })
+const authMiddleware = createMiddleware({ type: 'function' }).server(async ({ next }) => {
+  const user = await getCurrentUser()
+  // Pass through context — type-safe and request-scoped
+  return next({
+    context: { user },
   })
+})
 
 const permissionMiddleware = createMiddleware({ type: 'function' })
   .middleware([authMiddleware])
@@ -45,7 +43,7 @@ const permissionMiddleware = createMiddleware({ type: 'function' })
     // context.user is available from authMiddleware
     const permissions = await getPermissions(context.user.id)
     return next({
-      context: { permissions },  // Adds to existing context
+      context: { permissions }, // Adds to existing context
     })
   })
 

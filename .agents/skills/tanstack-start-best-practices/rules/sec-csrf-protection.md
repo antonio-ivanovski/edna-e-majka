@@ -22,7 +22,7 @@ export function useAppSession() {
 }
 
 // GET server function that mutates data - can be triggered by img tags
-export const deleteAccount = createServerFn()  // GET is default
+export const deleteAccount = createServerFn() // GET is default
   .handler(async () => {
     const session = await useAppSession()
     await db.users.delete({ where: { id: session.data.userId } })
@@ -37,46 +37,44 @@ import { useSession } from '@tanstack/react-start/server'
 // Configure session cookies with sameSite protection
 export function useAppSession() {
   return useSession<SessionData>({
-    password: process.env.SESSION_SECRET!,  // At least 32 characters
+    password: process.env.SESSION_SECRET!, // At least 32 characters
     cookie: {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
-      sameSite: 'lax',    // Blocks cross-site POST requests
+      sameSite: 'lax', // Blocks cross-site POST requests
       maxAge: 60 * 60 * 24 * 7,
     },
   })
 }
 
 // Use POST for all mutations - never GET
-export const deleteAccount = createServerFn({ method: 'POST' })
-  .handler(async () => {
-    const session = await useAppSession()
-    if (!session.data.userId) {
-      throw redirect({ to: '/login' })
-    }
-    await db.users.delete({ where: { id: session.data.userId } })
-    await session.clear()
-    throw redirect({ to: '/' })
-  })
+export const deleteAccount = createServerFn({ method: 'POST' }).handler(async () => {
+  const session = await useAppSession()
+  if (!session.data.userId) {
+    throw redirect({ to: '/login' })
+  }
+  await db.users.delete({ where: { id: session.data.userId } })
+  await session.clear()
+  throw redirect({ to: '/' })
+})
 ```
 
 ## Good Example: OAuth State Parameter for CSRF in Auth Flows
 
 ```tsx
-export const startOAuth = createServerFn({ method: 'POST' })
-  .handler(async () => {
-    const session = await useAppSession()
-    const state = crypto.randomUUID()
+export const startOAuth = createServerFn({ method: 'POST' }).handler(async () => {
+  const session = await useAppSession()
+  const state = crypto.randomUUID()
 
-    await session.update({ oauthState: state })
+  await session.update({ oauthState: state })
 
-    const authUrl = new URL('https://provider.com/oauth/authorize')
-    authUrl.searchParams.set('state', state)
-    authUrl.searchParams.set('client_id', process.env.OAUTH_CLIENT_ID!)
-    authUrl.searchParams.set('redirect_uri', process.env.OAUTH_CALLBACK_URL!)
+  const authUrl = new URL('https://provider.com/oauth/authorize')
+  authUrl.searchParams.set('state', state)
+  authUrl.searchParams.set('client_id', process.env.OAUTH_CLIENT_ID!)
+  authUrl.searchParams.set('redirect_uri', process.env.OAUTH_CALLBACK_URL!)
 
-    throw redirect({ href: authUrl.toString() })
-  })
+  throw redirect({ href: authUrl.toString() })
+})
 
 export const handleOAuthCallback = createServerFn()
   .inputValidator((data: { code: string; state: string }) => data)

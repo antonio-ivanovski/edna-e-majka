@@ -59,8 +59,8 @@ function LoginForm() {
 
     navigate({
       to: '/dashboard',
-      replace: true,        // Replace login page in history
-      resetScroll: true,    // Scroll to top
+      replace: true, // Replace login page in history
+      resetScroll: true, // Scroll to top
     })
   }
 
@@ -93,7 +93,7 @@ function PostActions() {
 
   const handleDelete = async () => {
     await deletePost()
-    navigate({ to: '..', })  // Navigate to parent route
+    navigate({ to: '..' }) // Navigate to parent route
   }
 
   return <button onClick={handleDelete}>Delete</button>
@@ -102,15 +102,15 @@ function PostActions() {
 
 ## NavigateOptions Reference
 
-| Option | Description |
-|---|---|
-| `to` | Destination path (absolute or relative from `from`) |
-| `params` | Path params object or updater function |
-| `search` | Search params object or updater function |
-| `hash` | Hash string or updater function |
-| `replace` | Replace current history entry instead of pushing |
-| `resetScroll` | Reset scroll position to 0,0 |
-| `viewTransition` | Use View Transitions API |
+| Option           | Description                                         |
+| ---------------- | --------------------------------------------------- |
+| `to`             | Destination path (absolute or relative from `from`) |
+| `params`         | Path params object or updater function              |
+| `search`         | Search params object or updater function            |
+| `hash`           | Hash string or updater function                     |
+| `replace`        | Replace current history entry instead of pushing    |
+| `resetScroll`    | Reset scroll position to 0,0                        |
+| `viewTransition` | Use View Transitions API                            |
 
 ## Context
 

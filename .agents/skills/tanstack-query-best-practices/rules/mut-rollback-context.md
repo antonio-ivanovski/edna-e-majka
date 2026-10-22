@@ -16,7 +16,7 @@ const mutation = useMutation({
 
     // Optimistically update without saving previous state
     queryClient.setQueryData(['todos'], (old: Todo[]) =>
-      old.map((t) => (t.id === newTodo.id ? { ...t, ...newTodo } : t))
+      old.map((t) => (t.id === newTodo.id ? { ...t, ...newTodo } : t)),
     )
 
     // No return — nothing to rollback with
@@ -43,7 +43,7 @@ const mutation = useMutation({
 
     // 3. Optimistically update the cache
     queryClient.setQueryData(['todos'], (old: Todo[]) =>
-      old.map((t) => (t.id === newTodo.id ? { ...t, ...newTodo } : t))
+      old.map((t) => (t.id === newTodo.id ? { ...t, ...newTodo } : t)),
     )
 
     // 4. Return snapshot as rollback context
@@ -76,7 +76,7 @@ const mutation = useMutation({
     const previousTodo = queryClient.getQueryData<Todo>(['todo', newTodo.id])
 
     queryClient.setQueryData(['todos'], (old: Todo[]) =>
-      old.map((t) => (t.id === newTodo.id ? { ...t, ...newTodo } : t))
+      old.map((t) => (t.id === newTodo.id ? { ...t, ...newTodo } : t)),
     )
     queryClient.setQueryData(['todo', newTodo.id], (old: Todo) => ({
       ...old,

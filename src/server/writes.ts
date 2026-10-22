@@ -18,23 +18,32 @@ export const updateStoreDetails = Effect.fn('updateStoreDetails')(function* (
   actor: Actor,
 ) {
   const db = yield* Db
-  const rows = yield* db.run((d) => d.select({ id: store.id, ownerId: store.ownerId }).from(store).where(eq(store.id, storeId)).limit(1))
+  const rows = yield* db.run((d) =>
+    d
+      .select({ id: store.id, ownerId: store.ownerId })
+      .from(store)
+      .where(eq(store.id, storeId))
+      .limit(1),
+  )
   const found = rows[0]
   if (!found) return yield* new NotFoundError({ message: 'Продавницата не е најдена.' })
   if (actor.kind === 'owner' && found.ownerId !== actor.id) {
     return yield* new NotAllowedError({ message: 'Немате дозвола за оваа акција.' })
   }
   yield* db.run((d) =>
-    d.update(store).set({
-      name: data.name,
-      description: data.description,
-      email: data.email,
-      phone: data.phone,
-      facebook: optionalText(data.facebook),
-      instagram: optionalText(data.instagram),
-      city: optionalText(data.city),
-      hours: optionalText(data.hours),
-    }).where(eq(store.id, storeId)),
+    d
+      .update(store)
+      .set({
+        name: data.name,
+        description: data.description,
+        email: data.email,
+        phone: data.phone,
+        facebook: optionalText(data.facebook),
+        instagram: optionalText(data.instagram),
+        city: optionalText(data.city),
+        hours: optionalText(data.hours),
+      })
+      .where(eq(store.id, storeId)),
   )
 })
 
@@ -45,16 +54,19 @@ export const setStoreStatus = Effect.fn('setStoreStatus')(function* (
   actor: Actor,
 ) {
   const db = yield* Db
-  const rows = yield* db.run((d) => d.select({ id: store.id }).from(store).where(eq(store.id, storeId)).limit(1))
+  const rows = yield* db.run((d) =>
+    d.select({ id: store.id }).from(store).where(eq(store.id, storeId)).limit(1),
+  )
   if (!rows[0]) return yield* new NotFoundError({ message: 'Продавницата не е најдена.' })
   yield* db.run((d) =>
-    d.update(store).set({
-      status,
-      ...(note === undefined ? {} : { statusNote: note || null }),
-      reviewedBy: actor.id,
-      reviewedAt: new Date(),
-    }).where(eq(store.id, storeId)),
+    d
+      .update(store)
+      .set({
+        status,
+        ...(note === undefined ? {} : { statusNote: note || null }),
+        reviewedBy: actor.id,
+        reviewedAt: new Date(),
+      })
+      .where(eq(store.id, storeId)),
   )
 })
-
-

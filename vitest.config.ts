@@ -5,7 +5,9 @@ import { fileURLToPath } from 'node:url'
 export default defineConfig({
   resolve: {
     alias: {
-      'cloudflare:workers': fileURLToPath(new URL('./src/test/cloudflare-workers-mock.ts', import.meta.url)),
+      'cloudflare:workers': fileURLToPath(
+        new URL('./src/test/cloudflare-workers-mock.ts', import.meta.url),
+      ),
     },
   },
   test: {

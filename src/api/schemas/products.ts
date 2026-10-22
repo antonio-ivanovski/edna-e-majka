@@ -19,7 +19,9 @@ export const ProductListFilters = Schema.Struct({
 
 export type ProductListFilters = Schema.Schema.Type<typeof ProductListFilters>
 
-export const ProductId = Schema.Struct({ productId: Schema.String.pipe(Schema.check(Schema.isMinLength(1))) })
+export const ProductId = Schema.Struct({
+  productId: Schema.String.pipe(Schema.check(Schema.isMinLength(1))),
+})
 
 export const ManageProducts = Schema.Struct({
   storeId: Schema.String.pipe(Schema.check(Schema.isMinLength(1))),
@@ -39,7 +41,9 @@ export const ProductStatusSchema = Schema.Struct({
   archived: Schema.Boolean,
 })
 
-export const ProductDelete = Schema.Struct({ productId: Schema.String.pipe(Schema.check(Schema.isMinLength(1))) })
+export const ProductDelete = Schema.Struct({
+  productId: Schema.String.pipe(Schema.check(Schema.isMinLength(1))),
+})
 
 export const ProductImageAlt = Schema.Struct({
   imageId: Schema.String.pipe(Schema.check(Schema.isMinLength(1))),
@@ -49,7 +53,11 @@ export const ProductImageAlt = Schema.Struct({
 export const ProductVariantInput = Schema.Struct({
   title: Schema.Trim.pipe(Schema.check(Schema.isMinLength(1), Schema.isMaxLength(60))),
   price: Schema.Number.pipe(
-    Schema.check(Schema.isInt(), Schema.isGreaterThanOrEqualTo(1), Schema.isLessThanOrEqualTo(1_000_000)),
+    Schema.check(
+      Schema.isInt(),
+      Schema.isGreaterThanOrEqualTo(1),
+      Schema.isLessThanOrEqualTo(1_000_000),
+    ),
   ),
 })
 
@@ -59,7 +67,9 @@ export const ProductForm = Schema.Struct({
   title: Schema.Trim.pipe(Schema.check(Schema.isMinLength(3), Schema.isMaxLength(160))),
   description: Schema.Trim.pipe(Schema.check(Schema.isMinLength(10), Schema.isMaxLength(4000))),
   categories: Schema.Array(Schema.String).pipe(Schema.check(Schema.isMinLength(1))),
-  availability: ProductAvailability.pipe(Schema.withDecodingDefault(Effect.succeed('in_stock' as any))),
+  availability: ProductAvailability.pipe(
+    Schema.withDecodingDefault(Effect.succeed('in_stock' as any)),
+  ),
   variants: Schema.Array(ProductVariantInput).pipe(Schema.check(Schema.isMinLength(1))),
 })
 

@@ -94,8 +94,8 @@ export const Route = createFileRoute('/blog/$slug')({
   headers: () => ({
     'Cache-Control': 'public, max-age=3600, s-maxage=3600, stale-while-revalidate=86400',
   }),
-  staleTime: 60_000,      // Client-side stale time (1 minute)
-  gcTime: 5 * 60_000,     // Client-side GC time (5 minutes)
+  staleTime: 60_000, // Client-side stale time (1 minute)
+  gcTime: 5 * 60_000, // Client-side GC time (5 minutes)
   component: BlogPost,
 })
 
@@ -171,13 +171,13 @@ export const Route = createFileRoute('/api/revalidate')({
 
 ## Cache-Control Directives
 
-| Directive | Meaning |
-|-----------|---------|
-| `s-maxage=N` | CDN cache duration (seconds) |
-| `max-age=N` | Browser cache duration |
-| `stale-while-revalidate=N` | Serve stale while fetching fresh |
-| `private` | Don't cache on CDN (user-specific) |
-| `no-store` | Never cache |
+| Directive                  | Meaning                            |
+| -------------------------- | ---------------------------------- |
+| `s-maxage=N`               | CDN cache duration (seconds)       |
+| `max-age=N`                | Browser cache duration             |
+| `stale-while-revalidate=N` | Serve stale while fetching fresh   |
+| `private`                  | Don't cache on CDN (user-specific) |
+| `no-store`                 | Never cache                        |
 
 ## Context
 

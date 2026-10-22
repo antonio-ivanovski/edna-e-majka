@@ -34,13 +34,13 @@ const { data: settings } = useQuery({
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
-      staleTime: 60 * 1000,       // 1 minute — prevents unnecessary refetches
-      gcTime: 10 * 60 * 1000,     // 10 minutes — retains inactive cache longer
-      retry: 2,                    // Fewer retries than default 3
+      staleTime: 60 * 1000, // 1 minute — prevents unnecessary refetches
+      gcTime: 10 * 60 * 1000, // 10 minutes — retains inactive cache longer
+      retry: 2, // Fewer retries than default 3
       refetchOnWindowFocus: false, // Disable if not needed
     },
     mutations: {
-      retry: 0,  // Mutations should not retry by default
+      retry: 0, // Mutations should not retry by default
     },
   },
 })
@@ -49,7 +49,7 @@ const queryClient = new QueryClient({
 const { data: stockPrice } = useQuery({
   queryKey: ['stock', symbol],
   queryFn: () => fetchStockPrice(symbol),
-  staleTime: 0,          // Override: real-time data
+  staleTime: 0, // Override: real-time data
   refetchInterval: 5000, // Poll every 5 seconds
 })
 

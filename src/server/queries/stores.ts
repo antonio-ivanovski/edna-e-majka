@@ -30,7 +30,11 @@ const publishedProductCount = sql<number>`(
   where ${product.storeId} = ${store.id} and ${product.status} = 'published'
 )`
 
-export const selectStores = Effect.fn('selectStores')(function* (): Effect.fn.Return<StoreSummary[], DatabaseError, Db> {
+export const selectStores = Effect.fn('selectStores')(function* (): Effect.fn.Return<
+  StoreSummary[],
+  DatabaseError,
+  Db
+> {
   const db = yield* Db
   const rows = yield* db.run((d) =>
     d

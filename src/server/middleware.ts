@@ -6,10 +6,12 @@ import { runEffect } from './runtime'
 import { Session } from './services/session'
 
 export const withViewer = createMiddleware({ type: 'function' }).server(async ({ next }) => {
-  const viewer = await runEffect(Effect.gen(function* () {
-    const session = yield* Session
-    return yield* session.getViewer()
-  }))
+  const viewer = await runEffect(
+    Effect.gen(function* () {
+      const session = yield* Session
+      return yield* session.getViewer()
+    }),
+  )
   return next({ context: { viewer } })
 })
 

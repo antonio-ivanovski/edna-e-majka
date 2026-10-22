@@ -14,8 +14,6 @@ import { deleteUserAvatar, uploadUserAvatar } from '#/lib/uploads'
 type ProfileValues = Schema.Schema.Type<typeof Profile>
 import { updateAccount } from '#/server/functions/account'
 
-
-
 /** The name and the picture on the account. */
 export function AccountProfileForm({ name, image }: { name: string; image: string | null }) {
   const router = useRouter()

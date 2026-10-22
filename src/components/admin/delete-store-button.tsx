@@ -25,7 +25,7 @@ export function AdminDeleteStoreButton({
 
     setBusy(false)
 
-    if (result._tag === "Failure") {
+    if (result._tag === 'Failure') {
       toast.error(result.failure.message)
       return false
     }

@@ -1,5 +1,3 @@
-
-
 /**
  * Categories are application content, not database rows: they change with a
  * deploy and products join them by slug through `product_category`.
@@ -43,8 +41,6 @@ export const CATEGORIES: readonly Category[] = CATEGORY_SLUGS.map((slug) => ({
   // The icons the legacy app shipped, kept as they are.
   icon: `/assets/category-icons/${slug}.svg`,
 }))
-
-
 
 export function findCategory(slug: string): Category | undefined {
   return CATEGORIES.find((category) => category.slug === slug)

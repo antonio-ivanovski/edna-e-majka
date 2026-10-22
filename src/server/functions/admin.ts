@@ -9,20 +9,40 @@
 import { notFound } from '@tanstack/react-router'
 import { createServerFn } from '@tanstack/react-start'
 import { eq, sql } from 'drizzle-orm'
-import { Result } from 'effect'
+import { Effect, Result } from 'effect'
 import type { DomainError } from '../errors'
 import { InvalidInputError, NotAllowedError, NotFoundError } from '../errors'
-import { toValidator, AdminMessage, AdminMessageHandled, AdminMessageList, AdminProductList, AdminStoreDetails, AdminStoreList, AdminStoreStatus, AdminTransferStore, AdminUserList, AdminUserRole, ProductDelete, ProductForm, ProductStatusSchema as ProductStatus, StoreId } from '#/api/schemas'
+import {
+  toValidator,
+  AdminMessage,
+  AdminMessageHandled,
+  AdminMessageList,
+  AdminProductList,
+  AdminStoreDetails,
+  AdminStoreList,
+  AdminStoreStatus,
+  AdminTransferStore,
+  AdminUserList,
+  AdminUserRole,
+  ProductDelete,
+  ProductForm,
+  ProductStatusSchema as ProductStatus,
+  StoreId,
+} from '#/api/schemas'
 import { buildSearchText } from '#/lib/translit'
-
 
 import { user } from '../db/auth-schema'
 import { getDb } from '../db/client'
+import { Env } from '../services/env'
 import { contactMessage, product, productCategory, productVariant, store } from '../db/schema'
 import { withAdmin } from '../middleware'
 import { runEffect } from '../runtime'
+import { sendModerationDecision } from '../notifications'
 import { deleteProductCascade, deleteStoreCascade } from '../product-writes'
-import { setStoreStatus as setStoreStatusEffect, updateStoreDetails as updateStoreDetailsEffect } from '../writes'
+import {
+  setStoreStatus as setStoreStatusEffect,
+  updateStoreDetails as updateStoreDetailsEffect,
+} from '../writes'
 import {
   selectAdminMessages,
   selectAdminProductRow,
@@ -79,7 +99,51 @@ export const setStoreStatus = createServerFn({ method: 'POST', strict: { output:
   .validator(toValidator(AdminStoreStatus))
   .handler(async ({ context, data }): Promise<Result.Result<null, DomainError>> => {
     try {
-      await runEffect(setStoreStatusEffect(data.storeId, data.status, data.note, { kind: 'admin', id: context.admin.id }))
+      await runEffect(
+        setStoreStatusEffect(data.storeId, data.status, data.note, {
+          kind: 'admin',
+          id: context.admin.id,
+        }),
+      )
+
+      // Tell the owner what changed. Best-effort.
+      const rows = await getDb()
+        .select({ name: store.name, ownerId: store.ownerId })
+        .from(store)
+        .where(eq(store.id, data.storeId))
+        .limit(1)
+
+      const row = rows[0]
+
+      if (row) {
+        const ownerRows = await getDb()
+          .select({ email: user.email })
+          .from(user)
+          .where(eq(user.id, row.ownerId))
+          .limit(1)
+
+        const ownerEmail = ownerRows[0]?.email
+        const appUrl =
+          (await runEffect(
+            Effect.gen(function* () {
+              const e = yield* Env
+              return e.APP_URL
+            }),
+          )) ?? ''
+
+        if (ownerEmail) {
+          await runEffect(
+            sendModerationDecision({
+              to: ownerEmail,
+              storeName: row.name,
+              status: data.status,
+              note: data.note ?? null,
+              appUrl,
+            }),
+          ).catch(() => undefined)
+        }
+      }
+
       return Result.succeed(null)
     } catch (e) {
       return Result.fail(new NotFoundError({ message: (e as Error).message || 'Грешка.' }))
@@ -226,7 +290,9 @@ export const setUserRole = createServerFn({ method: 'POST', strict: { output: fa
   .validator(toValidator(AdminUserRole))
   .handler(async ({ context, data }): Promise<Result.Result<null, DomainError>> => {
     if (data.userId === context.admin.id) {
-      return Result.fail(new NotAllowedError({ message: 'Не можете да ја смените сопствената улога.' }))
+      return Result.fail(
+        new NotAllowedError({ message: 'Не можете да ја смените сопствената улога.' }),
+      )
     }
 
     const rows = await getDb()

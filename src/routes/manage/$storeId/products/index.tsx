@@ -16,7 +16,9 @@ export const Route = createFileRoute('/manage/$storeId/products/')({
   validateSearch: toValidator(ProductSearch),
   loaderDeps: ({ search }) => ({ page: search.page ?? 1 }),
   loader: async ({ context: { queryClient }, params, deps }) => {
-    const data = await queryClient.ensureQueryData(manageQueries.products(params.storeId, deps.page))
+    const data = await queryClient.ensureQueryData(
+      manageQueries.products(params.storeId, deps.page),
+    )
     return data
   },
   head: ({ loaderData }) => ({

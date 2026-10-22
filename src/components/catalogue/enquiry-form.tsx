@@ -11,10 +11,19 @@ import { Field, Input, Textarea } from '#/components/ui/field'
 import { Message } from '#/components/ui/message'
 
 const formSchema = Schema.Struct({
-  name: Schema.Trim.pipe(Schema.check(Schema.isMinLength(2)), Schema.check(Schema.isMaxLength(120))),
-  email: Schema.String.pipe(Schema.check(Schema.isPattern(/^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/)), Schema.check(Schema.isMaxLength(200))),
+  name: Schema.Trim.pipe(
+    Schema.check(Schema.isMinLength(2)),
+    Schema.check(Schema.isMaxLength(120)),
+  ),
+  email: Schema.String.pipe(
+    Schema.check(Schema.isPattern(/^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/)),
+    Schema.check(Schema.isMaxLength(200)),
+  ),
   phone: Schema.optional(Schema.Trim.pipe(Schema.check(Schema.isMaxLength(60)))),
-  message: Schema.Trim.pipe(Schema.check(Schema.isMinLength(10)), Schema.check(Schema.isMaxLength(2000))),
+  message: Schema.Trim.pipe(
+    Schema.check(Schema.isMinLength(10)),
+    Schema.check(Schema.isMaxLength(2000)),
+  ),
   honeypot: Schema.String.pipe(Schema.check(Schema.isMaxLength(0))),
 })
 

@@ -69,20 +69,14 @@ function UserProfile({ userId }: { userId: string }) {
     queryFn: () => fetchUser(userId),
     placeholderData: () => {
       // Pull partial data from the users list cache
-      return queryClient
-        .getQueryData<User[]>(['users'])
-        ?.find((user) => user.id === userId)
+      return queryClient.getQueryData<User[]>(['users'])?.find((user) => user.id === userId)
     },
   })
 
   return (
     <div>
       <h1>{data?.name}</h1>
-      {isPlaceholderData ? (
-        <p>Loading full profile...</p>
-      ) : (
-        <ProfileDetails user={data} />
-      )}
+      {isPlaceholderData ? <p>Loading full profile...</p> : <ProfileDetails user={data} />}
     </div>
   )
 }

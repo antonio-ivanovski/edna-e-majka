@@ -33,8 +33,7 @@ export const Route = createFileRoute('/products')({
   }),
   // Only declare the params the loader actually uses
   loaderDeps: ({ search: { page, sort } }) => ({ page, sort }),
-  loader: ({ deps: { page, sort } }) =>
-    fetchProducts({ page, sort }),
+  loader: ({ deps: { page, sort } }) => fetchProducts({ page, sort }),
   component: ProductsPage,
 })
 

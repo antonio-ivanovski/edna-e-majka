@@ -17,7 +17,9 @@ export interface RateLimiterService {
 
 import { env } from 'cloudflare:workers'
 
-export class RateLimiter extends Context.Service<RateLimiter, RateLimiterService>()('edna-e-majka/server/RateLimiter') {
+export class RateLimiter extends Context.Service<RateLimiter, RateLimiterService>()(
+  'edna-e-majka/server/RateLimiter',
+) {
   static readonly layer = Layer.sync(RateLimiter, () => {
     const consume: RateLimiterService['consume'] = (input) =>
       Effect.tryPromise({
@@ -39,7 +41,8 @@ export class RateLimiter extends Context.Service<RateLimiter, RateLimiterService
             retryAfterSeconds: allowed ? 0 : input.windowSeconds,
           } satisfies RateLimitResult
         },
-        catch: (cause) => new DatabaseError({ message: 'Грешка при проверка на ограничувањето.', cause }),
+        catch: (cause) =>
+          new DatabaseError({ message: 'Грешка при проверка на ограничувањето.', cause }),
       })
 
     return RateLimiter.of({ consume })

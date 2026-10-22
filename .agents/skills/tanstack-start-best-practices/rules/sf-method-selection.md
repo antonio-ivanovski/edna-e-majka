@@ -10,10 +10,9 @@ Server functions support `GET` (default) and `POST` methods. Use `GET` for data 
 
 ```tsx
 // Using POST for a read operation - prevents caching and prefetching
-export const getUsers = createServerFn({ method: 'POST' })
-  .handler(async () => {
-    return db.users.findMany()
-  })
+export const getUsers = createServerFn({ method: 'POST' }).handler(async () => {
+  return db.users.findMany()
+})
 
 // Using GET for a mutation - can be replayed by browser/cache
 export const deleteUser = createServerFn({ method: 'GET' })
@@ -30,7 +29,7 @@ export const deleteUser = createServerFn({ method: 'GET' })
 import { createServerFn } from '@tanstack/react-start'
 
 // GET for reads - idempotent, cacheable, safe for prefetching
-export const getUsers = createServerFn()  // GET is default
+export const getUsers = createServerFn() // GET is default
   .handler(async () => {
     return db.users.findMany({ orderBy: { createdAt: 'desc' } })
   })

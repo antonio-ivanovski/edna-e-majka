@@ -54,9 +54,7 @@ function TodoList() {
       {todos?.map((todo) => (
         <li key={todo.id}>{todo.title}</li>
       ))}
-      {addTodo.isPending && (
-        <li style={{ opacity: 0.5 }}>{addTodo.variables.title}</li>
-      )}
+      {addTodo.isPending && <li style={{ opacity: 0.5 }}>{addTodo.variables.title}</li>}
     </ul>
   )
 }
@@ -64,11 +62,11 @@ function TodoList() {
 
 ## Mutation Status Reference
 
-| Status | Boolean | Meaning |
-|--------|---------|---------|
-| `'idle'` | `isIdle` | Mutation has not been called yet |
-| `'pending'` | `isPending` | Mutation is currently executing |
-| `'error'` | `isError` | Last mutation attempt failed |
+| Status      | Boolean     | Meaning                              |
+| ----------- | ----------- | ------------------------------------ |
+| `'idle'`    | `isIdle`    | Mutation has not been called yet     |
+| `'pending'` | `isPending` | Mutation is currently executing      |
+| `'error'`   | `isError`   | Last mutation attempt failed         |
 | `'success'` | `isSuccess` | Last mutation completed successfully |
 
 ## Context

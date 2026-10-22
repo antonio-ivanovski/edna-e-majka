@@ -12,9 +12,9 @@ Not all data is equally important for the initial render. Await critical data in
 // Awaiting everything — page blocked until slowest request finishes
 export const Route = createFileRoute('/posts/$postId')({
   loader: async ({ params }) => {
-    const post = await fetchPost(params.postId)           // 100ms
-    const comments = await fetchComments(params.postId)   // 2000ms
-    const recommendations = await fetchRecommendations()  // 3000ms
+    const post = await fetchPost(params.postId) // 100ms
+    const comments = await fetchComments(params.postId) // 2000ms
+    const recommendations = await fetchRecommendations() // 3000ms
     return { post, comments, recommendations }
     // User waits 3+ seconds before seeing anything
   },

@@ -10,14 +10,13 @@ TanStack Start uses `throw redirect()` for server-side navigation control. Redir
 
 ```tsx
 // Returning a redirect URL instead of throwing - client must handle manually
-export const checkAuth = createServerFn()
-  .handler(async () => {
-    const user = await getCurrentUser()
-    if (!user) {
-      return { redirect: '/login' }  // Client must check and navigate
-    }
-    return { user }
-  })
+export const checkAuth = createServerFn().handler(async () => {
+  const user = await getCurrentUser()
+  if (!user) {
+    return { redirect: '/login' } // Client must check and navigate
+  }
+  return { user }
+})
 
 // Catching redirects as errors
 export const Route = createFileRoute('/_authed')({
@@ -40,28 +39,26 @@ import { redirect, isRedirect } from '@tanstack/react-router'
 import { createServerFn } from '@tanstack/react-start'
 
 // Throw redirect for navigation control
-export const requireAuth = createServerFn()
-  .handler(async () => {
-    const user = await getCurrentUser()
-    if (!user) {
-      throw redirect({ to: '/login' })
-    }
-    return user
-  })
+export const requireAuth = createServerFn().handler(async () => {
+  const user = await getCurrentUser()
+  if (!user) {
+    throw redirect({ to: '/login' })
+  }
+  return user
+})
 
 // Redirect with search params to preserve return URL
-export const requireAuthWithReturn = createServerFn()
-  .handler(async () => {
-    const request = getRequest()
-    const user = await getCurrentUser()
-    if (!user) {
-      throw redirect({
-        to: '/login',
-        search: { redirect: new URL(request.url).pathname },
-      })
-    }
-    return user
-  })
+export const requireAuthWithReturn = createServerFn().handler(async () => {
+  const request = getRequest()
+  const user = await getCurrentUser()
+  if (!user) {
+    throw redirect({
+      to: '/login',
+      search: { redirect: new URL(request.url).pathname },
+    })
+  }
+  return user
+})
 
 // Redirect after mutation
 export const createPost = createServerFn({ method: 'POST' })
@@ -105,11 +102,10 @@ export const Route = createFileRoute('/_authed')({
 
 ```tsx
 // Use href for external URLs (not to)
-export const startOAuth = createServerFn({ method: 'POST' })
-  .handler(async () => {
-    const authUrl = buildOAuthUrl()
-    throw redirect({ href: authUrl })  // href for full URLs
-  })
+export const startOAuth = createServerFn({ method: 'POST' }).handler(async () => {
+  const authUrl = buildOAuthUrl()
+  throw redirect({ href: authUrl }) // href for full URLs
+})
 ```
 
 ## Context

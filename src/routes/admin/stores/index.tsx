@@ -39,7 +39,8 @@ export const Route = createFileRoute('/admin/stores/')({
     query: search.q,
     page: search.page ?? 1,
   }),
-  loader: ({ context: { queryClient }, deps }) => queryClient.ensureQueryData(adminQueries.stores(deps)),
+  loader: ({ context: { queryClient }, deps }) =>
+    queryClient.ensureQueryData(adminQueries.stores(deps)),
   head: () => ({
     meta: [
       { title: 'Продавници · Администрација | ЕДНА Е МАЈКА' },

@@ -8,10 +8,12 @@ import type { Viewer } from '../services/session'
 
 /** Who is signed in, if anyone. Used by the header and by route guards. */
 export const fetchViewer = createServerFn({ method: 'GET' }).handler(async () =>
-  runEffect(Effect.gen(function* () {
-    const session = yield* Session
-    return yield* session.getViewer()
-  })),
+  runEffect(
+    Effect.gen(function* () {
+      const session = yield* Session
+      return yield* session.getViewer()
+    }),
+  ),
 )
 
 export async function requireViewer(): Promise<Viewer> {

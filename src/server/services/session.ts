@@ -16,7 +16,9 @@ export interface SessionService {
   readonly requireViewer: () => Effect.Effect<Viewer, NotSignedInError>
 }
 
-export class Session extends Context.Service<Session, SessionService>()('edna-e-majka/server/Session') {
+export class Session extends Context.Service<Session, SessionService>()(
+  'edna-e-majka/server/Session',
+) {
   static readonly layer = Layer.sync(Session, () => {
     const getViewer = (): Effect.Effect<Viewer | null, never> =>
       Effect.tryPromise({
@@ -24,7 +26,12 @@ export class Session extends Context.Service<Session, SessionService>()('edna-e-
           const session = await auth.api.getSession({ headers: getRequestHeaders() })
           if (!session) return null
           const role = (session.user as { role?: string }).role === 'admin' ? 'admin' : 'user'
-          return { id: session.user.id, name: session.user.name, email: session.user.email, role } satisfies Viewer
+          return {
+            id: session.user.id,
+            name: session.user.name,
+            email: session.user.email,
+            role,
+          } satisfies Viewer
         },
         catch: () => null as never,
       }).pipe(Effect.orElseSucceed(() => null))

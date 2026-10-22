@@ -12,12 +12,12 @@ Router context enables dependency injection — passing services, clients, and c
 // Direct imports in every route — tightly coupled, hard to test
 // routes/posts.tsx
 import { queryClient } from '~/lib/query-client' // Singleton import
-import { apiClient } from '~/lib/api'            // Hard to mock in tests
+import { apiClient } from '~/lib/api' // Hard to mock in tests
 
 export const Route = createFileRoute('/posts')({
   loader: async () => {
-    const posts = await apiClient.getPosts()      // Can't swap implementation
-    await queryClient.ensureQueryData(postsQuery)  // Tight coupling to singleton
+    const posts = await apiClient.getPosts() // Can't swap implementation
+    await queryClient.ensureQueryData(postsQuery) // Tight coupling to singleton
     return posts
   },
 })

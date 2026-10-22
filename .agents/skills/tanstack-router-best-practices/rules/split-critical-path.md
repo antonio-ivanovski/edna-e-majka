@@ -75,15 +75,15 @@ function DashboardPage() {
 
 ## What Goes Where
 
-| Main Route File | Lazy File |
-|---|---|
-| `validateSearch` | `component` |
-| `beforeLoad` | `errorComponent` |
-| `loader` | `pendingComponent` |
-| `loaderDeps` | `notFoundComponent` |
-| `context` | |
-| `staticData` | |
-| `head` | |
+| Main Route File  | Lazy File           |
+| ---------------- | ------------------- |
+| `validateSearch` | `component`         |
+| `beforeLoad`     | `errorComponent`    |
+| `loader`         | `pendingComponent`  |
+| `loaderDeps`     | `notFoundComponent` |
+| `context`        |                     |
+| `staticData`     |                     |
+| `head`           |                     |
 
 ## Context
 

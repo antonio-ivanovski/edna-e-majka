@@ -23,10 +23,22 @@ import type { OwnerStore } from '#/server/queries/manage'
  * Exported because the admin dashboard edits a shop with the same fields.
  */
 export const storeFormSchema = Schema.Struct({
-  name: Schema.Trim.pipe(Schema.check(Schema.isMinLength(3)), Schema.check(Schema.isMaxLength(120))),
-  description: Schema.Trim.pipe(Schema.check(Schema.isMinLength(30)), Schema.check(Schema.isMaxLength(4000))),
-  email: Schema.String.pipe(Schema.check(Schema.isPattern(/^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/)), Schema.check(Schema.isMaxLength(200))),
-  phone: Schema.Trim.pipe(Schema.check(Schema.isMinLength(6)), Schema.check(Schema.isMaxLength(60))),
+  name: Schema.Trim.pipe(
+    Schema.check(Schema.isMinLength(3)),
+    Schema.check(Schema.isMaxLength(120)),
+  ),
+  description: Schema.Trim.pipe(
+    Schema.check(Schema.isMinLength(30)),
+    Schema.check(Schema.isMaxLength(4000)),
+  ),
+  email: Schema.String.pipe(
+    Schema.check(Schema.isPattern(/^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/)),
+    Schema.check(Schema.isMaxLength(200)),
+  ),
+  phone: Schema.Trim.pipe(
+    Schema.check(Schema.isMinLength(6)),
+    Schema.check(Schema.isMaxLength(60)),
+  ),
   facebook: Schema.Trim.pipe(Schema.check(Schema.isMaxLength(300))),
   instagram: Schema.Trim.pipe(Schema.check(Schema.isMaxLength(300))),
   city: Schema.Trim.pipe(Schema.check(Schema.isMaxLength(120))),

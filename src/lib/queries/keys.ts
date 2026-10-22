@@ -20,8 +20,10 @@ export const manageKeys = {
   all: ['manage'] as const,
   home: () => [...manageKeys.all, 'home'] as const,
   store: (storeId: string) => [...manageKeys.all, 'store', storeId] as const,
-  products: (storeId: string, page: number) => [...manageKeys.all, 'products', storeId, page] as const,
-  product: (storeId: string, productId: string) => [...manageKeys.all, 'product', storeId, productId] as const,
+  products: (storeId: string, page: number) =>
+    [...manageKeys.all, 'products', storeId, page] as const,
+  product: (storeId: string, productId: string) =>
+    [...manageKeys.all, 'product', storeId, productId] as const,
 }
 
 export const adminKeys = {

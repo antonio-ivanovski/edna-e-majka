@@ -82,7 +82,7 @@ export default async function PostsPage() {
 }
 
 // app/posts/posts.tsx — Client Component
-'use client'
+;('use client')
 
 export default function Posts() {
   const { data } = useQuery({ queryKey: ['posts'], queryFn: fetchPosts })

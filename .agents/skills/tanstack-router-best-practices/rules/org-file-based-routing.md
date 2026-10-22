@@ -14,9 +14,21 @@ import { createRouter, createRoute, createRootRoute } from '@tanstack/react-rout
 
 const rootRoute = createRootRoute({ component: Root })
 const indexRoute = createRoute({ getParentRoute: () => rootRoute, path: '/', component: Home })
-const aboutRoute = createRoute({ getParentRoute: () => rootRoute, path: '/about', component: About })
-const postsRoute = createRoute({ getParentRoute: () => rootRoute, path: '/posts', component: Posts })
-const postRoute = createRoute({ getParentRoute: () => postsRoute, path: '/$postId', component: Post })
+const aboutRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: '/about',
+  component: About,
+})
+const postsRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: '/posts',
+  component: Posts,
+})
+const postRoute = createRoute({
+  getParentRoute: () => postsRoute,
+  path: '/$postId',
+  component: Post,
+})
 
 // Manual tree assembly — must keep in sync as routes are added
 const routeTree = rootRoute.addChildren([
@@ -86,15 +98,15 @@ export default defineConfig({
 
 ## File Naming Conventions
 
-| Convention | Example | Meaning |
-|---|---|---|
-| `__root.tsx` | `__root.tsx` | Root route |
-| `.` separator | `posts.index.tsx` | Nesting (flat style) |
-| `$` prefix | `$postId` | Dynamic segment |
-| `_` prefix | `_layout.tsx` | Pathless layout |
-| `_` suffix | `posts_.$id.edit.tsx` | Non-nested route |
-| `-` prefix | `-components/` | Excluded from routing |
-| `(folder)` | `(auth)/login.tsx` | Organizational group |
+| Convention    | Example               | Meaning               |
+| ------------- | --------------------- | --------------------- |
+| `__root.tsx`  | `__root.tsx`          | Root route            |
+| `.` separator | `posts.index.tsx`     | Nesting (flat style)  |
+| `$` prefix    | `$postId`             | Dynamic segment       |
+| `_` prefix    | `_layout.tsx`         | Pathless layout       |
+| `_` suffix    | `posts_.$id.edit.tsx` | Non-nested route      |
+| `-` prefix    | `-components/`        | Excluded from routing |
+| `(folder)`    | `(auth)/login.tsx`    | Organizational group  |
 
 ## Context
 

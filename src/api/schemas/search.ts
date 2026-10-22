@@ -6,7 +6,9 @@ import { ProductSort, SortDirection } from './common'
 export const ProductSearch = Schema.Struct({
   sort: ProductSort.pipe(Schema.withDecodingDefault(Effect.succeed('newest' as any))),
   direction: SortDirection.pipe(Schema.withDecodingDefault(Effect.succeed('desc' as any))),
-  page: Schema.Union([Schema.Number, Schema.NumberFromString]).pipe(Schema.withDecodingDefault(Effect.succeed(1 as any))),
+  page: Schema.Union([Schema.Number, Schema.NumberFromString]).pipe(
+    Schema.withDecodingDefault(Effect.succeed(1 as any)),
+  ),
 })
 
 export const SearchPageSearch = Schema.Struct({

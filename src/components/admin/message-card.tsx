@@ -31,7 +31,7 @@ export function AdminMessageCard({ message }: { message: AdminMessage }) {
 
     setBusy(false)
 
-    if (result._tag === "Failure") {
+    if (result._tag === 'Failure') {
       toast.error(result.failure.message)
       return
     }
@@ -42,7 +42,7 @@ export function AdminMessageCard({ message }: { message: AdminMessage }) {
   const remove = async () => {
     const result = await deleteMessage({ data: { messageId: message.id } })
 
-    if (result._tag === "Failure") {
+    if (result._tag === 'Failure') {
       toast.error(result.failure.message)
       return false
     }

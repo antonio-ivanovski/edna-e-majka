@@ -41,10 +41,12 @@ function CreatePostForm() {
   const mutation = useMutation({ mutationFn: createPost })
 
   return (
-    <form onSubmit={(e) => {
-      e.preventDefault()
-      mutation.mutate(formData)
-    }}>
+    <form
+      onSubmit={(e) => {
+        e.preventDefault()
+        mutation.mutate(formData)
+      }}
+    >
       {/* ... form fields ... */}
 
       {mutation.isError && (

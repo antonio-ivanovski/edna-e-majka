@@ -17,8 +17,8 @@ export const Route = createFileRoute('/products')({
 function ProductsPage() {
   // Accessing raw search params without validation
   const searchParams = new URLSearchParams(window.location.search)
-  const page = parseInt(searchParams.get('page') || '1')  // Could be NaN
-  const sort = searchParams.get('sort') as 'asc' | 'desc'  // Could be anything
+  const page = parseInt(searchParams.get('page') || '1') // Could be NaN
+  const sort = searchParams.get('sort') as 'asc' | 'desc' // Could be anything
 
   // Runtime errors possible if URL is malformed
   return <ProductList page={page} sort={sort} />
@@ -86,9 +86,8 @@ function ProductsPage() {
       filters={{
         category: search.category,
         search: search.search,
-        priceRange: search.minPrice && search.maxPrice
-          ? [search.minPrice, search.maxPrice]
-          : undefined,
+        priceRange:
+          search.minPrice && search.maxPrice ? [search.minPrice, search.maxPrice] : undefined,
       }}
     />
   )
@@ -104,10 +103,7 @@ import { valibotSearchValidator } from '@tanstack/router-valibot-adapter'
 const searchSchema = v.object({
   page: v.fallback(v.number(), 1),
   query: v.fallback(v.string(), ''),
-  filters: v.fallback(
-    v.array(v.string()),
-    []
-  ),
+  filters: v.fallback(v.array(v.string()), []),
 })
 
 export const Route = createFileRoute('/search')({
@@ -125,11 +121,11 @@ function ProductFilters() {
 
   const updateFilters = (newFilters: Partial<ProductSearch>) => {
     navigate({
-      to: '.',  // Current route
+      to: '.', // Current route
       search: (prev) => ({
         ...prev,
         ...newFilters,
-        page: 1,  // Reset to page 1 when filters change
+        page: 1, // Reset to page 1 when filters change
       }),
     })
   }

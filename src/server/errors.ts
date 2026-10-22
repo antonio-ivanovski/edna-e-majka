@@ -17,9 +17,12 @@ export class NotSignedInError extends Schema.TaggedError<NotSignedInError>()('No
   message: Schema.String,
 }) {}
 
-export class InvalidInputError extends Schema.TaggedError<InvalidInputError>()('InvalidInputError', {
-  message: Schema.String,
-}) {}
+export class InvalidInputError extends Schema.TaggedError<InvalidInputError>()(
+  'InvalidInputError',
+  {
+    message: Schema.String,
+  },
+) {}
 
 export class RateLimitedError extends Schema.TaggedError<RateLimitedError>()('RateLimitedError', {
   message: Schema.String,

@@ -89,8 +89,8 @@ export const Route = createFileRoute('/_auth/dashboard')({
   },
   loader: ({ context }) => {
     // Has: queryClient, user, canManageUsers
-    context.queryClient  // from root
-    context.user         // from _auth beforeLoad
+    context.queryClient // from root
+    context.user // from _auth beforeLoad
     context.canManageUsers // from this route's beforeLoad
   },
 })

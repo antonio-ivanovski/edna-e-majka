@@ -3,7 +3,12 @@ import { createServerFn } from '@tanstack/react-start'
 
 import { toValidator, ProductId, ProductListFilters } from '#/api/schemas'
 import { runEffect } from '../runtime'
-import { selectProductDetail, selectProductPage, selectProductsByCategories, selectProductsByStore } from '../queries/products'
+import {
+  selectProductDetail,
+  selectProductPage,
+  selectProductsByCategories,
+  selectProductsByStore,
+} from '../queries/products'
 
 export const listProducts = createServerFn({ method: 'GET' })
   .validator(toValidator(ProductListFilters))

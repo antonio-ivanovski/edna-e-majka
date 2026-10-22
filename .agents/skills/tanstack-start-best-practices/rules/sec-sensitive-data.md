@@ -13,7 +13,7 @@ Route loaders are isomorphic — they run on both the server (SSR) and client (n
 // process.env.SECRET is bundled into client JavaScript
 export const Route = createFileRoute('/users')({
   loader: () => {
-    const secret = process.env.DATABASE_URL  // EXPOSED in client bundle!
+    const secret = process.env.DATABASE_URL // EXPOSED in client bundle!
     return fetch(`${process.env.API_URL}/users`, {
       headers: { Authorization: `Bearer ${process.env.API_SECRET}` },
     })
@@ -21,7 +21,7 @@ export const Route = createFileRoute('/users')({
 })
 
 // DANGEROUS: importing server modules in route files
-import { db } from './db.server'  // Database driver bundled into client!
+import { db } from './db.server' // Database driver bundled into client!
 
 export const Route = createFileRoute('/posts')({
   loader: () => db.posts.findMany(),
@@ -44,7 +44,7 @@ const getUsers = createServerFn().handler(async () => {
 })
 
 export const Route = createFileRoute('/users')({
-  loader: () => getUsers(),  // Client calls this as an RPC
+  loader: () => getUsers(), // Client calls this as an RPC
 })
 ```
 

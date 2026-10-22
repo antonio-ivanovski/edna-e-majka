@@ -25,7 +25,8 @@ export const Route = createFileRoute('/admin/products/')({
     query: search.q,
     page: search.page ?? 1,
   }),
-  loader: ({ context: { queryClient }, deps }) => queryClient.ensureQueryData(adminQueries.products(deps)),
+  loader: ({ context: { queryClient }, deps }) =>
+    queryClient.ensureQueryData(adminQueries.products(deps)),
   head: () => ({
     meta: [
       { title: 'Производи · Администрација | ЕДНА Е МАЈКА' },

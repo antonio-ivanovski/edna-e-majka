@@ -93,9 +93,9 @@ function PostPage() {
 
 ## Special Relative Paths
 
-| Path | Meaning |
-|---|---|
-| `to="."` | Current route / `from` path |
+| Path      | Meaning                      |
+| --------- | ---------------------------- |
+| `to="."`  | Current route / `from` path  |
 | `to=".."` | First parent route of `from` |
 
 ## Context

@@ -30,7 +30,10 @@ export const Route = createFileRoute('/sitemap.xml')({
           Effect.gen(function* () {
             const db = yield* Db
             const stores = yield* db.run((d) =>
-              d.select({ id: store.id, slug: store.slug, updatedAt: store.updatedAt }).from(store).where(eq(store.status, 'active')),
+              d
+                .select({ id: store.id, slug: store.slug, updatedAt: store.updatedAt })
+                .from(store)
+                .where(eq(store.status, 'active')),
             )
             const products = yield* db.run((d) =>
               d
@@ -49,14 +52,23 @@ export const Route = createFileRoute('/sitemap.xml')({
         const urls = [
           { loc: `${base}/`, lastmod: now },
           { loc: `${base}/producers`, lastmod: now },
-          ...stores.map((item) => ({ loc: `${base}/producers/${item.slug ?? item.id}`, lastmod: item.updatedAt.toISOString() })),
-          ...products.map((item) => ({ loc: `${base}/products/${item.slug ?? item.id}`, lastmod: item.updatedAt.toISOString() })),
+          ...stores.map((item) => ({
+            loc: `${base}/producers/${item.slug ?? item.id}`,
+            lastmod: item.updatedAt.toISOString(),
+          })),
+          ...products.map((item) => ({
+            loc: `${base}/products/${item.slug ?? item.id}`,
+            lastmod: item.updatedAt.toISOString(),
+          })),
         ]
 
         const body = `<?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
 ${urls
-  .map((entry) => `  <url>\n    <loc>${escape(entry.loc)}</loc>\n    <lastmod>${entry.lastmod}</lastmod>\n  </url>`)
+  .map(
+    (entry) =>
+      `  <url>\n    <loc>${escape(entry.loc)}</loc>\n    <lastmod>${entry.lastmod}</lastmod>\n  </url>`,
+  )
   .join('\n')}
 </urlset>
 `

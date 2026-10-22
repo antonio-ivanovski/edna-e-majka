@@ -1,7 +1,10 @@
 import { Schema } from 'effect'
 
 export const Profile = Schema.Struct({
-  name: Schema.Trim.pipe(Schema.check(Schema.isMinLength(1)), Schema.check(Schema.isMaxLength(120))),
+  name: Schema.Trim.pipe(
+    Schema.check(Schema.isMinLength(1)),
+    Schema.check(Schema.isMaxLength(120)),
+  ),
 })
 
 export const AccountProfile = Schema.Struct({

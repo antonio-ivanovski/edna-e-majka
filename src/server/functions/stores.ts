@@ -5,7 +5,9 @@ import { toValidator, StoreId } from '#/api/schemas'
 import { runEffect } from '../runtime'
 import { selectStoreDetail, selectStores } from '../queries/stores'
 
-export const listStores = createServerFn({ method: 'GET' }).handler(async () => runEffect(selectStores()))
+export const listStores = createServerFn({ method: 'GET' }).handler(async () =>
+  runEffect(selectStores()),
+)
 
 export const getStore = createServerFn({ method: 'GET' })
   .validator(toValidator(StoreId))

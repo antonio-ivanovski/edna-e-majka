@@ -15,20 +15,19 @@ export const getPost = createServerFn()
   .handler(async ({ data }) => {
     const post = await db.posts.findUnique({ where: { id: data.id } })
     if (!post) {
-      return { error: 'Not found' }  // Client must check manually
+      return { error: 'Not found' } // Client must check manually
     }
     return { data: post }
   })
 
 // Throwing generic errors instead of redirect
-export const requireAuth = createServerFn()
-  .handler(async () => {
-    const user = await getCurrentUser()
-    if (!user) {
-      throw new Error('Not authenticated')  // No redirect, bad UX
-    }
-    return user
-  })
+export const requireAuth = createServerFn().handler(async () => {
+  const user = await getCurrentUser()
+  if (!user) {
+    throw new Error('Not authenticated') // No redirect, bad UX
+  }
+  return user
+})
 ```
 
 ## Good Example
@@ -49,28 +48,26 @@ export const getPost = createServerFn()
   })
 
 // Use redirect() for auth failures - navigates to login
-export const requireAuth = createServerFn()
-  .handler(async () => {
-    const user = await getCurrentUser()
-    if (!user) {
-      throw redirect({ to: '/login' })
-    }
-    return user
-  })
+export const requireAuth = createServerFn().handler(async () => {
+  const user = await getCurrentUser()
+  if (!user) {
+    throw redirect({ to: '/login' })
+  }
+  return user
+})
 
 // Use redirect() with search params to preserve return URL
-export const requireAuthWithReturn = createServerFn()
-  .handler(async () => {
-    const request = getRequest()
-    const user = await getCurrentUser()
-    if (!user) {
-      throw redirect({
-        to: '/login',
-        search: { redirect: new URL(request.url).pathname },
-      })
-    }
-    return user
-  })
+export const requireAuthWithReturn = createServerFn().handler(async () => {
+  const request = getRequest()
+  const user = await getCurrentUser()
+  if (!user) {
+    throw redirect({
+      to: '/login',
+      search: { redirect: new URL(request.url).pathname },
+    })
+  }
+  return user
+})
 ```
 
 ## Good Example: Error Handling with isRedirect

@@ -32,20 +32,14 @@ function PostDetail({ postId }: { postId: string }) {
     queryFn: () => fetchPost(postId),
     placeholderData: () => {
       // Use partial data from the list cache as placeholder
-      return queryClient
-        .getQueryData<Post[]>(['posts'])
-        ?.find((post) => post.id === postId)
+      return queryClient.getQueryData<Post[]>(['posts'])?.find((post) => post.id === postId)
     },
   })
 
   return (
     <article style={{ opacity: isPlaceholderData ? 0.7 : 1 }}>
       <h1>{data?.title}</h1>
-      {isPlaceholderData ? (
-        <p>Loading full content...</p>
-      ) : (
-        <div>{data?.content}</div>
-      )}
+      {isPlaceholderData ? <p>Loading full content...</p> : <div>{data?.content}</div>}
     </article>
   )
 }
@@ -75,14 +69,14 @@ function ProductList({ page }: { page: number }) {
 
 ## placeholderData vs initialData
 
-| Behavior | `initialData` | `placeholderData` |
-|----------|---------------|-------------------|
-| Persisted to cache | Yes | No |
-| `staleTime` applies | Yes | No (always fetches) |
-| `isPlaceholderData` | `false` | `true` |
-| Visible to other components | Yes | No |
-| On fetch failure | Data preserved | Data becomes `undefined` |
-| Best for | SSR data, complete known data | Preview data, pagination |
+| Behavior                    | `initialData`                 | `placeholderData`        |
+| --------------------------- | ----------------------------- | ------------------------ |
+| Persisted to cache          | Yes                           | No                       |
+| `staleTime` applies         | Yes                           | No (always fetches)      |
+| `isPlaceholderData`         | `false`                       | `true`                   |
+| Visible to other components | Yes                           | No                       |
+| On fetch failure            | Data preserved                | Data becomes `undefined` |
+| Best for                    | SSR data, complete known data | Preview data, pagination |
 
 ## Context
 

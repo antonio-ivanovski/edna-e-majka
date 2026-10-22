@@ -16,9 +16,15 @@ function Navigation() {
   return (
     <nav>
       {/* Must manually pass locale to every single link */}
-      <Link to="/dashboard" search={{ locale }}>Dashboard</Link>
-      <Link to="/settings" search={{ locale }}>Settings</Link>
-      <Link to="/profile" search={{ locale }}>Profile</Link>
+      <Link to="/dashboard" search={{ locale }}>
+        Dashboard
+      </Link>
+      <Link to="/settings" search={{ locale }}>
+        Settings
+      </Link>
+      <Link to="/profile" search={{ locale }}>
+        Profile
+      </Link>
       {/* Forget one and locale is lost */}
     </nav>
   )
@@ -46,8 +52,8 @@ export const Route = createRootRoute({
 function Navigation() {
   return (
     <nav>
-      <Link to="/dashboard">Dashboard</Link>  {/* locale auto-retained */}
-      <Link to="/settings">Settings</Link>    {/* locale auto-retained */}
+      <Link to="/dashboard">Dashboard</Link> {/* locale auto-retained */}
+      <Link to="/settings">Settings</Link> {/* locale auto-retained */}
     </nav>
   )
 }
@@ -86,10 +92,7 @@ export const Route = createFileRoute('/products')({
 export const Route = createFileRoute('/products')({
   validateSearch: productSearchSchema,
   search: {
-    middlewares: [
-      retainSearchParams(['locale']),
-      stripSearchParams({ page: 1, sort: 'newest' }),
-    ],
+    middlewares: [retainSearchParams(['locale']), stripSearchParams({ page: 1, sort: 'newest' })],
   },
 })
 ```

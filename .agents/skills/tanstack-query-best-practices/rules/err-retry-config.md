@@ -33,10 +33,10 @@ const { data } = useQuery({
   queryKey: ['user', userId],
   queryFn: () => fetchUser(userId),
   retry: (failureCount, error) => {
-    if (error.status === 404) return false  // Not found — don't retry
-    if (error.status === 403) return false  // Forbidden — don't retry
+    if (error.status === 404) return false // Not found — don't retry
+    if (error.status === 403) return false // Forbidden — don't retry
     if (error.status >= 400 && error.status < 500) return false
-    return failureCount < 2  // Retry server errors up to 2 times
+    return failureCount < 2 // Retry server errors up to 2 times
   },
 })
 ```
@@ -52,8 +52,7 @@ const queryClient = new QueryClient({
         if (error.status >= 400 && error.status < 500) return false
         return failureCount < 2
       },
-      retryDelay: (attemptIndex) =>
-        Math.min(1000 * 2 ** attemptIndex, 30000), // Exponential backoff
+      retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 30000), // Exponential backoff
     },
     mutations: {
       retry: 0, // Never retry mutations by default
@@ -64,12 +63,12 @@ const queryClient = new QueryClient({
 
 ## Retry Option Reference
 
-| Value | Behavior |
-|-------|----------|
-| `false` or `0` | No retries |
-| `true` | Infinite retries (use with caution) |
-| `3` (number) | Retry up to 3 times |
-| `(failureCount, error) => boolean` | Custom logic per error |
+| Value                              | Behavior                            |
+| ---------------------------------- | ----------------------------------- |
+| `false` or `0`                     | No retries                          |
+| `true`                             | Infinite retries (use with caution) |
+| `3` (number)                       | Retry up to 3 times                 |
+| `(failureCount, error) => boolean` | Custom logic per error              |
 
 ## Context
 

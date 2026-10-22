@@ -26,7 +26,15 @@ function AdminEditProductPage() {
       <ProductForm
         storeId={store.id}
         product={product}
-        save={({ data }) => adminSaveProduct({ data: { ...data, categories: data.categories, variants: data.variants.map((v) => ({ ...v })) } })}
+        save={({ data }) =>
+          adminSaveProduct({
+            data: {
+              ...data,
+              categories: data.categories,
+              variants: data.variants.map((v) => ({ ...v })),
+            },
+          })
+        }
       />
     </div>
   )

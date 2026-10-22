@@ -5,7 +5,7 @@ import { AdminFilters } from '#/components/admin/list-toolbar'
 import { AdminMessageCard } from '#/components/admin/message-card'
 import { EmptyState } from '#/components/ui/empty-state'
 import { Panel } from '#/components/ui/panel'
-import { toValidator, AdminMessageSearch } from "#/api/schemas"
+import { toValidator, AdminMessageSearch } from '#/api/schemas'
 type MessageFilter = 'open' | 'done' | 'all'
 import { formatCount } from '#/lib/format'
 import { ADMIN_PAGE_SIZE } from '#/lib/pagination'
@@ -23,7 +23,8 @@ export const Route = createFileRoute('/admin/messages')({
     filter: search.filter ?? 'open',
     page: search.page ?? 1,
   }),
-  loader: ({ context: { queryClient }, deps }) => queryClient.ensureQueryData(adminQueries.messages(deps)),
+  loader: ({ context: { queryClient }, deps }) =>
+    queryClient.ensureQueryData(adminQueries.messages(deps)),
   head: () => ({
     meta: [
       { title: 'Пораки · Администрација | ЕДНА Е МАЈКА' },

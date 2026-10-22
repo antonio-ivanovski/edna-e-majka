@@ -36,7 +36,7 @@ export default function App({ Component, pageProps }: AppProps) {
             staleTime: 60 * 1000, // Prevent immediate refetch after hydration
           },
         },
-      })
+      }),
   )
 
   return (
@@ -83,11 +83,7 @@ function getQueryClient() {
 export default function Providers({ children }: { children: React.ReactNode }) {
   const queryClient = getQueryClient()
 
-  return (
-    <QueryClientProvider client={queryClient}>
-      {children}
-    </QueryClientProvider>
-  )
+  return <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
 }
 ```
 

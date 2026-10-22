@@ -19,7 +19,7 @@ export const getUserData = createServerFn()
 
 // Checking auth on the client only
 function ProfilePage() {
-  const { user } = useAuth()  // Client-side only
+  const { user } = useAuth() // Client-side only
   if (!user) return <Navigate to="/login" />
   // If someone calls getProfile() directly, there's no server check
   return <Profile />
@@ -33,16 +33,15 @@ import { createMiddleware, createServerFn } from '@tanstack/react-start'
 import { useSession } from '@tanstack/react-start/server'
 import { redirect } from '@tanstack/react-router'
 
-const authMiddleware = createMiddleware({ type: 'function' })
-  .server(async ({ next }) => {
-    const session = await useAppSession()
-    if (!session.data.userId) {
-      throw redirect({ to: '/login' })
-    }
-    return next({
-      context: { userId: session.data.userId },
-    })
+const authMiddleware = createMiddleware({ type: 'function' }).server(async ({ next }) => {
+  const session = await useAppSession()
+  if (!session.data.userId) {
+    throw redirect({ to: '/login' })
+  }
+  return next({
+    context: { userId: session.data.userId },
   })
+})
 
 // User can only access their own data - userId comes from session, not client
 export const getMyProfile = createServerFn()
@@ -56,9 +55,11 @@ export const getMyProfile = createServerFn()
 
 export const updateMyProfile = createServerFn({ method: 'POST' })
   .middleware([authMiddleware])
-  .inputValidator(z.object({
-    name: z.string().min(1).max(100),
-  }))
+  .inputValidator(
+    z.object({
+      name: z.string().min(1).max(100),
+    }),
+  )
   .handler(async ({ data, context }) => {
     return db.users.update({
       where: { id: context.userId },
@@ -73,23 +74,22 @@ export const updateMyProfile = createServerFn({ method: 'POST' })
 import { createServerFn } from '@tanstack/react-start'
 import { redirect } from '@tanstack/react-router'
 
-export const getCurrentUser = createServerFn()
-  .handler(async () => {
-    const session = await useAppSession()
-    const userId = session.data.userId
+export const getCurrentUser = createServerFn().handler(async () => {
+  const session = await useAppSession()
+  const userId = session.data.userId
 
-    if (!userId) return null
+  if (!userId) return null
 
-    return db.users.findUnique({
-      where: { id: userId },
-      select: {
-        id: true,
-        email: true,
-        name: true,
-        // Never include passwordHash or secrets
-      },
-    })
+  return db.users.findUnique({
+    where: { id: userId },
+    select: {
+      id: true,
+      email: true,
+      name: true,
+      // Never include passwordHash or secrets
+    },
   })
+})
 
 // Use in root route to make user available everywhere
 export const Route = createRootRoute({

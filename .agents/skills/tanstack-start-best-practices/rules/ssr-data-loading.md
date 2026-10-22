@@ -20,7 +20,7 @@ export const Route = createFileRoute('/posts')({
 
 // Returning the entire search object from loaderDeps
 export const Route = createFileRoute('/posts')({
-  loaderDeps: ({ search }) => search,  // Reloads on ANY search change
+  loaderDeps: ({ search }) => search, // Reloads on ANY search change
   loader: async ({ deps }) => {
     return fetchPosts(deps)
   },
@@ -29,7 +29,7 @@ export const Route = createFileRoute('/posts')({
 // Calling browser APIs during SSR
 export const Route = createFileRoute('/dashboard')({
   loader: async () => {
-    const width = window.innerWidth  // Crashes on server!
+    const width = window.innerWidth // Crashes on server!
     return fetchLayout(width)
   },
 })
@@ -79,7 +79,7 @@ export const Route = createFileRoute('/_authed')({
         search: { redirect: location.href },
       })
     }
-    return { user }  // Available to child routes via context
+    return { user } // Available to child routes via context
   },
 })
 

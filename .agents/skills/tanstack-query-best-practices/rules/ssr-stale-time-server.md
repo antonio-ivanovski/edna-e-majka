@@ -62,7 +62,7 @@ const [queryClient] = React.useState(
           staleTime: 60 * 1000, // Same as server — no refetch within 1 minute
         },
       },
-    })
+    }),
 )
 ```
 

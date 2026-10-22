@@ -22,9 +22,13 @@ routes/
 // Each route must duplicate the dashboard layout and auth logic
 // dashboard-stats.tsx
 export const Route = createFileRoute('/dashboard-stats')({
-  beforeLoad: () => { /* duplicate auth check */ },
+  beforeLoad: () => {
+    /* duplicate auth check */
+  },
   component: () => (
-    <DashboardLayout>  {/* duplicate layout wrapper */}
+    <DashboardLayout>
+      {' '}
+      {/* duplicate layout wrapper */}
       <Stats />
     </DashboardLayout>
   ),
@@ -68,8 +72,7 @@ function DashboardLayout() {
 
 // dashboard.stats.tsx — inherits layout and auth from parent
 export const Route = createFileRoute('/dashboard/stats')({
-  loader: ({ context: { queryClient } }) =>
-    queryClient.ensureQueryData(statsQueryOptions()),
+  loader: ({ context: { queryClient } }) => queryClient.ensureQueryData(statsQueryOptions()),
   component: StatsPage,
 })
 ```

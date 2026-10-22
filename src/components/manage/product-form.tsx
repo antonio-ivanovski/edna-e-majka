@@ -16,20 +16,37 @@ import { effectResolver } from '#/lib/effect-resolver'
 import { deleteProductImage, reorderProductImages, uploadProductImage } from '#/lib/uploads'
 
 const productFormValuesSchema = Schema.Struct({
-  title: Schema.Trim.pipe(Schema.check(Schema.isMinLength(3)), Schema.check(Schema.isMaxLength(160))),
-  description: Schema.Trim.pipe(Schema.check(Schema.isMinLength(10)), Schema.check(Schema.isMaxLength(4000))),
+  title: Schema.Trim.pipe(
+    Schema.check(Schema.isMinLength(3)),
+    Schema.check(Schema.isMaxLength(160)),
+  ),
+  description: Schema.Trim.pipe(
+    Schema.check(Schema.isMinLength(10)),
+    Schema.check(Schema.isMaxLength(4000)),
+  ),
   categories: Schema.Array(Schema.String).pipe(Schema.check(Schema.isMinLength(1))),
   availability: Schema.Literals(['in_stock', 'out_of_stock', 'on_order']),
   variants: Schema.Array(
     Schema.Struct({
-      title: Schema.Trim.pipe(Schema.check(Schema.isMinLength(1)), Schema.check(Schema.isMaxLength(60))),
+      title: Schema.Trim.pipe(
+        Schema.check(Schema.isMinLength(1)),
+        Schema.check(Schema.isMaxLength(60)),
+      ),
       price: Schema.String.pipe(Schema.check(Schema.isPattern(/^\\d{1,7}$/))),
     }),
   ).pipe(Schema.check(Schema.isMinLength(1))),
 })
 
 type ProductFormValues = Schema.Schema.Type<typeof productFormValuesSchema>
-type ProductFormData = { storeId: string; title: string; description: string; categories: string[]; availability: 'in_stock' | 'out_of_stock' | 'on_order'; variants: { title: string; price: number }[]; productId?: string }
+type ProductFormData = {
+  storeId: string
+  title: string
+  description: string
+  categories: string[]
+  availability: 'in_stock' | 'out_of_stock' | 'on_order'
+  variants: { title: string; price: number }[]
+  productId?: string
+}
 import { saveProduct, updateProductImageAlt } from '#/server/functions/manage'
 import type { OwnerProductDetail, OwnerProductImage } from '#/server/queries/manage'
 
@@ -51,7 +68,9 @@ export function ProductForm({
 }: {
   storeId: string
   product?: OwnerProductDetail
-  save?: (args: { data: ProductFormData }) => Promise<Result.Result<{ productId: string }, DomainError>>
+  save?: (args: {
+    data: ProductFormData
+  }) => Promise<Result.Result<{ productId: string }, DomainError>>
 }) {
   const router = useRouter()
   const navigate = useNavigate()

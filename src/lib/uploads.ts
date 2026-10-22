@@ -108,7 +108,9 @@ export function deleteStoreAvatar(storeId: string): Promise<Result.Result<null, 
   return deleteStoreAvatarFn({ data: { storeId } })
 }
 
-export async function uploadUserAvatar(file: File): Promise<Result.Result<{ key: string }, DomainError>> {
+export async function uploadUserAvatar(
+  file: File,
+): Promise<Result.Result<{ key: string }, DomainError>> {
   const { blob } = await shrink(file)
   const form = new FormData()
   form.set('userAvatar', '1')

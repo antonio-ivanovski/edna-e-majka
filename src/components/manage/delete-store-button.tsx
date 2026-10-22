@@ -22,7 +22,7 @@ export function DeleteStoreButton({ storeId, storeName }: { storeId: string; sto
 
     setBusy(false)
 
-    if (result._tag === "Failure") {
+    if (result._tag === 'Failure') {
       toast.error(result.failure.message)
       return false
     }

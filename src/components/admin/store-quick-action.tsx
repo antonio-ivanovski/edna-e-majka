@@ -33,7 +33,7 @@ export function StoreQuickAction({ store }: { store: AdminStore }) {
 
     setBusy(false)
 
-    if (result._tag === "Failure") {
+    if (result._tag === 'Failure') {
       toast.error(result.failure.message)
       return
     }

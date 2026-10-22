@@ -17,14 +17,16 @@ export const createUser = createServerFn({ method: 'POST' })
     if (!data.email?.includes('@')) throw new Error('Invalid email')
     return data
   })
-  .handler(async ({ data }) => { /* ... */ })
+  .handler(async ({ data }) => {
+    /* ... */
+  })
 
 // client — different rules, easy to drift
 function CreateUserForm() {
   const validate = (values) => {
     const errors = {}
     if (!values.name) errors.name = 'Required'
-    if (values.name?.length > 50) errors.name = 'Too long'  // Different max!
+    if (values.name?.length > 50) errors.name = 'Too long' // Different max!
     if (!values.email) errors.email = 'Required'
     return errors
   }

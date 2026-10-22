@@ -11,21 +11,19 @@ Server function middleware (`type: 'function'`) runs specifically around server 
 ```tsx
 // Using request middleware for function-specific concerns
 // This runs on ALL requests, not just the server functions that need it
-const loggingMiddleware = createMiddleware()
-  .server(async ({ next }) => {
-    console.log('Request started')
-    return next()
-  })
+const loggingMiddleware = createMiddleware().server(async ({ next }) => {
+  console.log('Request started')
+  return next()
+})
 
 // Or duplicating logic in every handler
-export const getData = createServerFn()
-  .handler(async () => {
-    console.log('Function called')  // Repeated everywhere
-    const start = Date.now()
-    const result = await fetchData()
-    console.log(`Took ${Date.now() - start}ms`)
-    return result
-  })
+export const getData = createServerFn().handler(async () => {
+  console.log('Function called') // Repeated everywhere
+  const start = Date.now()
+  const result = await fetchData()
+  console.log(`Took ${Date.now() - start}ms`)
+  return result
+})
 ```
 
 ## Good Example
@@ -62,7 +60,7 @@ export const getData = createServerFn()
 // Attach auth headers from client-side token
 const authTokenMiddleware = createMiddleware({ type: 'function' })
   .client(async ({ next }) => {
-    const token = getAuthToken()  // From client-side auth provider
+    const token = getAuthToken() // From client-side auth provider
     return next({
       headers: {
         Authorization: `Bearer ${token}`,
@@ -90,9 +88,13 @@ import { z } from 'zod'
 
 // Middleware that validates common input patterns
 const workspaceMiddleware = createMiddleware({ type: 'function' })
-  .inputValidator(zodValidator(z.object({
-    workspaceId: z.string().uuid(),
-  })))
+  .inputValidator(
+    zodValidator(
+      z.object({
+        workspaceId: z.string().uuid(),
+      }),
+    ),
+  )
   .server(async ({ next, data }) => {
     const workspace = await db.workspaces.findUnique({
       where: { id: data.workspaceId },

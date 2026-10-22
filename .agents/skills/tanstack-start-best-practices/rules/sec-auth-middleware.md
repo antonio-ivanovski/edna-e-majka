@@ -10,25 +10,22 @@ Use middleware to enforce authentication and authorization consistently across r
 
 ```tsx
 // Checking auth in every handler - easy to forget one
-export const getProfile = createServerFn()
-  .handler(async () => {
-    const session = await useAppSession()
-    if (!session.data.userId) throw redirect({ to: '/login' })
-    return db.users.findUnique({ where: { id: session.data.userId } })
-  })
+export const getProfile = createServerFn().handler(async () => {
+  const session = await useAppSession()
+  if (!session.data.userId) throw redirect({ to: '/login' })
+  return db.users.findUnique({ where: { id: session.data.userId } })
+})
 
-export const updateProfile = createServerFn({ method: 'POST' })
-  .handler(async ({ data }) => {
-    const session = await useAppSession()
-    if (!session.data.userId) throw redirect({ to: '/login' })
-    // ... duplicate check in every function
-  })
+export const updateProfile = createServerFn({ method: 'POST' }).handler(async ({ data }) => {
+  const session = await useAppSession()
+  if (!session.data.userId) throw redirect({ to: '/login' })
+  // ... duplicate check in every function
+})
 
-export const getSettings = createServerFn()
-  .handler(async () => {
-    // Forgot the auth check here! Endpoint is unprotected
-    return db.settings.findFirst()
-  })
+export const getSettings = createServerFn().handler(async () => {
+  // Forgot the auth check here! Endpoint is unprotected
+  return db.settings.findFirst()
+})
 ```
 
 ## Good Example: Auth Middleware for Server Functions
@@ -39,30 +36,29 @@ import { useSession } from '@tanstack/react-start/server'
 import { redirect } from '@tanstack/react-router'
 
 // Reusable auth middleware
-const authMiddleware = createMiddleware({ type: 'function' })
-  .server(async ({ next }) => {
-    const session = await useAppSession()
-    if (!session.data.userId) {
-      throw redirect({ to: '/login' })
-    }
+const authMiddleware = createMiddleware({ type: 'function' }).server(async ({ next }) => {
+  const session = await useAppSession()
+  if (!session.data.userId) {
+    throw redirect({ to: '/login' })
+  }
 
-    const user = await db.users.findUnique({
-      where: { id: session.data.userId },
-    })
-    if (!user) {
-      throw redirect({ to: '/login' })
-    }
-
-    return next({
-      context: { user },
-    })
+  const user = await db.users.findUnique({
+    where: { id: session.data.userId },
   })
+  if (!user) {
+    throw redirect({ to: '/login' })
+  }
+
+  return next({
+    context: { user },
+  })
+})
 
 // All protected functions use the middleware - auth is guaranteed
 export const getProfile = createServerFn()
   .middleware([authMiddleware])
   .handler(async ({ context }) => {
-    return context.user  // User is guaranteed to exist
+    return context.user // User is guaranteed to exist
   })
 
 export const updateProfile = createServerFn({ method: 'POST' })
@@ -110,7 +106,7 @@ function DashboardComponent() {
 
 ```tsx
 const adminMiddleware = createMiddleware({ type: 'function' })
-  .middleware([authMiddleware])  // Chains on auth middleware
+  .middleware([authMiddleware]) // Chains on auth middleware
   .server(async ({ next, context }) => {
     if (context.user.role !== 'admin') {
       throw redirect({ to: '/unauthorized' })

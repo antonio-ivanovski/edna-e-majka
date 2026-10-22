@@ -39,8 +39,20 @@ export type OwnerProduct = {
   variantCount: number
 }
 
-export type OwnerProductImage = { id: string; key: string; alt: string | null; width: number; height: number }
-export type OwnedProductRow = { id: string; storeId: string; title: string; storeName: string; status: ProductStatus }
+export type OwnerProductImage = {
+  id: string
+  key: string
+  alt: string | null
+  width: number
+  height: number
+}
+export type OwnedProductRow = {
+  id: string
+  storeId: string
+  title: string
+  storeName: string
+  status: ProductStatus
+}
 export type OwnerProductDetail = {
   id: string
   storeId: string
@@ -71,31 +83,74 @@ const storeColumns = {
   createdAt: store.createdAt,
 }
 
-export const selectOwnerStore = Effect.fn('selectOwnerStore')(function* (ownerId: string): Effect.fn.Return<OwnerStore | null, DatabaseError, Db> {
+export const selectOwnerStore = Effect.fn('selectOwnerStore')(function* (
+  ownerId: string,
+): Effect.fn.Return<OwnerStore | null, DatabaseError, Db> {
   const db = yield* Db
-  const rows = yield* db.run((d) => d.select(storeColumns).from(store).where(eq(store.ownerId, ownerId)).orderBy(store.createdAt).limit(1))
+  const rows = yield* db.run((d) =>
+    d
+      .select(storeColumns)
+      .from(store)
+      .where(eq(store.ownerId, ownerId))
+      .orderBy(store.createdAt)
+      .limit(1),
+  )
   return (rows[0] as OwnerStore | undefined) ?? null
 })
 
-export const selectOwnerStoreById = Effect.fn('selectOwnerStoreById')(function* (storeId: string, ownerId: string): Effect.fn.Return<OwnerStore | null, DatabaseError, Db> {
+export const selectOwnerStoreById = Effect.fn('selectOwnerStoreById')(function* (
+  storeId: string,
+  ownerId: string,
+): Effect.fn.Return<OwnerStore | null, DatabaseError, Db> {
   const db = yield* Db
-  const rows = yield* db.run((d) => d.select(storeColumns).from(store).where(and(eq(store.id, storeId), eq(store.ownerId, ownerId))).limit(1))
+  const rows = yield* db.run((d) =>
+    d
+      .select(storeColumns)
+      .from(store)
+      .where(and(eq(store.id, storeId), eq(store.ownerId, ownerId)))
+      .limit(1),
+  )
   return (rows[0] as OwnerStore | undefined) ?? null
 })
 
-export const selectOwnerProducts = Effect.fn('selectOwnerProducts')(function* (storeId: string, page = 1): Effect.fn.Return<{ items: OwnerProduct[]; total: number }, DatabaseError, Db> {
+export const selectOwnerProducts = Effect.fn('selectOwnerProducts')(function* (
+  storeId: string,
+  page = 1,
+): Effect.fn.Return<{ items: OwnerProduct[]; total: number }, DatabaseError, Db> {
   const db = yield* Db
   const offset = (page - 1) * MANAGE_PAGE_SIZE
-  const [rows, countRows] = yield* db.run((d) =>
-    d.batch([
-      d.select({ id: product.id, title: product.title, status: product.status, createdAt: product.createdAt, imageKey: productImage.r2Key }).from(product).leftJoin(productImage, and(eq(productImage.productId, product.id), eq(productImage.position, 0))).where(eq(product.storeId, storeId)).orderBy(desc(product.createdAt)).limit(MANAGE_PAGE_SIZE).offset(offset),
-      d.select({ total: count() }).from(product).where(eq(product.storeId, storeId)),
-    ]) as unknown as Promise<[any[], { total: number }[]]>,
+  const [rows, countRows] = yield* db.run(
+    (d) =>
+      d.batch([
+        d
+          .select({
+            id: product.id,
+            title: product.title,
+            status: product.status,
+            createdAt: product.createdAt,
+            imageKey: productImage.r2Key,
+          })
+          .from(product)
+          .leftJoin(
+            productImage,
+            and(eq(productImage.productId, product.id), eq(productImage.position, 0)),
+          )
+          .where(eq(product.storeId, storeId))
+          .orderBy(desc(product.createdAt))
+          .limit(MANAGE_PAGE_SIZE)
+          .offset(offset),
+        d.select({ total: count() }).from(product).where(eq(product.storeId, storeId)),
+      ]) as unknown as Promise<[any[], { total: number }[]]>,
   )
   // aggregate variants per product
   const ids = rows.map((r: any) => r.id)
   const variants = ids.length
-    ? yield* db.run((d) => d.select({ productId: productVariant.productId, price: productVariant.price }).from(productVariant).where(inArray(productVariant.productId, ids)))
+    ? yield* db.run((d) =>
+        d
+          .select({ productId: productVariant.productId, price: productVariant.price })
+          .from(productVariant)
+          .where(inArray(productVariant.productId, ids)),
+      )
     : []
   const byProduct = new Map<string, number[]>()
   for (const v of variants) {
@@ -118,15 +173,51 @@ export const selectOwnerProducts = Effect.fn('selectOwnerProducts')(function* (s
   return { items, total: countRows[0]?.total ?? 0 }
 })
 
-export const selectOwnerProduct = Effect.fn('selectOwnerProduct')(function* (productId: string, storeId: string): Effect.fn.Return<OwnerProductDetail | null, DatabaseError, Db> {
+export const selectOwnerProduct = Effect.fn('selectOwnerProduct')(function* (
+  productId: string,
+  storeId: string,
+): Effect.fn.Return<OwnerProductDetail | null, DatabaseError, Db> {
   const db = yield* Db
-  const [prodRows, imageRows, variantRows, categoryRows] = yield* db.run((d) =>
-    d.batch([
-      d.select({ id: product.id, storeId: product.storeId, title: product.title, description: product.description, status: product.status, availability: product.availability }).from(product).where(and(eq(product.id, productId), eq(product.storeId, storeId))).limit(1),
-      d.select({ id: productImage.id, key: productImage.r2Key, alt: productImage.alt, width: productImage.width, height: productImage.height }).from(productImage).where(eq(productImage.productId, productId)).orderBy(asc(productImage.position)),
-      d.select({ id: productVariant.id, title: productVariant.title, price: productVariant.price }).from(productVariant).where(eq(productVariant.productId, productId)).orderBy(asc(productVariant.position)),
-      d.select({ categorySlug: productCategory.categorySlug }).from(productCategory).where(eq(productCategory.productId, productId)),
-    ]) as unknown as Promise<[any[], any[], any[], any[]]>,
+  const [prodRows, imageRows, variantRows, categoryRows] = yield* db.run(
+    (d) =>
+      d.batch([
+        d
+          .select({
+            id: product.id,
+            storeId: product.storeId,
+            title: product.title,
+            description: product.description,
+            status: product.status,
+            availability: product.availability,
+          })
+          .from(product)
+          .where(and(eq(product.id, productId), eq(product.storeId, storeId)))
+          .limit(1),
+        d
+          .select({
+            id: productImage.id,
+            key: productImage.r2Key,
+            alt: productImage.alt,
+            width: productImage.width,
+            height: productImage.height,
+          })
+          .from(productImage)
+          .where(eq(productImage.productId, productId))
+          .orderBy(asc(productImage.position)),
+        d
+          .select({
+            id: productVariant.id,
+            title: productVariant.title,
+            price: productVariant.price,
+          })
+          .from(productVariant)
+          .where(eq(productVariant.productId, productId))
+          .orderBy(asc(productVariant.position)),
+        d
+          .select({ categorySlug: productCategory.categorySlug })
+          .from(productCategory)
+          .where(eq(productCategory.productId, productId)),
+      ]) as unknown as Promise<[any[], any[], any[], any[]]>,
   )
   const prod = prodRows[0]
   if (!prod) return null
@@ -139,20 +230,49 @@ export const selectOwnerProduct = Effect.fn('selectOwnerProduct')(function* (pro
     availability: prod.availability,
     categories: categoryRows.map((c: any) => c.categorySlug),
     variants: variantRows.map(({ id, title, price }: any) => ({ id, title, price })),
-    images: imageRows.map(({ id, key, alt, width, height }: any) => ({ id, key, alt, width, height })),
+    images: imageRows.map(({ id, key, alt, width, height }: any) => ({
+      id,
+      key,
+      alt,
+      width,
+      height,
+    })),
   }
 })
 
-export const selectOwnedProductRow = Effect.fn('selectOwnedProductRow')(function* (productId: string, ownerId: string): Effect.fn.Return<OwnedProductRow | null, DatabaseError, Db> {
+export const selectOwnedProductRow = Effect.fn('selectOwnedProductRow')(function* (
+  productId: string,
+  ownerId: string,
+): Effect.fn.Return<OwnedProductRow | null, DatabaseError, Db> {
   const db = yield* Db
   const rows = yield* db.run((d) =>
-    d.select({ id: product.id, storeId: product.storeId, title: product.title, storeName: store.name, status: product.status }).from(product).innerJoin(store, eq(store.id, product.storeId)).where(and(eq(product.id, productId), eq(store.ownerId, ownerId))).limit(1),
+    d
+      .select({
+        id: product.id,
+        storeId: product.storeId,
+        title: product.title,
+        storeName: store.name,
+        status: product.status,
+      })
+      .from(product)
+      .innerJoin(store, eq(store.id, product.storeId))
+      .where(and(eq(product.id, productId), eq(store.ownerId, ownerId)))
+      .limit(1),
   )
   return (rows[0] as OwnedProductRow | undefined) ?? null
 })
 
-export const selectNextImagePosition = Effect.fn('selectNextImagePosition')(function* (productId: string): Effect.fn.Return<number, DatabaseError, Db> {
+export const selectNextImagePosition = Effect.fn('selectNextImagePosition')(function* (
+  productId: string,
+): Effect.fn.Return<number, DatabaseError, Db> {
   const db = yield* Db
-  const rows = yield* db.run((d) => d.select({ position: productImage.position }).from(productImage).where(eq(productImage.productId, productId)).orderBy(desc(productImage.position)).limit(1))
-  return rows.length ? ((rows[0]?.position ?? 0) + 1) : 0
+  const rows = yield* db.run((d) =>
+    d
+      .select({ position: productImage.position })
+      .from(productImage)
+      .where(eq(productImage.productId, productId))
+      .orderBy(desc(productImage.position))
+      .limit(1),
+  )
+  return rows.length ? (rows[0]?.position ?? 0) + 1 : 0
 })

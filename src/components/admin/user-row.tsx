@@ -28,7 +28,7 @@ export function AdminUserRow({ user, isSelf }: { user: AdminUser; isSelf: boolea
 
     setBusy(false)
 
-    if (result._tag === "Failure") {
+    if (result._tag === 'Failure') {
       toast.error(result.failure.message)
       return false
     }

@@ -19,76 +19,76 @@ paying for this rewrite twice.
 Goal: one typed contract layer, Effect everywhere on the server, one client cache.
 
 - [x] **T0-01** Effect 4 foundation. Add `effect@4.0.5` (exact pin). Add the
-  "Learning more about Effect" section to `AGENTS.md` and read
-  `node_modules/effect/AGENTS.md` before writing any Effect code. Blockers: none.
+      "Learning more about Effect" section to `AGENTS.md` and read
+      `node_modules/effect/AGENTS.md` before writing any Effect code. Blockers: none.
 - [x] **T0-02** Effect services and layers. `Db` (Drizzle over D1, kept as the
-  query layer), `Env`, `Session`/`Viewer` (Better Auth), `Assets` (R2), `Mailer`
-  (Cloudflare Email), `RateLimiter`, `AppConfig`. One `AppLayer` built with
-  `Layer.mergeAll`; every service is a `Context.Service` + `Layer`. Blockers: T0-01.
+      query layer), `Env`, `Session`/`Viewer` (Better Auth), `Assets` (R2), `Mailer`
+      (Cloudflare Email), `RateLimiter`, `AppConfig`. One `AppLayer` built with
+      `Layer.mergeAll`; every service is a `Context.Service` + `Layer`. Blockers: T0-01.
 - [x] **T0-03** Typed domain errors. `NotFound`, `NotAllowed`, `NotSignedIn`,
-  `Invalid`, `RateLimited`, `Storage` as `Schema.TaggedError`. Replace
-  `src/lib/action.ts` (`ActionResult`, `NOT_SIGNED_IN`, `NOT_ALLOWED`) with
-  `Effect.Result` + tagged errors. Blockers: T0-01.
+      `Invalid`, `RateLimited`, `Storage` as `Schema.TaggedError`. Replace
+      `src/lib/action.ts` (`ActionResult`, `NOT_SIGNED_IN`, `NOT_ALLOWED`) with
+      `Effect.Result` + tagged errors. Blockers: T0-01.
 - [x] **T0-04** One schema source of truth. Port every zod schema to Effect
-  Schema under `src/api/schemas/*`; expose them via `Schema.toStandardSchemaV1`
-  so TanStack `.validator()`, route `validateSearch` and react-hook-form all
-  accept the same definition. Drop `zod` from the app. Blockers: T0-01.
+      Schema under `src/api/schemas/*`; expose them via `Schema.toStandardSchemaV1`
+      so TanStack `.validator()`, route `validateSearch` and react-hook-form all
+      accept the same definition. Drop `zod` from the app. Blockers: T0-01.
 - [x] **T0-05** Typesafe client URL params. Every route's `validateSearch`
-  becomes an Effect Schema → the router types `search` and `Link search={{...}}`
-  is checked at compile time. Delete the hand-written parsers in
-  `src/lib/search-params.ts` and `src/lib/admin-search.ts` along with their
-  duplicated enums and `pageSchema`. Blockers: T0-04.
+      becomes an Effect Schema → the router types `search` and `Link search={{...}}`
+      is checked at compile time. Delete the hand-written parsers in
+      `src/lib/search-params.ts` and `src/lib/admin-search.ts` along with their
+      duplicated enums and `pageSchema`. Blockers: T0-04.
 - [x] **T0-06** Effect everywhere on the server. Every query in
-  `src/server/queries/*` and every write in `src/server/functions/*` returns an
-  `Effect`: `Effect.fn`/`Effect.fnUntraced` for named operations, `Effect.gen`
-  for orchestration, `Effect.tryPromise` around Drizzle/Better Auth/R2 (never
-  `Effect.promise` — it swallows errors), `Effect.all` for parallelism,
-  `Effect.retry` + `Schedule.exponential` for transient D1/R2 failures,
-  `Effect.timeout` on external calls, `Effect.withSpan` for tracing into
-  Cloudflare observability, `Effect.log*` instead of `console`, `Effect.Clock`
-  instead of `src/lib/clock.ts`. Blockers: T0-02, T0-03.
+      `src/server/queries/*` and every write in `src/server/functions/*` returns an
+      `Effect`: `Effect.fn`/`Effect.fnUntraced` for named operations, `Effect.gen`
+      for orchestration, `Effect.tryPromise` around Drizzle/Better Auth/R2 (never
+      `Effect.promise` — it swallows errors), `Effect.all` for parallelism,
+      `Effect.retry` + `Schedule.exponential` for transient D1/R2 failures,
+      `Effect.timeout` on external calls, `Effect.withSpan` for tracing into
+      Cloudflare observability, `Effect.log*` instead of `console`, `Effect.Clock`
+      instead of `src/lib/clock.ts`. Blockers: T0-02, T0-03.
 - [x] **T0-07** One write path per concern. `functions/admin.ts` and
-  `functions/manage.ts` currently duplicate five writes (store details,
-  product + variants + categories, archive, delete product, delete store) and
-  admin repeats the "row not found" check eight times. One parameterised Effect
-  service per concern; the actor (`owner` vs `admin`) is an argument, not a
-  copy. Also unify `claimProductSlug`/`claimStoreSlug`. Blockers: T0-06.
+      `functions/manage.ts` currently duplicate five writes (store details,
+      product + variants + categories, archive, delete product, delete store) and
+      admin repeats the "row not found" check eight times. One parameterised Effect
+      service per concern; the actor (`owner` vs `admin`) is an argument, not a
+      copy. Also unify `claimProductSlug`/`claimStoreSlug`. Blockers: T0-06.
 - [x] **T0-08** Typed server functions. Keep `createServerFn` as the app's
-  transport; every one is typed from the Effect schemas and returns an
-  `Effect.Result`-shaped value, so `notFound()`/`redirect()` and the
-  `ActionResult` envelope both come from typed errors. Enable Start's CSRF
-  middleware for mutations. Blockers: T0-04, T0-06.
+      transport; every one is typed from the Effect schemas and returns an
+      `Effect.Result`-shaped value, so `notFound()`/`redirect()` and the
+      `ActionResult` envelope both come from typed errors. Enable Start's CSRF
+      middleware for mutations. Blockers: T0-04, T0-06.
 - [x] **T0-09** Uploads become a typed server function. Replace the hand-rolled
-  `POST`/`PATCH`/`DELETE` handlers in `src/routes/api/uploads.ts` (352 lines,
-  no zod, manual `ActionResult` over HTTP) with a server function taking a
-  `FormData` validator (TanStack supports `FormData` validators on POST).
-  `src/lib/uploads.ts` calls it and gets a typed result; the REST route goes
-  away. Blockers: T0-04, T0-06.
+      `POST`/`PATCH`/`DELETE` handlers in `src/routes/api/uploads.ts` (352 lines,
+      no zod, manual `ActionResult` over HTTP) with a server function taking a
+      `FormData` validator (TanStack supports `FormData` validators on POST).
+      `src/lib/uploads.ts` calls it and gets a typed result; the REST route goes
+      away. Blockers: T0-04, T0-06.
 - [x] **T0-10** Remaining server routes typed. `/images/$`, `/robots.txt`,
-  `/rss.xml`, `/sitemap.xml`, `/api/auth/$` keep their shape but build their
-  payloads from typed Effect data (Effect Schema for sitemap/feed entries, the
-  `Assets` service for R2). Blockers: T0-06.
+      `/rss.xml`, `/sitemap.xml`, `/api/auth/$` keep their shape but build their
+      payloads from typed Effect data (Effect Schema for sitemap/feed entries, the
+      `Assets` service for R2). Blockers: T0-06.
 - [x] **T0-11** TanStack Query as the single client cache. Install
-  `@tanstack/react-query`; create the `QueryClient` in `src/router.tsx` and
-  pass it through router `context`; `defaultPreloadStaleTime: 0` so Query owns
-  freshness; `@tanstack/react-router-ssr-query` for SSR dehydrate/hydrate.
-  Key factories + `queryOptions` per domain in `src/lib/queries/*`, with
-  per-domain `staleTime` (catalogue ~60s, admin/manage 0). Prove the SSR
-  hydration path on one route before rolling it out. Blockers: none.
+      `@tanstack/react-query`; create the `QueryClient` in `src/router.tsx` and
+      pass it through router `context`; `defaultPreloadStaleTime: 0` so Query owns
+      freshness; `@tanstack/react-router-ssr-query` for SSR dehydrate/hydrate.
+      Key factories + `queryOptions` per domain in `src/lib/queries/*`, with
+      per-domain `staleTime` (catalogue ~60s, admin/manage 0). Prove the SSR
+      hydration path on one route before rolling it out. Blockers: none.
 - [x] **T0-12** Loaders prefetch, components read. Every route loader calls
-  `queryClient.ensureQueryData(...)`; components use `useSuspenseQuery`;
-  mutations use `useMutation` + `queryClient.invalidateQueries` instead of
-  ad-hoc refetches. Blockers: T0-08, T0-11.
+      `queryClient.ensureQueryData(...)`; components use `useSuspenseQuery`;
+      mutations use `useMutation` + `queryClient.invalidateQueries` instead of
+      ad-hoc refetches. Blockers: T0-08, T0-11.
 - [x] **T0-13** Delete what the refactor made redundant: `zod`,
-  `src/lib/action.ts`, `src/lib/clock.ts`, `src/lib/search-params.ts`,
-  `src/lib/admin-search.ts`, the duplicated slug claiming and the duplicated
-  admin/owner writes from T0-07. Blockers: T0-04, T0-05, T0-06, T0-07, T0-09.
+      `src/lib/action.ts`, `src/lib/clock.ts`, `src/lib/search-params.ts`,
+      `src/lib/admin-search.ts`, the duplicated slug claiming and the duplicated
+      admin/owner writes from T0-07. Blockers: T0-04, T0-05, T0-06, T0-07, T0-09.
 - [x] **T0-14** Tests. Vitest coverage for the Effect services (layers with
-  test doubles), the tagged errors and the shared write paths; existing unit
-  tests stay green; `typecheck`, `lint` and `build` pass. Blockers: T0-06.
+      test doubles), the tagged errors and the shared write paths; existing unit
+      tests stay green; `typecheck`, `lint` and `build` pass. Blockers: T0-06.
 - [x] **T0-15** Documentation. `README.md` + `AGENTS.md` describe the layering
-  (`src/api` contracts → `src/server` Effect services → `src/lib/queries` →
-  routes) so later Tier 1–4 work lands in the new shape. Blockers: T0-13.
+      (`src/api` contracts → `src/server` Effect services → `src/lib/queries` →
+      routes) so later Tier 1–4 work lands in the new shape. Blockers: T0-13.
 
 ### Tier 0 notes
 
@@ -112,11 +112,11 @@ Goal: one typed contract layer, Effect everywhere on the server, one client cach
 - [x] **T1-08** "Similar products" + "more from this producer" on product page. Blockers: query additions.
 - [x] **T1-09** Breadcrumbs on product/category/producer pages. Blockers: none.
 - [x] **T1-10** Recently viewed (client) + "new arrivals" section on home. Blockers: none.
-- [ ] **T1-11** Paginate manage products + endless scroll on public catalogue. Blockers: paginated API for owner products.
+- [x] **T1-11** Paginate manage products + endless scroll on public catalogue. Blockers: paginated API for owner products.
 - [x] **T1-12** Admin edit product details (title/description/price/categories/images). Blockers: admin form reuse.
 - [x] **T1-13** Store deletion (owner request + admin) with propagation across all store assets (R2 objects, products, variants, images, categories). Blockers: cascade R2 cleanup.
 - [x] **T1-14** Account profile edit (name, avatar) + account deletion (GDPR). Blockers: auth endpoints.
-- [ ] **T1-15** Email notifications (new enquiry to producer; moderation decision to owner; new shop application to admin). Blockers: email templates via `send_email`.
+- [x] **T1-15** Email notifications (new enquiry to producer; moderation decision to owner; new shop application to admin). Blockers: email templates via `send_email`.
 - [ ] **T1-16** Search autocomplete / suggestions + recent searches. Blockers: search endpoint.
 - [ ] **T1-17** Advanced filters (price range, has-image, multi-category; region deferred). Blockers: T1-05 (region field) for region filter.
 - [ ] **T1-18** Structured product attributes per category (weight, origin, allergens, etc.) with category-specific schemas. Blockers: category constants restructure + DB migration.

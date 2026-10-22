@@ -53,11 +53,11 @@ loader: async ({ params, context: { queryClient } }) => {
 
 ## API Comparison
 
-| Method | Returns | On error | Cache hit (fresh) | Cache hit (stale) | Cache miss |
-|--------|---------|----------|-------------------|-------------------|------------|
-| `prefetchQuery` | `void` | Swallows | Skips fetch | Refetches | Fetches |
-| `fetchQuery` | `TData` | Throws | Skips fetch | Refetches | Fetches |
-| `ensureQueryData` | `TData` | Throws | Returns cached | Returns cached* | Fetches |
+| Method            | Returns | On error | Cache hit (fresh) | Cache hit (stale) | Cache miss |
+| ----------------- | ------- | -------- | ----------------- | ----------------- | ---------- |
+| `prefetchQuery`   | `void`  | Swallows | Skips fetch       | Refetches         | Fetches    |
+| `fetchQuery`      | `TData` | Throws   | Skips fetch       | Refetches         | Fetches    |
+| `ensureQueryData` | `TData` | Throws   | Returns cached    | Returns cached*   | Fetches    |
 
 *With `revalidateIfStale: true`, returns stale data immediately and refetches in background.
 

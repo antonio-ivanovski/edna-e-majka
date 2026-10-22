@@ -12,7 +12,7 @@ Organize server functions in `.functions.ts` files to clearly separate RPC wrapp
 // Mixing server functions with component code
 // routes/posts.tsx
 import { createServerFn } from '@tanstack/react-start'
-import { db } from '../lib/db.server'  // Server import in route file
+import { db } from '../lib/db.server' // Server import in route file
 
 const getPosts = createServerFn().handler(async () => {
   return db.posts.findMany()

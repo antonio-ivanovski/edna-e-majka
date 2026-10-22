@@ -27,7 +27,7 @@ export function AdminProductRow({ product }: { product: AdminProduct }) {
 
     setBusy(false)
 
-    if (result._tag === "Failure") {
+    if (result._tag === 'Failure') {
       toast.error(result.failure.message)
       return
     }
@@ -39,7 +39,7 @@ export function AdminProductRow({ product }: { product: AdminProduct }) {
   const remove = async () => {
     const result = await adminDeleteProduct({ data: { productId: product.id } })
 
-    if (result._tag === "Failure") {
+    if (result._tag === 'Failure') {
       toast.error(result.failure.message)
       return false
     }

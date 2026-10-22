@@ -14,7 +14,8 @@ import { adminQueries } from '#/lib/queries/admin'
 export const Route = createFileRoute('/admin/users')({
   validateSearch: toValidator(AdminListSearch),
   loaderDeps: ({ search }) => ({ query: search.q, page: search.page ?? 1 }),
-  loader: ({ context: { queryClient }, deps }) => queryClient.ensureQueryData(adminQueries.users(deps)),
+  loader: ({ context: { queryClient }, deps }) =>
+    queryClient.ensureQueryData(adminQueries.users(deps)),
   head: () => ({
     meta: [
       { title: 'Корисници · Администрација | ЕДНА Е МАЈКА' },

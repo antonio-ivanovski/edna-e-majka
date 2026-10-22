@@ -21,7 +21,9 @@ const MAGIC_LINK_EMAIL_QUOTA = { windowSeconds: 15 * 60, max: 3 }
 const THIRTY_DAYS = 60 * 60 * 24 * 30
 
 /** Better Auth validates the body itself; this only reads the address. */
-const magicLinkRequestBody = Schema.Struct({ email: Schema.String.pipe(Schema.check(Schema.isPattern(/^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/))) })
+const magicLinkRequestBody = Schema.Struct({
+  email: Schema.String.pipe(Schema.check(Schema.isPattern(/^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/))),
+})
 
 /**
  * Google sign-in is offered only when credentials are configured; the button is

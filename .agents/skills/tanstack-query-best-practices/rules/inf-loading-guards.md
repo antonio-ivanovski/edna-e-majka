@@ -20,31 +20,23 @@ function ProjectList() {
   return (
     <div>
       {data?.pages.map((page) =>
-        page.items.map((item) => <ProjectCard key={item.id} item={item} />)
+        page.items.map((item) => <ProjectCard key={item.id} item={item} />),
       )}
       {/* No loading guard — can trigger multiple fetches */}
-      {hasNextPage && (
-        <button onClick={() => fetchNextPage()}>Load More</button>
-      )}
+      {hasNextPage && <button onClick={() => fetchNextPage()}>Load More</button>}
     </div>
   )
 }
 
 // Infinite scroll without guard — fires on every scroll event
-<List onEndReached={() => fetchNextPage()} />
+;<List onEndReached={() => fetchNextPage()} />
 ```
 
 ## Good Example
 
 ```tsx
 function ProjectList() {
-  const {
-    data,
-    fetchNextPage,
-    hasNextPage,
-    isFetching,
-    isFetchingNextPage,
-  } = useInfiniteQuery({
+  const { data, fetchNextPage, hasNextPage, isFetching, isFetchingNextPage } = useInfiniteQuery({
     queryKey: ['projects'],
     queryFn: fetchProjects,
     initialPageParam: 0,
@@ -61,10 +53,7 @@ function ProjectList() {
         </React.Fragment>
       ))}
 
-      <button
-        onClick={() => fetchNextPage()}
-        disabled={!hasNextPage || isFetching}
-      >
+      <button onClick={() => fetchNextPage()} disabled={!hasNextPage || isFetching}>
         {isFetchingNextPage
           ? 'Loading more...'
           : hasNextPage

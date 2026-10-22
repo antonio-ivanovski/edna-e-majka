@@ -4,7 +4,9 @@ import { Schema } from 'effect'
 export const TrimmedString = (min: number, max: number) =>
   Schema.Trim.pipe(Schema.check(Schema.isMinLength(min), Schema.isMaxLength(max)))
 
-export const Email = Schema.String.pipe(Schema.check(Schema.isPattern(/^[^\s@]+@[^\s@]+\.[^\s@]+$/)))
+export const Email = Schema.String.pipe(
+  Schema.check(Schema.isPattern(/^[^\s@]+@[^\s@]+\.[^\s@]+$/)),
+)
 
 export const PageNumber = Schema.Number.pipe(
   Schema.check(Schema.isInt()),

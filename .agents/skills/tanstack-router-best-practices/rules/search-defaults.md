@@ -11,8 +11,8 @@ Always provide default values for search params so the app works when users visi
 ```tsx
 // No defaults — crashes or shows errors on bare URL visit
 const searchSchema = z.object({
-  page: z.number(),           // Required — /products without ?page= throws
-  sort: z.enum(['name', 'price']),  // Required — no fallback
+  page: z.number(), // Required — /products without ?page= throws
+  sort: z.enum(['name', 'price']), // Required — no fallback
 })
 
 export const Route = createFileRoute('/products')({

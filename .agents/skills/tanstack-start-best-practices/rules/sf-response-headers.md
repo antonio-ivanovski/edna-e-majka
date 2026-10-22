@@ -10,13 +10,12 @@ Server functions can read request headers and set response headers using utiliti
 
 ```tsx
 // Trying to access request/response directly - not available in server functions
-export const getCachedData = createServerFn()
-  .handler(async () => {
-    // req and res don't exist in server function context
-    const authHeader = req.headers.authorization
-    res.setHeader('Cache-Control', 'max-age=300')
-    return fetchData()
-  })
+export const getCachedData = createServerFn().handler(async () => {
+  // req and res don't exist in server function context
+  const authHeader = req.headers.authorization
+  res.setHeader('Cache-Control', 'max-age=300')
+  return fetchData()
+})
 ```
 
 ## Good Example
@@ -32,25 +31,25 @@ import {
 } from '@tanstack/react-start/server'
 
 // Reading request headers
-export const getProtectedData = createServerFn()
-  .handler(async () => {
-    const authHeader = getRequestHeader('Authorization')
-    if (!authHeader?.startsWith('Bearer ')) {
-      setResponseStatus(401)
-      throw new Error('Unauthorized')
-    }
-    return fetchProtectedData(authHeader)
-  })
+export const getProtectedData = createServerFn().handler(async () => {
+  const authHeader = getRequestHeader('Authorization')
+  if (!authHeader?.startsWith('Bearer ')) {
+    setResponseStatus(401)
+    throw new Error('Unauthorized')
+  }
+  return fetchProtectedData(authHeader)
+})
 
 // Setting cache headers
-export const getCachedData = createServerFn()
-  .handler(async () => {
-    setResponseHeaders(new Headers({
+export const getCachedData = createServerFn().handler(async () => {
+  setResponseHeaders(
+    new Headers({
       'Cache-Control': 'public, max-age=300',
       'CDN-Cache-Control': 'max-age=3600, stale-while-revalidate=600',
-    }))
-    return fetchData()
-  })
+    }),
+  )
+  return fetchData()
+})
 
 // Setting individual headers
 export const downloadFile = createServerFn()
@@ -62,20 +61,19 @@ export const downloadFile = createServerFn()
   })
 
 // Accessing the full request object
-export const handleWebhook = createServerFn({ method: 'POST' })
-  .handler(async () => {
-    const request = getRequest()
-    const signature = request.headers.get('x-webhook-signature')
-    const body = await request.text()
+export const handleWebhook = createServerFn({ method: 'POST' }).handler(async () => {
+  const request = getRequest()
+  const signature = request.headers.get('x-webhook-signature')
+  const body = await request.text()
 
-    if (!verifySignature(body, signature)) {
-      setResponseStatus(403)
-      throw new Error('Invalid signature')
-    }
+  if (!verifySignature(body, signature)) {
+    setResponseStatus(403)
+    throw new Error('Invalid signature')
+  }
 
-    await processWebhook(JSON.parse(body))
-    return { received: true }
-  })
+  await processWebhook(JSON.parse(body))
+  return { received: true }
+})
 ```
 
 ## Context

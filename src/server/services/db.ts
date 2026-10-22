@@ -8,9 +8,14 @@ import { DatabaseError } from '../errors'
  * synchronous to construct (it only binds to `env.DB`), so this is a `sync`
  * layer; the actual query execution happens inside `Effect.tryPromise`.
  */
-export class Db extends Context.Service<Db, {
-  readonly run: <A>(f: (db: ReturnType<typeof getDb>) => Promise<A>) => Effect.Effect<A, DatabaseError>
-}>()('edna-e-majka/server/Db') {
+export class Db extends Context.Service<
+  Db,
+  {
+    readonly run: <A>(
+      f: (db: ReturnType<typeof getDb>) => Promise<A>,
+    ) => Effect.Effect<A, DatabaseError>
+  }
+>()('edna-e-majka/server/Db') {
   static readonly layer = Layer.sync(Db, () => {
     const db = getDb()
     return Db.of({

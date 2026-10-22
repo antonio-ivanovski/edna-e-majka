@@ -37,10 +37,7 @@ function Navigation() {
         Dashboard
       </Link>
 
-      <Link
-        to="/posts"
-        activeProps={{ style: { fontWeight: 'bold' } }}
-      >
+      <Link to="/posts" activeProps={{ style: { fontWeight: 'bold' } }}>
         Posts
       </Link>
     </nav>
@@ -52,7 +49,9 @@ function Navigation() {
 
 ```tsx
 // Style active links purely with CSS using the data-status attribute
-<Link to="/dashboard" className="nav-link">Dashboard</Link>
+<Link to="/dashboard" className="nav-link">
+  Dashboard
+</Link>
 ```
 
 ```css
@@ -113,12 +112,12 @@ function Navigation() {
 
 ## activeOptions Reference
 
-| Option | Default | Description |
-|---|---|---|
-| `exact` | `false` | Only active on exact path match (not prefix) |
-| `includeSearch` | `true` | Check if link's search params are a subset of current |
-| `includeHash` | `false` | Check if link's hash matches current hash |
-| `explicitUndefined` | `false` | `undefined` values in search must NOT be present |
+| Option              | Default | Description                                           |
+| ------------------- | ------- | ----------------------------------------------------- |
+| `exact`             | `false` | Only active on exact path match (not prefix)          |
+| `includeSearch`     | `true`  | Check if link's search params are a subset of current |
+| `includeHash`       | `false` | Check if link's hash matches current hash             |
+| `explicitUndefined` | `false` | `undefined` values in search must NOT be present      |
 
 ## Context
 

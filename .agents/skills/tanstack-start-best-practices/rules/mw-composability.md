@@ -10,8 +10,8 @@ Middleware can depend on other middleware via `.middleware([...])`, forming a co
 
 ```tsx
 // Monolithic middleware doing too many things
-const doEverythingMiddleware = createMiddleware({ type: 'function' })
-  .server(async ({ next, request }) => {
+const doEverythingMiddleware = createMiddleware({ type: 'function' }).server(
+  async ({ next, request }) => {
     // Logging
     const start = Date.now()
     console.log(`${request.method} ${request.url}`)
@@ -30,7 +30,8 @@ const doEverythingMiddleware = createMiddleware({ type: 'function' })
 
     console.log(`Completed in ${Date.now() - start}ms`)
     return next({ context: { user, perms } })
-  })
+  },
+)
 ```
 
 ## Good Example: Composable Middleware Chain
@@ -39,16 +40,15 @@ const doEverythingMiddleware = createMiddleware({ type: 'function' })
 import { createMiddleware } from '@tanstack/react-start'
 
 // Each middleware has a single responsibility
-const loggingMiddleware = createMiddleware({ type: 'function' })
-  .server(async ({ next }) => {
-    const start = Date.now()
-    const result = await next()
-    console.log(`Completed in ${Date.now() - start}ms`)
-    return result
-  })
+const loggingMiddleware = createMiddleware({ type: 'function' }).server(async ({ next }) => {
+  const start = Date.now()
+  const result = await next()
+  console.log(`Completed in ${Date.now() - start}ms`)
+  return result
+})
 
 const authMiddleware = createMiddleware({ type: 'function' })
-  .middleware([loggingMiddleware])  // Logging wraps auth
+  .middleware([loggingMiddleware]) // Logging wraps auth
   .server(async ({ next }) => {
     const session = await useAppSession()
     if (!session.data.userId) throw redirect({ to: '/login' })
@@ -59,7 +59,7 @@ const authMiddleware = createMiddleware({ type: 'function' })
   })
 
 const adminMiddleware = createMiddleware({ type: 'function' })
-  .middleware([authMiddleware])  // Auth wraps admin check
+  .middleware([authMiddleware]) // Auth wraps admin check
   .server(async ({ next, context }) => {
     if (context.user.role !== 'admin') {
       throw redirect({ to: '/unauthorized' })
@@ -87,13 +87,12 @@ const requestLogger = createMiddleware().server(async ({ next, request }) => {
   return next()
 })
 
-const functionLogger = createMiddleware({ type: 'function' })
-  .server(async ({ next }) => {
-    const start = Date.now()
-    const result = await next()
-    console.log(`Server fn completed in ${Date.now() - start}ms`)
-    return result
-  })
+const functionLogger = createMiddleware({ type: 'function' }).server(async ({ next }) => {
+  const start = Date.now()
+  const result = await next()
+  console.log(`Server fn completed in ${Date.now() - start}ms`)
+  return result
+})
 
 export const startInstance = createStart(() => ({
   // Runs on ALL server requests (SSR, server routes, server functions)
@@ -109,7 +108,7 @@ export const startInstance = createStart(() => ({
 // Middleware on all handlers in a server route
 export const Route = createFileRoute('/api/users')({
   server: {
-    middleware: [authMiddleware],  // Applies to GET and POST
+    middleware: [authMiddleware], // Applies to GET and POST
     handlers: {
       GET: async ({ context }) => {
         return Response.json(await db.users.findMany())
@@ -128,10 +127,10 @@ export const Route = createFileRoute('/api/posts')({
     handlers: ({ createHandlers }) =>
       createHandlers({
         GET: async ({ request }) => {
-          return Response.json(await db.posts.findMany())  // Public
+          return Response.json(await db.posts.findMany()) // Public
         },
         POST: {
-          middleware: [authMiddleware],  // Only POST requires auth
+          middleware: [authMiddleware], // Only POST requires auth
           handler: async ({ request, context }) => {
             const body = await request.json()
             return Response.json(await db.posts.create({ data: body }))

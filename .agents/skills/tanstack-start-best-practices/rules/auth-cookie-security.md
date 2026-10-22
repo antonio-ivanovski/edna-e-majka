@@ -12,13 +12,13 @@ Session cookies are the primary attack surface for authentication. Misconfigured
 // Minimal session config - missing security settings
 export function useAppSession() {
   return useSession({
-    password: 'short',  // Too short, hardcoded
+    password: 'short', // Too short, hardcoded
   })
 }
 
 // Storing token in localStorage
 function login(token: string) {
-  localStorage.setItem('token', token)  // XSS can steal this
+  localStorage.setItem('token', token) // XSS can steal this
 }
 
 // Non-httpOnly cookie
@@ -26,8 +26,8 @@ export function useAppSession() {
   return useSession({
     password: process.env.SESSION_SECRET!,
     cookie: {
-      httpOnly: false,  // JavaScript can read the session cookie
-      secure: false,    // Sent over HTTP in production
+      httpOnly: false, // JavaScript can read the session cookie
+      secure: false, // Sent over HTTP in production
     },
   })
 }
@@ -47,12 +47,12 @@ type SessionData = {
 export function useAppSession() {
   return useSession<SessionData>({
     name: 'app-session',
-    password: process.env.SESSION_SECRET!,  // At least 32 characters
+    password: process.env.SESSION_SECRET!, // At least 32 characters
     cookie: {
-      httpOnly: true,      // Not accessible via document.cookie / JavaScript
-      secure: process.env.NODE_ENV === 'production',  // HTTPS only in prod
-      sameSite: 'lax',     // Blocks cross-site POST but allows navigation
-      maxAge: 60 * 60 * 24 * 7,  // 7 days
+      httpOnly: true, // Not accessible via document.cookie / JavaScript
+      secure: process.env.NODE_ENV === 'production', // HTTPS only in prod
+      sameSite: 'lax', // Blocks cross-site POST but allows navigation
+      maxAge: 60 * 60 * 24 * 7, // 7 days
     },
   })
 }
@@ -80,23 +80,22 @@ export const login = createServerFn({ method: 'POST' })
     throw redirect({ to: '/dashboard' })
   })
 
-export const logout = createServerFn({ method: 'POST' })
-  .handler(async () => {
-    const session = await useAppSession()
-    await session.clear()  // Destroys the session
-    throw redirect({ to: '/' })
-  })
+export const logout = createServerFn({ method: 'POST' }).handler(async () => {
+  const session = await useAppSession()
+  await session.clear() // Destroys the session
+  throw redirect({ to: '/' })
+})
 ```
 
 ## Cookie Security Settings Reference
 
-| Setting | Recommended | Purpose |
-|---------|-------------|---------|
-| `httpOnly` | `true` | Prevents XSS from reading cookie via JavaScript |
-| `secure` | `true` in prod | Cookie only sent over HTTPS |
-| `sameSite` | `'lax'` | Blocks cross-site POST requests (CSRF protection) |
-| `maxAge` | App-specific | Session duration in seconds |
-| `password` | 32+ random chars | Encryption key for cookie contents |
+| Setting    | Recommended      | Purpose                                           |
+| ---------- | ---------------- | ------------------------------------------------- |
+| `httpOnly` | `true`           | Prevents XSS from reading cookie via JavaScript   |
+| `secure`   | `true` in prod   | Cookie only sent over HTTPS                       |
+| `sameSite` | `'lax'`          | Blocks cross-site POST requests (CSRF protection) |
+| `maxAge`   | App-specific     | Session duration in seconds                       |
+| `password` | 32+ random chars | Encryption key for cookie contents                |
 
 ## Context
 

@@ -10,14 +10,13 @@ All data crossing the client/server boundary must be validated. Server functions
 
 ```tsx
 // No validation - trusting client input directly
-export const updateUser = createServerFn({ method: 'POST' })
-  .handler(async ({ data }) => {
-    // data is untyped and unvalidated
-    await db.users.update({
-      where: { id: data.id },
-      data: { role: data.role },  // Could set role to 'admin'!
-    })
+export const updateUser = createServerFn({ method: 'POST' }).handler(async ({ data }) => {
+  // data is untyped and unvalidated
+  await db.users.update({
+    where: { id: data.id },
+    data: { role: data.role }, // Could set role to 'admin'!
   })
+})
 
 // Type-only validation - no runtime checks
 export const createPost = createServerFn({ method: 'POST' })
@@ -76,15 +75,17 @@ export const submitForm = createServerFn({ method: 'POST' })
       throw new Error('Expected FormData')
     }
     // Parse and validate FormData fields
-    const parsed = z.object({
-      name: z.string().min(1).max(100),
-      email: z.string().email(),
-      message: z.string().min(1).max(5000),
-    }).parse({
-      name: data.get('name'),
-      email: data.get('email'),
-      message: data.get('message'),
-    })
+    const parsed = z
+      .object({
+        name: z.string().min(1).max(100),
+        email: z.string().email(),
+        message: z.string().min(1).max(5000),
+      })
+      .parse({
+        name: data.get('name'),
+        email: data.get('email'),
+        message: data.get('message'),
+      })
     return parsed
   })
   .handler(async ({ data }) => {

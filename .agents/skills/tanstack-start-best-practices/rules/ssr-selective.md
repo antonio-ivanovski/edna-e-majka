@@ -19,7 +19,7 @@ export const Route = createFileRoute('/app/dashboard')({
 
 // No SSR for a marketing landing page - bad for SEO
 export const Route = createFileRoute('/')({
-  ssr: false,  // Google sees a blank page
+  ssr: false, // Google sees a blank page
   component: LandingPage,
 })
 ```
@@ -38,14 +38,14 @@ export const Route = createFileRoute('/blog/$slug')({
 
 // Client-only for heavy interactive apps — no server rendering overhead
 export const Route = createFileRoute('/app/dashboard')({
-  ssr: false,  // No beforeLoad/loader on server, no server rendering
+  ssr: false, // No beforeLoad/loader on server, no server rendering
   loader: () => getDashboardData(),
   component: Dashboard,
 })
 
 // Data-only for pages where data matters but rendering doesn't
 export const Route = createFileRoute('/app/settings')({
-  ssr: 'data-only',  // Runs loader on server, renders on client only
+  ssr: 'data-only', // Runs loader on server, renders on client only
   loader: () => getUserSettings(),
   component: SettingsPage,
 })
@@ -95,8 +95,13 @@ export const Route = createRootRoute({
 function RootShell({ children }: { children: React.ReactNode }) {
   return (
     <html>
-      <head><HeadContent /></head>
-      <body>{children}<Scripts /></body>
+      <head>
+        <HeadContent />
+      </head>
+      <body>
+        {children}
+        <Scripts />
+      </body>
     </html>
   )
 }
@@ -104,11 +109,11 @@ function RootShell({ children }: { children: React.ReactNode }) {
 
 ## SSR Modes Reference
 
-| Mode | `beforeLoad`/`loader` on server | Server renders component | Use case |
-|------|------|------|------|
-| `true` | Yes | Yes | SEO pages, landing pages, blogs |
-| `'data-only'` | Yes | No | Data-heavy apps, authenticated pages |
-| `false` | No | No | Interactive dashboards, admin panels |
+| Mode          | `beforeLoad`/`loader` on server | Server renders component | Use case                             |
+| ------------- | ------------------------------- | ------------------------ | ------------------------------------ |
+| `true`        | Yes                             | Yes                      | SEO pages, landing pages, blogs      |
+| `'data-only'` | Yes                             | No                       | Data-heavy apps, authenticated pages |
+| `false`       | No                              | No                       | Interactive dashboards, admin panels |
 
 ## Context
 

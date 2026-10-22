@@ -13,7 +13,7 @@ Use `throw notFound()` when a requested resource doesn't exist. This triggers th
 export const Route = createFileRoute('/posts/$postId')({
   loader: async ({ params }) => {
     const post = await getPost(params.postId)
-    return post  // Returns undefined if not found - component crashes
+    return post // Returns undefined if not found - component crashes
   },
   component: PostComponent,
 })
@@ -28,7 +28,7 @@ function PostComponent() {
 export const Route = createFileRoute('/posts/$postId')({
   loader: async ({ params }) => {
     const post = await getPost(params.postId)
-    if (!post) throw new Error('Post not found')  // Shows error UI, not 404
+    if (!post) throw new Error('Post not found') // Shows error UI, not 404
     return post
   },
 })

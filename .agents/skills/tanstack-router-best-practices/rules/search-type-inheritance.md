@@ -45,10 +45,14 @@ export const Route = createFileRoute('/posts/$postId')({
 
 function PostPage() {
   // Child automatically inherits parent search params
-  const { tab } = Route.useSearch()     // tab from this route
+  const { tab } = Route.useSearch() // tab from this route
   const { view } = useSearch({ from: '/posts' }) // view from parent
 
-  return <div>View: {view}, Tab: {tab}</div>
+  return (
+    <div>
+      View: {view}, Tab: {tab}
+    </div>
+  )
 }
 ```
 
