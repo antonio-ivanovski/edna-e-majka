@@ -201,31 +201,27 @@ export const saveProduct = createServerFn({ method: 'POST', strict: { output: fa
           })
           .where(eq(product.id, productId))
       } else {
-        await db
-          .insert(product)
-          .values({
-            id: productId,
-            storeId: data.storeId,
-            title: data.title,
-            description: data.description,
-            searchText,
-            availability: data.availability,
-            slug: await runEffect(claimProductSlug(data.title)),
-          })
+        await db.insert(product).values({
+          id: productId,
+          storeId: data.storeId,
+          title: data.title,
+          description: data.description,
+          searchText,
+          availability: data.availability,
+          slug: await runEffect(claimProductSlug(data.title)),
+        })
       }
       await db.delete(productVariant).where(eq(productVariant.productId, productId))
       await db.delete(productCategory).where(eq(productCategory.productId, productId))
       const statements = rowStatements([
         ...data.variants.map((variant, position) =>
-          db
-            .insert(productVariant)
-            .values({
-              id: crypto.randomUUID(),
-              productId,
-              title: variant.title,
-              price: variant.price,
-              position,
-            }),
+          db.insert(productVariant).values({
+            id: crypto.randomUUID(),
+            productId,
+            title: variant.title,
+            price: variant.price,
+            position,
+          }),
         ),
         ...data.categories.map((categorySlug) =>
           db.insert(productCategory).values({ productId, categorySlug }),
