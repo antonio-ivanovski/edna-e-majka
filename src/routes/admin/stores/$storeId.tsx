@@ -5,6 +5,7 @@ import { AdminProductRow } from '#/components/admin/product-row'
 import { AdminStoreForm } from '#/components/admin/store-form'
 import { StoreStatusForm } from '#/components/admin/store-status-form'
 import { TransferOwnerForm } from '#/components/admin/transfer-owner-form'
+import { ModerationNotes } from '#/components/admin/moderation-notes'
 import { StoreStatusLabel } from '#/components/manage/status-label'
 import { StoreAvatarField } from '#/components/manage/store-form'
 import { Avatar } from '#/components/ui/avatar'
@@ -82,6 +83,8 @@ function AdminStorePage() {
       </Panel>
 
       <TransferOwnerForm store={store} />
+
+      <ModerationNotes storeId={store.id} />
 
       <div className="border-t border-line pt-5">
         <AdminDeleteStoreButton storeId={store.id} storeName={store.name} />

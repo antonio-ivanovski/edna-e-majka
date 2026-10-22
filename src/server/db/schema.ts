@@ -168,3 +168,12 @@ export const auditLog = sqliteTable('audit_log', {
   details: text('details'),
   createdAt: integer('created_at', { mode: 'timestamp_ms' }).notNull().default(now),
 })
+
+export const moderationNote = sqliteTable('moderation_note', {
+  id: text('id').primaryKey(),
+  storeId: text('store_id').references(() => store.id, { onDelete: 'cascade' }),
+  productId: text('product_id').references(() => product.id, { onDelete: 'cascade' }),
+  authorId: text('author_id').notNull(),
+  body: text('body').notNull(),
+  createdAt: integer('created_at', { mode: 'timestamp_ms' }).notNull().default(now),
+})

@@ -131,7 +131,7 @@ Goal: one typed contract layer, Effect everywhere on the server, one client cach
 - [x] **T2-04** Admin audit log (who/what/when for status changes, deletions, role changes). Blockers: new table + middleware hooks.
 - [x] **T2-05** Admin bulk actions (approve/suspend/archive multiple). Blockers: none.
 - [x] **T2-06** Admin user management (suspend/ban, role change, view sessions). Blockers: T2-04 (audit).
-- [ ] **T2-07** Admin moderation notes (internal comments on stores/products). Blockers: new table.
+- [x] **T2-07** Admin moderation notes (internal comments on stores/products). Blockers: new table.
 - [ ] **T2-08** Data export — user data (GDPR) + store products CSV export/import. Blockers: T1-18 for attribute columns.
 - [x] **T2-09** Content guidelines / producer onboarding guide page. Blockers: none.
 - [x] **T2-10** 404 page with suggestions + richer empty states. Blockers: none.

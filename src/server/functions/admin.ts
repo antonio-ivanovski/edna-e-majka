@@ -8,8 +8,8 @@
  */
 import { notFound } from '@tanstack/react-router'
 import { createServerFn } from '@tanstack/react-start'
-import { eq, sql } from 'drizzle-orm'
-import { Effect, Result } from 'effect'
+import { and, desc, eq, sql } from 'drizzle-orm'
+import { Effect, Result, Schema } from 'effect'
 import type { DomainError } from '../errors'
 import { InvalidInputError, NotAllowedError, NotFoundError } from '../errors'
 import {
@@ -25,6 +25,7 @@ import {
   AdminTransferStore,
   AdminUserList,
   AdminUserBan,
+  ModerationNote,
   AdminUserRole,
   ProductDelete,
   ProductForm,
@@ -37,7 +38,14 @@ import { buildSearchText } from '#/lib/translit'
 import { user } from '../db/auth-schema'
 import { getDb } from '../db/client'
 import { Env } from '../services/env'
-import { contactMessage, product, productCategory, productVariant, store } from '../db/schema'
+import {
+  contactMessage,
+  moderationNote,
+  product,
+  productCategory,
+  productVariant,
+  store,
+} from '../db/schema'
 import { withAdmin } from '../middleware'
 import { runEffect } from '../runtime'
 import { recordAudit } from '../audit'
@@ -270,6 +278,50 @@ export const adminSetUserBanned = createServerFn({ method: 'POST', strict: { out
     )
 
     return Result.succeed(null)
+  })
+
+export const addModerationNote = createServerFn({ method: 'POST', strict: { output: false } })
+  .middleware([withAdmin])
+  .validator(toValidator(ModerationNote))
+  .handler(async ({ context, data }): Promise<Result.Result<null, DomainError>> => {
+    await getDb()
+      .insert(moderationNote)
+      .values({
+        id: crypto.randomUUID(),
+        storeId: data.storeId ?? null,
+        productId: data.productId ?? null,
+        authorId: context.admin.id,
+        body: data.body,
+      })
+
+    return Result.succeed(null)
+  })
+
+export const listModerationNotes = createServerFn({ method: 'GET', strict: { output: false } })
+  .middleware([withAdmin])
+  .validator(
+    toValidator(
+      Schema.Struct({
+        storeId: Schema.optional(Schema.String),
+        productId: Schema.optional(Schema.String),
+      }),
+    ),
+  )
+  .handler(async ({ data }) => {
+    const conditions = []
+    if (data.storeId) conditions.push(eq(moderationNote.storeId, data.storeId))
+    if (data.productId) conditions.push(eq(moderationNote.productId, data.productId))
+    const rows = await getDb()
+      .select({
+        id: moderationNote.id,
+        body: moderationNote.body,
+        authorId: moderationNote.authorId,
+        createdAt: moderationNote.createdAt,
+      })
+      .from(moderationNote)
+      .where(conditions.length > 0 ? and(...conditions) : undefined)
+      .orderBy(desc(moderationNote.createdAt))
+    return rows
   })
 
 export const transferStoreOwner = createServerFn({ method: 'POST', strict: { output: false } })

@@ -37,3 +37,9 @@ export const AdminUserBan = Schema.Struct({
   userId: Schema.String.pipe(Schema.check(Schema.isMinLength(1))),
   banned: Schema.Boolean,
 })
+
+export const ModerationNote = Schema.Struct({
+  storeId: Schema.optional(Schema.String.pipe(Schema.check(Schema.isMinLength(1)))),
+  productId: Schema.optional(Schema.String.pipe(Schema.check(Schema.isMinLength(1)))),
+  body: Schema.Trim.pipe(Schema.check(Schema.isMinLength(2), Schema.isMaxLength(1000))),
+})
