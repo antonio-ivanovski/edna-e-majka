@@ -103,11 +103,17 @@ function RootComponent() {
 
   return (
     <RootDocument>
+      <a
+        href="#main-content"
+        className="sr-only focus:not-sr-only focus:fixed focus:top-2 focus:left-2 focus:z-50 focus:rounded focus:bg-white focus:px-3 focus:py-2 focus:text-sm focus:font-semibold focus:shadow"
+      >
+        Скокни на содржината
+      </a>
       <div className="flex min-h-screen flex-col">
         <AmberBar />
         <div className="mx-auto flex w-full max-w-[80rem] flex-1 flex-col bg-white shadow-[0_0_20px_rgba(34,36,38,0.04)]">
           <SiteHeader stores={stores} googleEnabled={googleEnabled} />
-          <main className="flex-1">
+          <main id="main-content" className="flex-1">
             <Outlet />
           </main>
         </div>
