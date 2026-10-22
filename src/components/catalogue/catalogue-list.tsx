@@ -6,6 +6,7 @@ import { formatCount } from '#/lib/format'
 import { MAX_CATALOGUE_ITEMS } from '#/lib/pagination'
 import type { ProductSort, SortDirection } from '#/api/schemas'
 import type { ProductSummary } from '#/server/queries/products'
+import { CATEGORIES } from '#/lib/categories'
 import { cn } from '#/lib/utils'
 
 import { InfiniteScrollTrigger } from './infinite-scroll-trigger'
@@ -30,6 +31,8 @@ export function CatalogueList({
   pageSize,
   emptyTitle,
   emptyDescription,
+  filters,
+  showCategoryFilter = true,
   onParamsChange,
 }: {
   products: ProductSummary[]
@@ -40,7 +43,22 @@ export function CatalogueList({
   pageSize: number
   emptyTitle: string
   emptyDescription?: string
-  onParamsChange: (next: { sort?: ProductSort; direction?: SortDirection; page?: number }) => void
+  filters?: {
+    minPrice?: number | undefined
+    maxPrice?: number | undefined
+    inStock?: string | undefined
+    categorySlugs?: string | undefined
+  }
+  showCategoryFilter?: boolean
+  onParamsChange: (next: {
+    sort?: ProductSort
+    direction?: SortDirection
+    page?: number
+    minPrice?: number | undefined
+    maxPrice?: number | undefined
+    inStock?: string | undefined
+    categorySlugs?: string | undefined
+  }) => void
 }) {
   const pageCount = Math.min(
     Math.max(1, Math.ceil(total / pageSize)),
@@ -91,6 +109,86 @@ export function CatalogueList({
           </button>
         ))}
       </div>
+
+      <details className="mx-4 mt-3 rounded border border-line bg-white p-3">
+        <summary className="cursor-pointer text-sm font-semibold text-black/70">Филтри</summary>
+        <div className="mt-3 flex flex-wrap items-end gap-4">
+          <label className="flex flex-col gap-1 text-sm">
+            <span className="text-black/60">Мин. цена (ден.)</span>
+            <input
+              type="number"
+              min={0}
+              defaultValue={filters?.minPrice ?? ''}
+              onBlur={(event) => {
+                const value = event.target.value.trim()
+                onParamsChange({ minPrice: value ? Number(value) : undefined, page: 1 })
+              }}
+              className="h-9 w-24 rounded border border-line px-2"
+            />
+          </label>
+
+          <label className="flex flex-col gap-1 text-sm">
+            <span className="text-black/60">Макс. цена (ден.)</span>
+            <input
+              type="number"
+              min={0}
+              defaultValue={filters?.maxPrice ?? ''}
+              onBlur={(event) => {
+                const value = event.target.value.trim()
+                onParamsChange({ maxPrice: value ? Number(value) : undefined, page: 1 })
+              }}
+              className="h-9 w-24 rounded border border-line px-2"
+            />
+          </label>
+
+          <label className="flex items-center gap-2 text-sm">
+            <input
+              type="checkbox"
+              checked={filters?.inStock === '1'}
+              onChange={(event) =>
+                onParamsChange({ inStock: event.target.checked ? '1' : undefined, page: 1 })
+              }
+            />
+            Само на залиха
+          </label>
+
+          {showCategoryFilter ? (
+            <div className="flex flex-wrap items-center gap-3">
+              {CATEGORIES.map((category) => {
+                const selected = (filters?.categorySlugs ?? '')
+                  .split(',')
+                  .map((slug) => slug.trim())
+                  .includes(category.slug)
+
+                return (
+                  <label key={category.slug} className="flex items-center gap-1.5 text-sm">
+                    <input
+                      type="checkbox"
+                      checked={selected}
+                      onChange={(event) => {
+                        const current = (filters?.categorySlugs ?? '')
+                          .split(',')
+                          .map((slug) => slug.trim())
+                          .filter(Boolean)
+
+                        const next = event.target.checked
+                          ? [...current, category.slug]
+                          : current.filter((slug) => slug !== category.slug)
+
+                        onParamsChange({
+                          categorySlugs: next.length > 0 ? next.join(',') : undefined,
+                          page: 1,
+                        })
+                      }}
+                    />
+                    {category.title}
+                  </label>
+                )
+              })}
+            </div>
+          ) : null}
+        </div>
+      </details>
 
       {total > 0 ? (
         <p className="px-4 pt-2 text-sm text-black/45">

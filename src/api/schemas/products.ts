@@ -7,10 +7,14 @@ export const ProductListFilters = Schema.Struct({
   sort: ProductSort.pipe(Schema.withDecodingDefault(Effect.succeed('newest' as any))),
   direction: SortDirection.pipe(Schema.withDecodingDefault(Effect.succeed('desc' as any))),
   categorySlug: Schema.optional(Schema.String),
+  categorySlugs: Schema.optional(Schema.String),
   storeId: Schema.optional(Schema.String.pipe(Schema.check(Schema.isMinLength(1)))),
   query: Schema.optional(
     Schema.Trim.pipe(Schema.check(Schema.isMinLength(2), Schema.isMaxLength(64))),
   ),
+  minPrice: Schema.optional(Schema.NumberFromString),
+  maxPrice: Schema.optional(Schema.NumberFromString),
+  inStock: Schema.optional(Schema.String),
   page: Schema.NumberFromString.pipe(
     Schema.check(Schema.isInt(), Schema.isGreaterThanOrEqualTo(1), Schema.isLessThanOrEqualTo(500)),
     Schema.withDecodingDefault(Effect.succeed('1' as any)),

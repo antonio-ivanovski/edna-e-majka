@@ -9,6 +9,10 @@ export const ProductSearch = Schema.Struct({
   page: Schema.Union([Schema.Number, Schema.NumberFromString]).pipe(
     Schema.withDecodingDefault(Effect.succeed(1 as any)),
   ),
+  minPrice: Schema.optional(Schema.Union([Schema.Number, Schema.NumberFromString])),
+  maxPrice: Schema.optional(Schema.Union([Schema.Number, Schema.NumberFromString])),
+  inStock: Schema.optional(Schema.String),
+  categorySlugs: Schema.optional(Schema.String),
 })
 
 export const SearchPageSearch = Schema.Struct({

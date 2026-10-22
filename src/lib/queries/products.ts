@@ -10,7 +10,15 @@ export const productQueries = {
   list: (filters: ProductListFilters) =>
     queryOptions({
       queryKey: productKeys.list(filters),
-      queryFn: () => listProducts({ data: { ...filters, page: String(filters.page) } }),
+      queryFn: () =>
+        listProducts({
+          data: {
+            ...filters,
+            page: String(filters.page),
+            minPrice: filters.minPrice != null ? String(filters.minPrice) : undefined,
+            maxPrice: filters.maxPrice != null ? String(filters.maxPrice) : undefined,
+          },
+        }),
       staleTime: 60 * 1000,
     }),
   detail: (productId: string) =>

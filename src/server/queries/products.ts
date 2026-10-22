@@ -56,12 +56,41 @@ const productColumns = {
 
 function publicProductConditions(filters: Partial<ProductListFiltersType>) {
   const conditions = [eq(product.status, 'published' as const), eq(store.status, 'active' as const)]
+
+  const categorySlugs = filters.categorySlugs
+    ? filters.categorySlugs
+        .split(',')
+        .map((slug) => slug.trim())
+        .filter(Boolean)
+    : []
+
   if (filters.categorySlug) {
     conditions.push(
       sql`exists (select 1 from ${productCategory} where ${productCategory.productId} = ${product.id} and ${productCategory.categorySlug} = ${filters.categorySlug})`,
     )
+  } else if (categorySlugs.length > 0) {
+    conditions.push(
+      sql`exists (select 1 from ${productCategory} where ${productCategory.productId} = ${product.id} and ${productCategory.categorySlug} in (${sql.join(
+        categorySlugs.map((slug) => sql`${slug}`),
+        sql`, `,
+      )}))`,
+    )
   }
+
   if (filters.storeId) conditions.push(eq(product.storeId, filters.storeId))
+
+  if (filters.minPrice != null) {
+    conditions.push(sql`${lowestVariantPrice} >= ${filters.minPrice}`)
+  }
+
+  if (filters.maxPrice != null) {
+    conditions.push(sql`${lowestVariantPrice} <= ${filters.maxPrice}`)
+  }
+
+  if (filters.inStock === '1' || filters.inStock === 'true') {
+    conditions.push(eq(product.availability, 'in_stock'))
+  }
+
   if (filters.query) {
     const matches = buildSearchVariants(filters.query).map(
       (v) => sql`instr(${product.searchText}, ${v}) > 0`,

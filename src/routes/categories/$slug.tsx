@@ -39,8 +39,15 @@ function CategoryPage() {
   const navigate = Route.useNavigate()
 
   const onParamsChange = useCallback(
-    (next: { sort?: ProductSort; direction?: SortDirection; page?: number }) =>
-      void navigate({ search: (prev) => ({ ...prev, ...next }) }),
+    (next: {
+      sort?: ProductSort
+      direction?: SortDirection
+      page?: number
+      minPrice?: number | undefined
+      maxPrice?: number | undefined
+      inStock?: string | undefined
+      categorySlugs?: string | undefined
+    }) => void navigate({ search: (prev) => ({ ...prev, ...next }) }),
     [navigate],
   )
 
@@ -64,6 +71,13 @@ function CategoryPage() {
         emptyTitle={`Сѐ уште нема производи во „${category.title}“.`}
         emptyDescription="Погледнете другите категории или сите производители."
         onParamsChange={onParamsChange}
+        filters={{
+          minPrice: params.minPrice,
+          maxPrice: params.maxPrice,
+          inStock: params.inStock,
+          categorySlugs: params.categorySlugs,
+        }}
+        showCategoryFilter={false}
       />
     </div>
   )
