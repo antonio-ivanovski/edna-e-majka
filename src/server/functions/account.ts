@@ -20,6 +20,7 @@ import { withViewer } from '../middleware'
 import { runEffect } from '../runtime'
 import { deleteStoreCascade } from '../product-writes'
 import { selectOwnerStore, selectOwnerProducts } from '../queries/manage'
+import type { OwnerProduct } from '../queries/manage'
 
 import { toValidator, Profile } from '#/api/schemas'
 const profileSchema = toValidator(Profile)
@@ -100,11 +101,11 @@ export const exportUserData = createServerFn({ method: 'GET' })
 
     const account = rows[0] ?? null
 
-    let products: import('../queries/manage').OwnerProduct[] = []
+    let products: OwnerProduct[] = []
 
     if (ownStore) {
       products = (await runEffect(selectOwnerProducts(ownStore.id)))
-        .items as import('../queries/manage').OwnerProduct[]
+        .items as OwnerProduct[]
     }
 
     return { account, store: ownStore, products }
