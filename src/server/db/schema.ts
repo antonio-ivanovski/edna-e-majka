@@ -157,3 +157,14 @@ export const contactMessage = sqliteTable(
   },
   (table) => [index('contact_message_created_at_idx').on(table.createdAt)],
 )
+
+export const auditLog = sqliteTable('audit_log', {
+  id: text('id').primaryKey(),
+  actorId: text('actor_id').notNull(),
+  actorKind: text('actor_kind', { enum: ['admin', 'owner', 'system'] }).notNull(),
+  action: text('action').notNull(),
+  targetType: text('target_type').notNull(),
+  targetId: text('target_id').notNull(),
+  details: text('details'),
+  createdAt: integer('created_at', { mode: 'timestamp_ms' }).notNull().default(now),
+})

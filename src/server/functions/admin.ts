@@ -38,6 +38,7 @@ import { Env } from '../services/env'
 import { contactMessage, product, productCategory, productVariant, store } from '../db/schema'
 import { withAdmin } from '../middleware'
 import { runEffect } from '../runtime'
+import { recordAudit } from '../audit'
 import { sendModerationDecision } from '../notifications'
 import { deleteProductCascade, deleteStoreCascade } from '../product-writes'
 import {
@@ -107,6 +108,17 @@ export const setStoreStatus = createServerFn({ method: 'POST', strict: { output:
         }),
       )
 
+      await runEffect(
+        recordAudit({
+          actorId: context.admin.id,
+          actorKind: 'admin',
+          action: 'set_store_status',
+          targetType: 'store',
+          targetId: data.storeId,
+          details: data.status,
+        }),
+      )
+
       // Tell the owner what changed. Best-effort.
       const rows = await getDb()
         .select({ name: store.name, ownerId: store.ownerId })
@@ -171,7 +183,7 @@ export const adminUpdateStore = createServerFn({ method: 'POST', strict: { outpu
 export const adminDeleteStore = createServerFn({ method: 'POST', strict: { output: false } })
   .middleware([withAdmin])
   .validator(toValidator(StoreId))
-  .handler(async ({ data }): Promise<Result.Result<null, DomainError>> => {
+  .handler(async ({ context, data }): Promise<Result.Result<null, DomainError>> => {
     const rows = await getDb()
       .select({ id: store.id })
       .from(store)
@@ -182,6 +194,15 @@ export const adminDeleteStore = createServerFn({ method: 'POST', strict: { outpu
       return Result.fail(new NotFoundError({ message: 'Продавницата не е најдена.' }))
     }
 
+    await runEffect(
+      recordAudit({
+        actorId: context.admin.id,
+        actorKind: 'admin',
+        action: 'delete_store',
+        targetType: 'store',
+        targetId: data.storeId,
+      }),
+    )
     await runEffect(deleteStoreCascade(data.storeId))
 
     return Result.succeed(null)

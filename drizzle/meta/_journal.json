@@ -57,6 +57,13 @@
       "when": 1792654178778,
       "tag": "0007_lying_ultimates",
       "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "6",
+      "when": 1792654672392,
+      "tag": "0008_magical_lionheart",
+      "breakpoints": true
     }
   ]
 }
