@@ -1,11 +1,13 @@
 import { useEffect, useState } from 'react'
 
 import { Button } from '#/components/ui/button'
+import { useTranslation } from 'react-i18next'
 
 const STORAGE_KEY = 'edna-cookie-consent'
 
 /** A small banner at the bottom: the visitor chooses once, then it stays gone. */
 export function CookieConsent() {
+  const { t } = useTranslation()
   const [visible, setVisible] = useState(false)
 
   useEffect(() => {
@@ -48,16 +50,16 @@ export function CookieConsent() {
           Користиме колачиња за да се сеќаваме на вашите поставки и да го подобриме сајтот. Повеќе
           во{' '}
           <a href="/cookies" className="font-semibold text-accent-strong hover:underline">
-            политиката за колачиња
+            {t('cookie.policy')}
           </a>
           .
         </p>
         <div className="flex gap-2">
           <Button type="button" variant="outline" size="sm" onClick={() => decide('rejected')}>
-            Одбиј
+            {t('cookie.reject')}
           </Button>
           <Button type="button" variant="positive" size="sm" onClick={() => decide('accepted')}>
-            Прифати
+            {t('cookie.accept')}
           </Button>
         </div>
       </div>

@@ -1,4 +1,5 @@
 import '#/styles/app.css'
+import '#/lib/i18n'
 import '@fontsource-variable/literata'
 import '@fontsource-variable/onest'
 
