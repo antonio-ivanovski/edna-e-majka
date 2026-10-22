@@ -19,6 +19,7 @@ import {
   AdminMessageList,
   AdminProductList,
   AdminStoreDetails,
+  AdminBulkStoreStatus,
   AdminStoreList,
   AdminStoreStatus,
   AdminTransferStore,
@@ -230,6 +231,23 @@ export const adminToggleFeatured = createServerFn({ method: 'POST', strict: { ou
       .update(product)
       .set({ featured: data.featured })
       .where(eq(product.id, data.productId))
+
+    return Result.succeed(null)
+  })
+
+export const adminBulkSetStoreStatus = createServerFn({ method: 'POST', strict: { output: false } })
+  .middleware([withAdmin])
+  .validator(toValidator(AdminBulkStoreStatus))
+  .handler(async ({ context, data }): Promise<Result.Result<null, DomainError>> => {
+    for (const storeId of data.storeIds) {
+      try {
+        await runEffect(
+          setStoreStatusEffect(storeId, data.status, null, { kind: 'admin', id: context.admin.id }),
+        )
+      } catch {
+        // Skip missing stores.
+      }
+    }
 
     return Result.succeed(null)
   })

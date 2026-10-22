@@ -1,4 +1,5 @@
 import { Link, createFileRoute } from '@tanstack/react-router'
+import { useState } from 'react'
 import { ExternalLink } from 'lucide-react'
 
 import { AdminPager } from '#/components/admin/admin-pager'
@@ -22,6 +23,7 @@ import { formatCount, formatDate } from '#/lib/format'
 import { imageUrl } from '#/lib/images'
 import { ADMIN_PAGE_SIZE } from '#/lib/pagination'
 import { adminQueries } from '#/lib/queries/admin'
+import { adminBulkSetStoreStatus } from '#/server/functions/admin'
 import type { StoreStatus } from '#/server/queries/manage'
 
 const STATUS_FILTERS: { value?: StoreStatus; label: string }[] = [
@@ -54,6 +56,37 @@ function AdminStoresPage() {
   const { items, total } = Route.useLoaderData()
   const search = Route.useSearch()
   const navigate = Route.useNavigate()
+  const [selected, setSelected] = useState<Set<string>>(new Set())
+  const [bulkStatus, setBulkStatus] = useState<'active' | 'suspended' | 'archived'>('active')
+  const [busy, setBusy] = useState(false)
+
+  const toggle = (id: string) => {
+    setSelected((current) => {
+      const next = new Set(current)
+      if (next.has(id)) {
+        next.delete(id)
+      } else {
+        next.add(id)
+      }
+      return next
+    })
+  }
+
+  const applyBulk = async () => {
+    if (selected.size === 0) {
+      return
+    }
+
+    setBusy(true)
+
+    await adminBulkSetStoreStatus({
+      data: { storeIds: [...selected], status: bulkStatus },
+    })
+
+    setSelected(new Set())
+    setBusy(false)
+    await navigate({ search: (prev) => ({ ...prev }) })
+  }
 
   return (
     <div>
@@ -81,6 +114,32 @@ function AdminStoresPage() {
         {search.q ? ` · пребарување „${search.q}“` : ''}
       </p>
 
+      {selected.size > 0 ? (
+        <div className="mb-3 flex flex-wrap items-center gap-3 rounded border border-line bg-white p-3">
+          <span className="text-sm font-semibold">{selected.size} избрани</span>
+          <select
+            value={bulkStatus}
+            onChange={(event) =>
+              setBulkStatus(event.target.value as 'active' | 'suspended' | 'archived')
+            }
+            className="h-9 rounded border border-line px-2 text-sm"
+          >
+            <option value="active">Активни</option>
+            <option value="suspended">Суспендирани</option>
+            <option value="archived">Архивирани</option>
+          </select>
+          <Button
+            type="button"
+            variant="primary"
+            size="sm"
+            disabled={busy}
+            onClick={() => void applyBulk()}
+          >
+            {busy ? 'Применуваме…' : 'Примени'}
+          </Button>
+        </div>
+      ) : null}
+
       {items.length === 0 ? (
         <Panel>
           <EmptyState
@@ -96,6 +155,19 @@ function AdminStoresPage() {
         <Table>
           <TableHead>
             <TableRow>
+              <TableHeaderCell>
+                <input
+                  type="checkbox"
+                  checked={items.length > 0 && items.every((store) => selected.has(store.id))}
+                  onChange={(event) => {
+                    if (event.target.checked) {
+                      setSelected(new Set(items.map((store) => store.id)))
+                    } else {
+                      setSelected(new Set())
+                    }
+                  }}
+                />
+              </TableHeaderCell>
               <TableHeaderCell>Продавница</TableHeaderCell>
               <TableHeaderCell>Статус</TableHeaderCell>
               <TableHeaderCell>Производи</TableHeaderCell>
@@ -106,6 +178,13 @@ function AdminStoresPage() {
           <TableBody>
             {items.map((store) => (
               <TableRow key={store.id}>
+                <TableCell>
+                  <input
+                    type="checkbox"
+                    checked={selected.has(store.id)}
+                    onChange={() => toggle(store.id)}
+                  />
+                </TableCell>
                 <TableCell>
                   <div className="flex items-center gap-3">
                     <Avatar src={imageUrl(store.avatarKey)} alt="" size={36} />

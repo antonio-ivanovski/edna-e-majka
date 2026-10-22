@@ -91,3 +91,9 @@ export const AdminMessageHandled = Schema.Struct({
 export const AdminMessage = Schema.Struct({
   messageId: Schema.String.pipe(Schema.check(Schema.isMinLength(1))),
 })
+export const AdminBulkStoreStatus = Schema.Struct({
+  storeIds: Schema.Array(Schema.String.pipe(Schema.check(Schema.isMinLength(1)))).pipe(
+    Schema.check(Schema.isMinLength(1)),
+  ),
+  status: StoreStatus,
+})
