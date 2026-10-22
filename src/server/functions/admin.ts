@@ -24,6 +24,7 @@ import {
   AdminStoreStatus,
   AdminTransferStore,
   AdminUserList,
+  AdminUserBan,
   AdminUserRole,
   ProductDelete,
   ProductForm,
@@ -248,6 +249,25 @@ export const adminBulkSetStoreStatus = createServerFn({ method: 'POST', strict: 
         // Skip missing stores.
       }
     }
+
+    return Result.succeed(null)
+  })
+
+export const adminSetUserBanned = createServerFn({ method: 'POST', strict: { output: false } })
+  .middleware([withAdmin])
+  .validator(toValidator(AdminUserBan))
+  .handler(async ({ context, data }): Promise<Result.Result<null, DomainError>> => {
+    await getDb().update(user).set({ banned: data.banned }).where(eq(user.id, data.userId))
+
+    await runEffect(
+      recordAudit({
+        actorId: context.admin.id,
+        actorKind: 'admin',
+        action: data.banned ? 'ban_user' : 'unban_user',
+        targetType: 'user',
+        targetId: data.userId,
+      }),
+    )
 
     return Result.succeed(null)
   })

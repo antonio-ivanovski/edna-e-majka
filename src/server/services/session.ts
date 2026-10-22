@@ -9,6 +9,7 @@ export interface Viewer {
   readonly name: string
   readonly email: string
   readonly role: 'user' | 'admin'
+  readonly banned: boolean
 }
 
 export interface SessionService {
@@ -26,11 +27,14 @@ export class Session extends Context.Service<Session, SessionService>()(
           const session = await auth.api.getSession({ headers: getRequestHeaders() })
           if (!session) return null
           const role = (session.user as { role?: string }).role === 'admin' ? 'admin' : 'user'
+          const banned = Boolean((session.user as { banned?: boolean }).banned)
+          if (banned) return null
           return {
             id: session.user.id,
             name: session.user.name,
             email: session.user.email,
             role,
+            banned,
           } satisfies Viewer
         },
         catch: () => null as never,

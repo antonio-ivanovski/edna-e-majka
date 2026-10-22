@@ -59,6 +59,12 @@ export const auth = betterAuth({
         defaultValue: 'user',
         input: false,
       },
+      banned: {
+        type: 'boolean',
+        required: false,
+        defaultValue: false,
+        input: false,
+      },
     },
   },
   session: {

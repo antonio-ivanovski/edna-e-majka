@@ -32,3 +32,8 @@ export const MessageFilter = Schema.Literals(['open', 'done', 'all'])
 
 export const toValidator = <S extends Schema.ConstraintDecoder<unknown>>(schema: S) =>
   Schema.toStandardSchemaV1(schema)
+
+export const AdminUserBan = Schema.Struct({
+  userId: Schema.String.pipe(Schema.check(Schema.isMinLength(1))),
+  banned: Schema.Boolean,
+})

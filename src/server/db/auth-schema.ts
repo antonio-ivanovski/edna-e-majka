@@ -34,6 +34,8 @@ export const user = sqliteTable('user', {
   role: text('role', { enum: ['user', 'admin'] })
     .notNull()
     .default('user'),
+  /** Suspended by an admin: cannot sign in. */
+  banned: integer('banned', { mode: 'boolean' }).notNull().default(false),
   ...timestamps,
 })
 

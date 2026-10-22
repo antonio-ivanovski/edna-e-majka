@@ -49,6 +49,7 @@ export type AdminUser = {
   name: string
   email: string
   role: 'user' | 'admin'
+  banned: boolean
   createdAt: Date
   emailVerified: boolean
   store: { id: string; name: string; status: StoreStatus } | null
@@ -289,6 +290,7 @@ export const selectAdminUsers = Effect.fn('selectAdminUsers')(function* (filters
         name: user.name,
         email: user.email,
         role: user.role,
+        banned: user.banned,
         createdAt: user.createdAt,
         emailVerified: user.emailVerified,
         storeId: sql<
@@ -322,6 +324,7 @@ export const selectAdminUsers = Effect.fn('selectAdminUsers')(function* (filters
       name: row.name ?? '',
       email: row.email,
       role: row.role === 'admin' ? 'admin' : 'user',
+      banned: Boolean(row.banned),
       createdAt: row.createdAt,
       emailVerified: row.emailVerified,
       store: row.storeId

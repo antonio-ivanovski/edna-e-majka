@@ -8,7 +8,7 @@ import { ConfirmDialog } from '#/components/ui/confirm-dialog'
 import { Label } from '#/components/ui/label'
 import { TableCell, TableRow } from '#/components/ui/table'
 import { formatCount, formatDate } from '#/lib/format'
-import { setUserRole } from '#/server/functions/admin'
+import { setUserRole, adminSetUserBanned } from '#/server/functions/admin'
 import type { AdminUser } from '#/server/queries/admin'
 
 /**
@@ -83,21 +83,52 @@ export function AdminUserRow({ user, isSelf }: { user: AdminUser; isSelf: boolea
         {isSelf ? (
           <span className="text-sm text-black/40">Ова сте вие</span>
         ) : (
-          <ConfirmDialog
-            trigger={
-              <Button variant="outline" size="sm" disabled={busy}>
-                {admin ? 'Отстрани администратор' : 'Направи администратор'}
-              </Button>
-            }
-            title={admin ? 'Отстрани администратор' : 'Направи администратор'}
-            description={
-              admin
-                ? `${user.email} повеќе нема да има пристап до администрацијата.`
-                : `${user.email} добива пристап до сите продавници, производи и пораки.`
-            }
-            confirmLabel={admin ? 'Отстрани' : 'Дозволи'}
-            onConfirm={changeRole}
-          />
+          <div className="flex flex-wrap justify-end gap-2">
+            <ConfirmDialog
+              trigger={
+                <Button variant="outline" size="sm" disabled={busy}>
+                  {admin ? 'Отстрани администратор' : 'Направи администратор'}
+                </Button>
+              }
+              title={admin ? 'Отстрани администратор' : 'Направи администратор'}
+              description={
+                admin
+                  ? `${user.email} повеќе нема да има пристап до администрацијата.`
+                  : `${user.email} добива пристап до сите продавници, производи и пораки.`
+              }
+              confirmLabel={admin ? 'Отстрани' : 'Дозволи'}
+              onConfirm={changeRole}
+            />
+
+            <ConfirmDialog
+              trigger={
+                <Button variant="outline" size="sm" disabled={busy}>
+                  {user.banned ? 'Одблокирај' : 'Блокирај'}
+                </Button>
+              }
+              title={user.banned ? 'Одблокирај корисник' : 'Блокирај корисник'}
+              description={
+                user.banned
+                  ? `${user.email} повторно ќе може да се најави.`
+                  : `${user.email} повеќе нема да може да се најави.`
+              }
+              confirmLabel={user.banned ? 'Одблокирај' : 'Блокирај'}
+              onConfirm={async () => {
+                setBusy(true)
+                const result = await adminSetUserBanned({
+                  data: { userId: user.id, banned: !user.banned },
+                })
+                setBusy(false)
+                if (result._tag === 'Failure') {
+                  toast.error(result.failure.message)
+                  return false
+                }
+                await router.invalidate()
+                toast.success(user.banned ? 'Корисникот е одблокиран.' : 'Корисникот е блокиран.')
+                return true
+              }}
+            />
+          </div>
         )}
       </TableCell>
     </TableRow>
