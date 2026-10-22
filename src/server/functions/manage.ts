@@ -3,9 +3,9 @@ import { createServerFn } from '@tanstack/react-start'
 import type { BatchItem } from 'drizzle-orm/batch'
 import { eq } from 'drizzle-orm'
 
-import { Effect, Result } from 'effect'
+import { Effect, Result, Schema } from 'effect'
 import type { DomainError } from '../errors'
-import { NotAllowedError, NotFoundError, NotSignedInError } from '../errors'
+import { InvalidInputError, NotAllowedError, NotFoundError, NotSignedInError } from '../errors'
 import {
   toValidator,
   ManageProduct,
@@ -303,3 +303,173 @@ export const updateProductImageAlt = createServerFn({ method: 'POST', strict: { 
       .where(eq(productImage.id, data.imageId))
     return Result.succeed(null)
   })
+
+export const exportStoreProductsCSV = createServerFn({ method: 'GET', strict: { output: false } })
+  .middleware([withViewer])
+  .validator(toValidator(StoreId))
+  .handler(async ({ context, data }): Promise<Result.Result<string, DomainError>> => {
+    const viewer = context.viewer
+    if (!viewer) return Result.fail(new NotSignedInError({ message: 'Не сте најавени.' }))
+
+    const ownStore = await runEffect(selectOwnerStoreById(data.storeId, viewer.id))
+    if (!ownStore)
+      return Result.fail(new NotAllowedError({ message: 'Немате дозвола за оваа акција.' }))
+
+    const page = await runEffect(selectOwnerProducts(ownStore.id, 1))
+    let all = page.items
+    let current = 1
+    const pageSize = 20
+    while (page.items.length === pageSize) {
+      current += 1
+      const next = await runEffect(selectOwnerProducts(ownStore.id, current))
+      if (next.items.length === 0) break
+      all = all.concat(next.items)
+      if (next.items.length < pageSize) break
+    }
+
+    const lines = ['title,description,categories,availability,variants']
+    for (const summary of all) {
+      const detail = await runEffect(selectOwnerProduct(summary.id, ownStore.id))
+      if (!detail) continue
+      const categories = detail.categories.join(';')
+      const variants = detail.variants.map((v) => v.title + ':' + v.price).join(';')
+      const escape = (value: string) => '"' + value.replace(/"/g, '""') + '"'
+      lines.push(
+        [
+          escape(detail.title),
+          escape(detail.description),
+          escape(categories),
+          detail.availability,
+          escape(variants),
+        ].join(','),
+      )
+    }
+
+    return Result.succeed(lines.join('\n'))
+  })
+
+export const importStoreProductsCSV = createServerFn({ method: 'POST', strict: { output: false } })
+  .middleware([withViewer])
+  .validator(toValidator(Schema.Struct({ storeId: Schema.String, csv: Schema.String })))
+  .handler(async ({ context, data }): Promise<Result.Result<{ count: number }, DomainError>> => {
+    const viewer = context.viewer
+    if (!viewer) return Result.fail(new NotSignedInError({ message: 'Не сте најавени.' }))
+
+    const ownStore = await runEffect(selectOwnerStoreById(data.storeId, viewer.id))
+    if (!ownStore)
+      return Result.fail(new NotAllowedError({ message: 'Немате дозвола за оваа акција.' }))
+
+    const lines = data.csv.split(/\r?\n/).filter((line) => line.trim().length > 0)
+    if (lines.length < 2) {
+      return Result.fail(new InvalidInputError({ message: 'CSV-то е празно.' }))
+    }
+
+    let count = 0
+
+    for (let i = 1; i < lines.length; i += 1) {
+      const row = parseCsvLine(lines[i]!)
+      if (!row) continue
+
+      const title = row[0]
+      const description = row[1] ?? ''
+      const categoriesRaw = row[2] ?? ''
+      const availability = row[3] ?? ''
+      const variantsRaw = row[4] ?? ''
+
+      const categories = categoriesRaw
+        .split(';')
+        .map((s) => s.trim())
+        .filter(Boolean)
+      const variants = variantsRaw
+        .split(';')
+        .map((entry) => {
+          const parts = entry.split(':')
+          const variantTitle = parts[0]?.trim() || 'Стандардно'
+          const price = Number(parts[1]) || 0
+          return { title: variantTitle, price }
+        })
+        .filter((variant) => variant.price > 0)
+
+      if (variants.length === 0) {
+        variants.push({ title: 'Стандардно', price: 0 })
+      }
+
+      const productId = crypto.randomUUID()
+      await getDb()
+        .insert(product)
+        .values({
+          id: productId,
+          storeId: ownStore.id,
+          title: title!,
+          description: description || title!,
+          searchText: buildSearchText(title!, description || title!),
+          availability: (availability as 'in_stock' | 'out_of_stock' | 'on_order') || 'in_stock',
+          slug: await runEffect(claimProductSlug(title!)),
+        })
+
+      for (const [position, variant] of variants.entries()) {
+        await getDb().insert(productVariant).values({
+          id: crypto.randomUUID(),
+          productId,
+          title: variant.title,
+          price: variant.price,
+          position,
+        })
+      }
+
+      for (const categorySlug of categories) {
+        await getDb().insert(productCategory).values({ productId, categorySlug })
+      }
+
+      count += 1
+    }
+
+    return Result.succeed({ count })
+  })
+
+function parseCsvLine(line: string): string[] | null {
+  const result: string[] = []
+  let current = ''
+  let inQuotes = false
+  let i = 0
+
+  while (i < line.length) {
+    const char = line[i]
+
+    if (inQuotes) {
+      if (char === '"' && line[i + 1] === '"') {
+        current += '"'
+        i += 2
+        continue
+      }
+      if (char === '"') {
+        inQuotes = false
+        i += 1
+        continue
+      }
+      current += char
+      i += 1
+      continue
+    }
+
+    if (char === '"') {
+      inQuotes = true
+      i += 1
+      continue
+    }
+
+    if (char === ',') {
+      result.push(current)
+      current = ''
+      i += 1
+      continue
+    }
+
+    current += char
+    i += 1
+  }
+
+  result.push(current)
+
+  return result.length >= 5 ? result : null
+}

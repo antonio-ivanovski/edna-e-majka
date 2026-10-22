@@ -19,7 +19,7 @@ import { store } from '../db/schema'
 import { withViewer } from '../middleware'
 import { runEffect } from '../runtime'
 import { deleteStoreCascade } from '../product-writes'
-import { selectOwnerStore } from '../queries/manage'
+import { selectOwnerStore, selectOwnerProducts } from '../queries/manage'
 
 import { toValidator, Profile } from '#/api/schemas'
 const profileSchema = toValidator(Profile)
@@ -76,6 +76,40 @@ export const updateAccount = createServerFn({ method: 'POST', strict: { output: 
  * Closes the account for good: the shop it holds, its listings and their
  * photos, the sessions and the account itself.
  */
+
+export const exportUserData = createServerFn({ method: 'GET' })
+  .middleware([withViewer])
+  .handler(async ({ context }) => {
+    const viewer = context.viewer
+    if (!viewer) return null
+
+    const db = getDb()
+    const ownStore = await runEffect(selectOwnerStore(viewer.id))
+
+    const rows = await db
+      .select({
+        id: user.id,
+        name: user.name,
+        email: user.email,
+        image: user.image,
+        createdAt: user.createdAt,
+      })
+      .from(user)
+      .where(eq(user.id, viewer.id))
+      .limit(1)
+
+    const account = rows[0] ?? null
+
+    let products: import('../queries/manage').OwnerProduct[] = []
+
+    if (ownStore) {
+      products = (await runEffect(selectOwnerProducts(ownStore.id)))
+        .items as import('../queries/manage').OwnerProduct[]
+    }
+
+    return { account, store: ownStore, products }
+  })
+
 export const deleteAccount = createServerFn({ method: 'POST', strict: { output: false } })
   .middleware([withViewer])
   .handler(async ({ context }): Promise<Result.Result<null, DomainError>> => {

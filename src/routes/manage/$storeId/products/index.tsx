@@ -11,6 +11,7 @@ import { formatCount } from '#/lib/format'
 import { MANAGE_PAGE_SIZE } from '#/lib/pagination'
 import { toValidator, ProductSearch } from '#/api/schemas'
 import { manageQueries } from '#/lib/queries/manage'
+import { exportStoreProductsCSV, importStoreProductsCSV } from '#/server/functions/manage'
 
 export const Route = createFileRoute('/manage/$storeId/products/')({
   validateSearch: toValidator(ProductSearch),
@@ -58,12 +59,59 @@ function ManageProductsPage() {
           </p>
         </div>
 
-        <Button asChild variant="positive">
-          <Link to="/manage/$storeId/products/new" params={{ storeId: store.id }}>
-            <Plus className="size-4" />
-            Нов производ
-          </Link>
-        </Button>
+        <div className="flex flex-wrap gap-2">
+          <Button asChild variant="positive">
+            <Link to="/manage/$storeId/products/new" params={{ storeId: store.id }}>
+              <Plus className="size-4" />
+              Нов производ
+            </Link>
+          </Button>
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            onClick={async () => {
+              const csv = await exportStoreProductsCSV({ data: { storeId: store.id } })
+              if (csv._tag === 'Failure') return
+              const blob = new Blob([csv.success], { type: 'text/csv' })
+              const url = URL.createObjectURL(blob)
+              const link = document.createElement('a')
+              link.href = url
+              link.download = 'products.csv'
+              link.click()
+              URL.revokeObjectURL(url)
+            }}
+          >
+            Извези CSV
+          </Button>
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            onClick={async () => {
+              const input = document.createElement('input')
+              input.type = 'file'
+              input.accept = 'text/csv'
+              input.onchange = async () => {
+                const file = input.files?.[0]
+                if (!file) return
+                const text = await file.text()
+                const result = await importStoreProductsCSV({
+                  data: { storeId: store.id, csv: text },
+                })
+                if (result._tag === 'Failure') {
+                  alert(result.failure.message)
+                  return
+                }
+                alert('Увезени ' + result.success.count + ' производи.')
+                window.location.reload()
+              }
+              input.click()
+            }}
+          >
+            Увези CSV
+          </Button>
+        </div>
       </div>
 
       {products.length === 0 ? (
