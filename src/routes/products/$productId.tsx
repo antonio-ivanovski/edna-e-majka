@@ -5,6 +5,7 @@ import { useEffect } from 'react'
 import { recordRecentlyViewed } from '#/lib/recently-viewed'
 
 import { EnquiryForm } from '#/components/catalogue/enquiry-form'
+import { ReportButton } from '#/components/catalogue/report-button'
 import { ProductGrid } from '#/components/catalogue/product-grid'
 import { ProducerContacts } from '#/components/catalogue/producer-contacts'
 import { ShareButtons } from '#/components/catalogue/share-buttons'
@@ -154,6 +155,7 @@ function ProductPage() {
             {product.store.name}
             <Avatar src={imageUrl(product.store.avatarKey)} alt={product.store.name} />
           </Link>
+          <ReportButton productId={product.id} storeId={product.store.id} />
           {product.store.description ? (
             <Popover
               trigger={

@@ -26,3 +26,10 @@ export const CooperationMessage = Schema.Struct({
   ),
   startedAt: Schema.Number,
 })
+
+export const ReportMessage = Schema.Struct({
+  storeId: Schema.optional(Schema.String.pipe(Schema.check(Schema.isMinLength(1)))),
+  productId: Schema.optional(Schema.String.pipe(Schema.check(Schema.isMinLength(1)))),
+  reason: Schema.Trim.pipe(Schema.check(Schema.isMinLength(5), Schema.isMaxLength(500))),
+  startedAt: Schema.Number,
+})

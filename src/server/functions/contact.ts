@@ -3,7 +3,7 @@ import { getRequestHeader } from '@tanstack/react-start/server'
 import { Effect } from 'effect'
 
 import { Result } from 'effect'
-import { toValidator, CooperationMessage, EnquiryMessage } from '#/api/schemas'
+import { toValidator, CooperationMessage, EnquiryMessage, ReportMessage } from '#/api/schemas'
 // (inlined)
 
 import type { DomainError } from '../errors'
@@ -156,6 +156,28 @@ export const submitEnquiry = createServerFn({ method: 'POST', strict: { output: 
         ).catch(() => undefined)
       }
     }
+
+    return Result.succeed(null)
+  })
+
+export const submitReport = createServerFn({ method: 'POST', strict: { output: false } })
+  .validator(toValidator(ReportMessage))
+  .handler(async ({ data }): Promise<Result.Result<null, DomainError>> => {
+    const ip = getRequestHeader('cf-connecting-ip')
+
+    await getDb()
+      .insert(contactMessage)
+      .values({
+        id: crypto.randomUUID(),
+        kind: 'report',
+        name: 'Пријава',
+        email: 'noreply@ednaemajka.mk',
+        message: data.reason,
+        ip,
+        userAgent: getRequestHeader('user-agent'),
+        storeId: data.storeId ?? null,
+        productId: data.productId ?? null,
+      })
 
     return Result.succeed(null)
   })
