@@ -8,6 +8,7 @@ import {
   selectProductPage,
   selectProductsByCategories,
   selectProductsByStore,
+  selectFeaturedProducts,
 } from '../queries/products'
 
 export const listProducts = createServerFn({ method: 'GET' })
@@ -33,3 +34,7 @@ export const getRelatedProducts = createServerFn({ method: 'GET' })
     ])
     return { fromStore, similar }
   })
+
+export const getFeaturedProducts = createServerFn({ method: 'GET' }).handler(async () =>
+  runEffect(selectFeaturedProducts(8)),
+)

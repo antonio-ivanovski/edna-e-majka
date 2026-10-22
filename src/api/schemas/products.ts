@@ -27,6 +27,11 @@ export const ProductId = Schema.Struct({
   productId: Schema.String.pipe(Schema.check(Schema.isMinLength(1))),
 })
 
+export const ToggleFeatured = Schema.Struct({
+  productId: Schema.String.pipe(Schema.check(Schema.isMinLength(1))),
+  featured: Schema.Boolean,
+})
+
 export const ManageProducts = Schema.Struct({
   storeId: Schema.String.pipe(Schema.check(Schema.isMinLength(1))),
   page: Schema.NumberFromString.pipe(

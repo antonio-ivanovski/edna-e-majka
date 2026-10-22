@@ -28,6 +28,7 @@ import {
   ProductForm,
   ProductStatusSchema as ProductStatus,
   StoreId,
+  ToggleFeatured,
 } from '#/api/schemas'
 import { buildSearchText } from '#/lib/translit'
 
@@ -189,7 +190,30 @@ export const adminDeleteStore = createServerFn({ method: 'POST', strict: { outpu
 /**
  * Moves a shop to another account, for the cases the platform cannot solve by
  * itself. One shop per person still holds: the target must not have one.
- */ export const transferStoreOwner = createServerFn({ method: 'POST', strict: { output: false } })
+ */
+export const adminToggleFeatured = createServerFn({ method: 'POST', strict: { output: false } })
+  .middleware([withAdmin])
+  .validator(toValidator(ToggleFeatured))
+  .handler(async ({ data }): Promise<Result.Result<null, DomainError>> => {
+    const rows = await getDb()
+      .select({ id: product.id })
+      .from(product)
+      .where(eq(product.id, data.productId))
+      .limit(1)
+
+    if (!rows[0]) {
+      return Result.fail(new NotFoundError({ message: 'Производот не е најден.' }))
+    }
+
+    await getDb()
+      .update(product)
+      .set({ featured: data.featured })
+      .where(eq(product.id, data.productId))
+
+    return Result.succeed(null)
+  })
+
+export const transferStoreOwner = createServerFn({ method: 'POST', strict: { output: false } })
   .middleware([withAdmin])
   .validator(toValidator(AdminTransferStore))
   .handler(async ({ data }): Promise<Result.Result<null, DomainError>> => {

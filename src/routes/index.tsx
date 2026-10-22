@@ -3,6 +3,7 @@ import { useSuspenseQuery } from '@tanstack/react-query'
 import { useCallback } from 'react'
 
 import { CatalogueList } from '#/components/catalogue/catalogue-list'
+import { ProductCard } from '#/components/catalogue/product-card'
 import { ContactDialog } from '#/components/shell/contact-dialog'
 import { Message } from '#/components/ui/message'
 import { useRecentlyViewed } from '#/hooks/use-recently-viewed'
@@ -17,7 +18,10 @@ export const Route = createFileRoute('/')({
   validateSearch: toValidator(ProductSearch),
   loaderDeps: ({ search }) => search,
   loader: async ({ context: { queryClient }, deps }) => {
-    await queryClient.ensureQueryData(productQueries.list(deps))
+    await Promise.all([
+      queryClient.ensureQueryData(productQueries.list(deps)),
+      queryClient.ensureQueryData(productQueries.featured()),
+    ])
     return { params: deps }
   },
   head: () => ({
@@ -29,6 +33,7 @@ export const Route = createFileRoute('/')({
 function HomePage() {
   const { params } = Route.useLoaderData()
   const { data: page } = useSuspenseQuery(productQueries.list(params))
+  const { data: featured } = useSuspenseQuery(productQueries.featured())
   const navigate = Route.useNavigate()
   const recent = useRecentlyViewed()
 
@@ -112,6 +117,17 @@ function HomePage() {
                 ) : null}
                 <span className="line-clamp-2 text-sm font-semibold">{item.title}</span>
               </Link>
+            ))}
+          </div>
+        </section>
+      ) : null}
+
+      {featured.length > 0 ? (
+        <section className="px-4 pt-4">
+          <h2 className="font-display text-xl font-semibold">Издвоени производи</h2>
+          <div className="mt-3 grid grid-cols-[repeat(auto-fill,minmax(250px,1fr))] gap-4">
+            {featured.map((product) => (
+              <ProductCard key={product.id} product={product} />
             ))}
           </div>
         </section>

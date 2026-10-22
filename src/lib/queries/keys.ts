@@ -7,6 +7,7 @@ export const productKeys = {
   details: () => [...productKeys.all, 'detail'] as const,
   detail: (id: string) => [...productKeys.details(), id] as const,
   related: (id: string) => [...productKeys.details(), id, 'related'] as const,
+  featured: () => [...productKeys.all, 'featured'] as const,
 }
 
 export const storeKeys = {

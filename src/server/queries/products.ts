@@ -23,6 +23,10 @@ export type ProductSummary = {
   title: string
   description: string
   availability: 'in_stock' | 'out_of_stock' | 'on_order'
+  /** Structured per-category attributes. */
+  attributes: ProductAttributes
+  /** Pinned to the top of the home and producer pages. */
+  featured: boolean
   slug: string | null
   createdAt: Date
   image: ProductImage | null
@@ -50,6 +54,7 @@ const productColumns = {
   createdAt: product.createdAt,
   availability: product.availability,
   attributes: product.attributes,
+  featured: product.featured,
   slug: product.slug,
   storeId: sql<string>`${store.id}`.as('store_id'),
   storeName: sql<string>`${store.name}`.as('store_name'),
@@ -196,6 +201,7 @@ export const selectProductSummaries = Effect.fn('selectProductSummaries')(functi
         description: row.description,
         availability: row.availability,
         attributes: parseAttributes(row.attributes),
+        featured: row.featured,
         slug: row.slug,
         createdAt: row.createdAt,
         image: images[0] ?? null,
@@ -269,6 +275,31 @@ export const selectProductsByCategories = Effect.fn('selectProductsByCategories'
   return yield* selectProductSummaries(rows.map((r: any) => r.id))
 })
 
+/** Products the admin pinned to the top of the home and producer pages. */
+export const selectFeaturedProducts = Effect.fn('selectFeaturedProducts')(function* (
+  limit: number = 8,
+) {
+  const db = yield* Db
+
+  const rows = yield* db.run((d) =>
+    d
+      .select({ id: product.id })
+      .from(product)
+      .innerJoin(store, eq(store.id, product.storeId))
+      .where(
+        and(
+          eq(product.status, 'published'),
+          eq(store.status, 'active'),
+          eq(product.featured, true),
+        ),
+      )
+      .orderBy(desc(product.createdAt))
+      .limit(limit),
+  )
+
+  return yield* selectProductSummaries(rows.map((row) => row.id))
+})
+
 export const selectProductDetail = Effect.fn('selectProductDetail')(function* (
   productId: string,
 ): Effect.fn.Return<ProductDetail | null, DatabaseError, Db> {
@@ -328,6 +359,7 @@ export const selectProductDetail = Effect.fn('selectProductDetail')(function* (
     description: row.description,
     availability: row.availability,
     attributes: parseAttributes(row.attributes),
+    featured: row.featured,
     slug: row.slug,
     createdAt: row.createdAt,
     image: imageRows[0] ?? null,

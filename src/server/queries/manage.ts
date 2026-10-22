@@ -61,6 +61,7 @@ export type OwnerProductDetail = {
   description: string
   status: ProductStatus
   availability: 'in_stock' | 'out_of_stock' | 'on_order'
+  featured: boolean
   attributes: Record<string, string | number>
   categories: string[]
   variants: { id: string; title: string; price: number }[]
@@ -192,6 +193,7 @@ export const selectOwnerProduct = Effect.fn('selectOwnerProduct')(function* (
             status: product.status,
             availability: product.availability,
             attributes: product.attributes,
+            featured: product.featured,
           })
           .from(product)
           .where(and(eq(product.id, productId), eq(product.storeId, storeId)))
@@ -232,6 +234,7 @@ export const selectOwnerProduct = Effect.fn('selectOwnerProduct')(function* (
     status: prod.status,
     availability: prod.availability,
     attributes: parseAttributes(prod.attributes),
+    featured: prod.featured,
     categories: categoryRows.map((c: any) => c.categorySlug),
     variants: variantRows.map(({ id, title, price }: any) => ({ id, title, price })),
     images: imageRows.map(({ id, key, alt, width, height }: any) => ({

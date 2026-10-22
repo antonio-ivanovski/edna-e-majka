@@ -1,6 +1,11 @@
 import { queryOptions } from '@tanstack/react-query'
 
-import { listProducts, getProduct, getRelatedProducts } from '#/server/functions/products'
+import {
+  listProducts,
+  getProduct,
+  getRelatedProducts,
+  getFeaturedProducts,
+} from '#/server/functions/products'
 import type { ProductListFilters } from '#/api/schemas'
 
 import { productKeys } from './keys'
@@ -31,6 +36,12 @@ export const productQueries = {
     queryOptions({
       queryKey: productKeys.related(productId),
       queryFn: () => getRelatedProducts({ data: { productId } }),
+      staleTime: 60 * 1000,
+    }),
+  featured: () =>
+    queryOptions({
+      queryKey: productKeys.featured(),
+      queryFn: () => getFeaturedProducts(),
       staleTime: 60 * 1000,
     }),
 }

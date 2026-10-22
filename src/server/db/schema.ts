@@ -79,6 +79,8 @@ export const product = sqliteTable(
       .default('in_stock'),
     /** Structured per-category attributes, stored as JSON. */
     attributes: text('attributes'),
+    /** Pinned to the top of the home and the producer page. */
+    featured: integer('featured', { mode: 'boolean' }).notNull().default(false),
     archivedAt: integer('archived_at', { mode: 'timestamp_ms' }),
     archivedBy: text('archived_by').references(() => user.id, { onDelete: 'set null' }),
     ...timestamps,
