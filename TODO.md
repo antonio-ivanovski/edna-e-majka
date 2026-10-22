@@ -126,7 +126,7 @@ Goal: one typed contract layer, Effect everywhere on the server, one client cach
 ## Tier 2 — Trust, safety, compliance (production blockers)
 
 - [x] **T2-01** Legal pages: Terms of use, Privacy policy, Cookie policy (Macedonian). Blockers: none.
-- [ ] **T2-02** Cookie consent banner + analytics gating. Blockers: T2-01.
+- [x] **T2-02** Cookie consent banner + analytics gating. Blockers: T2-01.
 - [ ] **T2-03** Report abuse on product/store → admin inbox. Blockers: reuse contactMessage (add `report` kind) or new table.
 - [ ] **T2-04** Admin audit log (who/what/when for status changes, deletions, role changes). Blockers: new table + middleware hooks.
 - [ ] **T2-05** Admin bulk actions (approve/suspend/archive multiple). Blockers: none.

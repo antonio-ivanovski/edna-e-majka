@@ -14,6 +14,7 @@ import type { ReactNode } from 'react'
 import { Toaster } from 'sonner'
 
 import { AmberBar } from '#/components/shell/amber-bar'
+import { CookieConsent } from '#/components/shell/cookie-consent'
 import { SiteFooter } from '#/components/shell/site-footer'
 import { SiteHeader } from '#/components/shell/site-header'
 import { Button } from '#/components/ui/button'
@@ -125,6 +126,7 @@ function RootDocument({ children }: Readonly<{ children: ReactNode }>) {
       <body className="font-sans antialiased">
         {children}
         <Toaster position="top-center" richColors />
+        <CookieConsent />
         <Scripts />
       </body>
     </html>
