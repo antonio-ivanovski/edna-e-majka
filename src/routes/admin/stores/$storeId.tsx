@@ -36,7 +36,7 @@ function AdminStorePage() {
 
   return (
     <div className="space-y-6">
-      <Link to="/admin/stores" className="text-sm font-semibold text-accent-strong hover:underline">
+      <Link to="/admin/stores" className="text-sm font-semibold text-accent-ink hover:underline">
         ← Продавници
       </Link>
 
@@ -67,7 +67,7 @@ function AdminStorePage() {
           <Link
             to="/producers/$storeId"
             params={{ storeId: store.slug ?? store.id }}
-            className="text-sm font-semibold text-accent-strong hover:underline"
+            className="text-sm font-semibold text-accent-ink hover:underline"
           >
             Јавна страница
           </Link>

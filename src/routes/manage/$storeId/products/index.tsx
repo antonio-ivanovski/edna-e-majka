@@ -1,10 +1,12 @@
 import { Link, createFileRoute } from '@tanstack/react-router'
 import { Plus } from 'lucide-react'
+import { toast } from 'sonner'
 
 import { ProductRow } from '#/components/manage/product-row'
 import { StoreStatusLabel } from '#/components/manage/status-label'
 import { Button } from '#/components/ui/button'
 import { EmptyState } from '#/components/ui/empty-state'
+import { Pager } from '#/components/ui/pager'
 import { Panel } from '#/components/ui/panel'
 import { Table, TableBody, TableHead, TableHeaderCell, TableRow } from '#/components/ui/table'
 import { formatCount } from '#/lib/format'
@@ -45,7 +47,7 @@ function ManageProductsPage() {
 
   return (
     <div className="mx-auto w-full max-w-5xl px-4 py-10">
-      <Link to="/manage" className="text-sm font-semibold text-accent-strong hover:underline">
+      <Link to="/manage" className="text-sm font-semibold text-accent-ink hover:underline">
         ← Менаџирај
       </Link>
 
@@ -73,7 +75,10 @@ function ManageProductsPage() {
             size="sm"
             onClick={async () => {
               const csv = toResult(await exportStoreProductsCSV({ data: { storeId: store.id } }))
-              if (csv._tag === 'Failure') return
+              if (csv._tag === 'Failure') {
+                toast.error(csv.failure.message)
+                return
+              }
               const blob = new Blob([csv.success], { type: 'text/csv' })
               const url = URL.createObjectURL(blob)
               const link = document.createElement('a')
@@ -150,34 +155,11 @@ function ManageProductsPage() {
         </Table>
       )}
 
-      {pageCount > 1 ? (
-        <nav
-          aria-label="Страници"
-          className="mt-6 flex flex-wrap items-center justify-center gap-3"
-        >
-          <Button
-            type="button"
-            variant="outline"
-            size="sm"
-            disabled={page <= 1}
-            onClick={() => void navigate({ search: (prev) => ({ ...prev, page: page - 1 }) })}
-          >
-            Претходна
-          </Button>
-          <span className="text-ink-muted">
-            Страница {page} од {pageCount}
-          </span>
-          <Button
-            type="button"
-            variant="outline"
-            size="sm"
-            disabled={page >= pageCount}
-            onClick={() => void navigate({ search: (prev) => ({ ...prev, page: page + 1 }) })}
-          >
-            Следна
-          </Button>
-        </nav>
-      ) : null}
+      <Pager
+        page={page}
+        pageCount={pageCount}
+        onPageChange={(next) => void navigate({ search: (prev) => ({ ...prev, page: next }) })}
+      />
 
       <div className="mt-8 border-t border-border pt-5">
         <Button asChild variant="outline">

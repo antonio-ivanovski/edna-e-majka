@@ -25,7 +25,7 @@ function EditStorePage() {
 
   return (
     <div className="mx-auto w-full max-w-2xl px-4 py-10">
-      <Link to="/manage" className="text-sm font-semibold text-accent-strong hover:underline">
+      <Link to="/manage" className="text-sm font-semibold text-accent-ink hover:underline">
         ← Менаџирај
       </Link>
 

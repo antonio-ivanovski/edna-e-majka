@@ -21,6 +21,7 @@ export function Field({
   error,
   htmlFor,
   required,
+  hint,
   className,
   children,
 }: {
@@ -28,11 +29,14 @@ export function Field({
   error?: ReactNode
   htmlFor?: string
   required?: boolean
+  /** Guidance shown under the label, read with the control. */
+  hint?: ReactNode
   className?: string
   children: ReactNode
 }) {
   const errorId = htmlFor ? `${htmlFor}-error` : undefined
-  const describedBy = errorId
+  const hintId = hint && htmlFor ? `${htmlFor}-hint` : undefined
+  const describedBy = [hintId, error ? errorId : undefined].filter(Boolean).join(' ') || undefined
 
   const control =
     isValidElement(children) && describedBy
@@ -73,6 +77,11 @@ export function Field({
         ) : (
           <span className="mb-1 block text-sm font-bold text-ink">{labelText}</span>
         )
+      ) : null}
+      {hint ? (
+        <p id={hintId} className="mb-1 text-sm text-ink-subtle">
+          {hint}
+        </p>
       ) : null}
       {control}
       {error ? (

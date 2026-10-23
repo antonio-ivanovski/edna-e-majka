@@ -49,7 +49,7 @@ export function CookieConsent() {
         <p className="text-sm text-ink">
           Користиме колачиња за да се сеќаваме на вашите поставки и да го подобриме сајтот. Повеќе
           во{' '}
-          <a href="/cookies" className="font-semibold text-accent-strong hover:underline">
+          <a href="/cookies" className="font-semibold text-accent-ink hover:underline">
             {t('cookie.policy')}
           </a>
           .

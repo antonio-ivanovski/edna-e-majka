@@ -19,7 +19,7 @@ function NewProductPage() {
       <Link
         to="/manage/$storeId/products"
         params={{ storeId: store.id }}
-        className="text-sm font-semibold text-accent-strong hover:underline"
+        className="text-sm font-semibold text-accent-ink hover:underline"
       >
         ← Производи
       </Link>

@@ -52,7 +52,7 @@ export function NotificationBell() {
             {unread > 0 ? (
               <button
                 type="button"
-                className="text-xs text-accent-strong hover:underline"
+                className="text-xs text-accent-ink hover:underline"
                 onClick={() => markAll.mutate()}
               >
                 Означи сите

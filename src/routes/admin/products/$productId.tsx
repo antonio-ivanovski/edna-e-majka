@@ -15,10 +15,7 @@ function AdminEditProductPage() {
 
   return (
     <div className="mx-auto w-full max-w-3xl px-4 py-10">
-      <Link
-        to="/admin/products"
-        className="text-sm font-semibold text-accent-strong hover:underline"
-      >
+      <Link to="/admin/products" className="text-sm font-semibold text-accent-ink hover:underline">
         ← Производи
       </Link>
       <h1 className="mt-2 font-display text-3xl font-semibold">Уреди производ</h1>

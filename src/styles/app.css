@@ -63,6 +63,7 @@
 
   --color-danger-soft: var(--danger-soft);
   --color-success-soft: var(--success-soft);
+  --color-accent-ink: var(--accent-ink);
 
   --shadow-panel: var(--shadow-panel-value);
   --shadow-card: var(--shadow-card-value);
@@ -92,6 +93,7 @@
 
   --danger-soft: #fff6f6;
   --success-soft: #f2fbf4;
+  --accent-ink: #8a5f00;
 
   --shadow-outer: rgb(34 36 38 / 4%);
 }
@@ -119,6 +121,7 @@
 
   --danger-soft: #2c1416;
   --success-soft: #10220f;
+  --accent-ink: #ffc145;
 
   --shadow-outer: rgb(0 0 0 / 45%);
 }

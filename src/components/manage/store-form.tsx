@@ -70,6 +70,10 @@ export function StoreFields({
       </Field>
 
       <div className="grid gap-x-5 sm:grid-cols-2">
+        <p className="text-sm text-ink-subtle sm:col-span-2">
+          Е-поштата и телефонот се задолжителни и јавни — купувачите ги гледаат на страницата на
+          продавницата. Останатото е незадолжително.
+        </p>
         <Field label="Е-маил адреса" htmlFor="store-email" error={errors.email?.message}>
           <Input
             id="store-email"
@@ -200,7 +204,7 @@ export function StoreForm({
       return
     }
 
-    const result = await applyForStore({ data: values })
+    const result = toResult(await applyForStore({ data: values }))
 
     if (result._tag === 'Failure') {
       setServerError(result.failure.message)

@@ -6,7 +6,7 @@ import { toast } from 'sonner'
 
 import { Schema } from 'effect'
 import { Button } from '#/components/ui/button'
-import { Field, Input, Select, Textarea } from '#/components/ui/field'
+import { Checkbox, Field, Input, Select, Textarea } from '#/components/ui/field'
 import { Message } from '#/components/ui/message'
 import { CATEGORIES, type CategorySlug } from '#/lib/categories'
 import { attributesForCategories, serializeAttributes } from '#/lib/attributes'
@@ -186,9 +186,11 @@ export function ProductForm({
       return
     }
 
-    const result = await reorderProductImages(
-      product.id,
-      next.map((image) => image.id),
+    const result = toResult(
+      await reorderProductImages(
+        product.id,
+        next.map((image) => image.id),
+      ),
     )
 
     if (result._tag === 'Failure') {
@@ -260,7 +262,7 @@ export function ProductForm({
     }
 
     for (const item of pending) {
-      const uploaded = await uploadProductImage(result.success.productId, item.file)
+      const uploaded = toResult(await uploadProductImage(result.success.productId, item.file))
 
       URL.revokeObjectURL(item.url)
 
@@ -297,18 +299,19 @@ export function ProductForm({
         />
       </Field>
 
-      <Field label="Категории" error={errors.categories?.message}>
+      <Field
+        label="Категории"
+        hint="Најмалку една — по неа купувачите го наоѓаат производот."
+        error={errors.categories?.message}
+      >
         <div className="flex flex-wrap gap-x-5 gap-y-2 pt-1">
           {CATEGORIES.map((category) => (
-            <label key={category.slug} className="flex cursor-pointer items-center gap-2">
-              <input
-                type="checkbox"
-                value={category.slug}
-                className="size-4 accent-accent-strong"
-                {...register('categories')}
-              />
-              {category.title}
-            </label>
+            <Checkbox
+              key={category.slug}
+              label={category.title}
+              value={category.slug}
+              {...register('categories')}
+            />
           ))}
         </div>
       </Field>
@@ -365,6 +368,7 @@ export function ProductForm({
           {variants.fields.map((field, index) => (
             <div key={field.id} className="flex flex-wrap items-start gap-3">
               <Field
+                label="Пакување"
                 htmlFor={`variant-title-${index}`}
                 error={errors.variants?.[index]?.title?.message}
                 className="mb-0 min-w-[10rem] flex-1"
@@ -378,6 +382,7 @@ export function ProductForm({
               </Field>
 
               <Field
+                label="Цена"
                 htmlFor={`variant-price-${index}`}
                 error={errors.variants?.[index]?.price?.message}
                 className="mb-0 w-40"
@@ -421,7 +426,14 @@ export function ProductForm({
         </Button>
       </fieldset>
 
-      <Field label="Слики" error={imageError || undefined}>
+      <Field
+        label="Слики"
+        hint="Сликите се смалуваат во вашиот прелистувач пред да се испратат, а првата е насловната на картичката. Alt-текстот го читаат читачите на екран и се гледа ако сликата не се вчита."
+        error={imageError || undefined}
+      >
+        <div aria-live="polite" className="sr-only">
+          {busyImages ? 'Се прикачуваат слики…' : ''}
+        </div>
         <input
           ref={input}
           type="file"
@@ -544,11 +556,6 @@ export function ProductForm({
             {busyImages ? 'Прикачуваме…' : 'Додај слика'}
           </Button>
         </div>
-
-        <p className="mt-2 text-sm text-ink-subtle">
-          Сликите се смалуваат во вашиот прелистувач пред да се испратат. Првата слика е онаа што се
-          гледа на картичката.
-        </p>
       </Field>
 
       {serverError ? (

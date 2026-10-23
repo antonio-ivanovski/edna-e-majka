@@ -207,7 +207,7 @@ function StoreOverview({ store, products }: { store: OwnerStore; products: Owner
         <Link
           to="/manage/$storeId/products"
           params={{ storeId: store.id }}
-          className="inline-flex items-center gap-1 font-semibold text-accent-strong hover:underline"
+          className="inline-flex items-center gap-1 font-semibold text-accent-ink hover:underline"
         >
           Сите производи
           <ArrowRight className="size-4" />
@@ -216,7 +216,7 @@ function StoreOverview({ store, products }: { store: OwnerStore; products: Owner
           <Link
             to="/producers/$storeId"
             params={{ storeId: store.slug ?? store.id }}
-            className="inline-flex items-center gap-1 font-semibold text-accent-strong hover:underline"
+            className="inline-flex items-center gap-1 font-semibold text-accent-ink hover:underline"
           >
             Јавна страница
             <ArrowRight className="size-4" />

@@ -84,7 +84,7 @@ export function AdminMessageCard({ message }: { message: AdminMessage }) {
             href={message.website}
             target="_blank"
             rel="noreferrer"
-            className="text-accent-strong hover:underline"
+            className="text-accent-ink hover:underline"
           >
             {message.website}
           </a>
