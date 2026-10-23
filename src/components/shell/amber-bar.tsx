@@ -12,7 +12,7 @@ const socials = [
 /** The amber strip above every page: social links, cooperation, contact. */
 export function AmberBar() {
   return (
-    <div className="bg-brand text-white">
+    <div className="bg-brand text-on-brand">
       <div className="mx-auto flex max-w-[80rem] flex-wrap items-center justify-between gap-x-4 px-2">
         <div className="flex items-center">
           {socials.map(({ href, label, Icon }) => (
@@ -30,7 +30,7 @@ export function AmberBar() {
         </div>
         <div className="flex items-center gap-1 text-sm">
           <CooperationDialog />
-          <span aria-hidden="true" className="px-1 text-white/70">
+          <span aria-hidden="true" className="px-1 text-on-brand/70">
             |
           </span>
           <ContactDialog />

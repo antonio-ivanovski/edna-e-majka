@@ -49,4 +49,12 @@ export default defineConfig(
       'no-console': ['warn', { allow: ['warn', 'error', 'info'] }],
     },
   },
+  {
+    // The end-to-end suite is not React: Playwright's fixtures use a `use`
+    // callback that the React hooks rules would otherwise read as a hook.
+    files: ['e2e/**/*.ts'],
+    rules: {
+      'react-hooks/rules-of-hooks': 'off',
+    },
+  },
 )

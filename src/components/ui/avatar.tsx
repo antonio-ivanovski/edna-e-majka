@@ -23,7 +23,7 @@ export function Avatar({
       height={size}
       style={{ width: size, height: size }}
       className={cn(
-        'inline-block shrink-0 rounded-full bg-black/[0.04] object-cover align-middle',
+        'inline-block shrink-0 rounded-full bg-hover object-cover align-middle',
         className,
       )}
     />

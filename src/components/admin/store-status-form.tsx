@@ -82,7 +82,7 @@ export function StoreStatusForm({ store }: { store: AdminStore }) {
         </Field>
       </div>
 
-      <p className="mb-4 text-sm text-black/45">
+      <p className="mb-4 text-sm text-ink-subtle">
         Забелешката ја гледа продавачот на својата табла.
         {store.reviewedAt ? ` Последна измена: ${formatDate(store.reviewedAt)}.` : ''}
       </p>

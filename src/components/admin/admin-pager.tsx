@@ -29,7 +29,7 @@ export function AdminPager({
       >
         Претходна
       </Button>
-      <span className="text-black/60">
+      <span className="text-ink-muted">
         Страница {page} од {pageCount}
       </span>
       <Button

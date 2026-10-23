@@ -109,20 +109,20 @@ function AdminStoresPage() {
         />
       </div>
 
-      <p className="mb-3 text-sm text-black/50">
+      <p className="mb-3 text-sm text-ink-subtle">
         {formatCount(total, 'продавница', 'продавници')}
         {search.q ? ` · пребарување „${search.q}“` : ''}
       </p>
 
       {selected.size > 0 ? (
-        <div className="mb-3 flex flex-wrap items-center gap-3 rounded border border-line bg-white p-3">
+        <div className="mb-3 flex flex-wrap items-center gap-3 rounded-card border border-border bg-surface-raised p-3">
           <span className="text-sm font-semibold">{selected.size} избрани</span>
           <select
             value={bulkStatus}
             onChange={(event) =>
               setBulkStatus(event.target.value as 'active' | 'suspended' | 'archived')
             }
-            className="h-9 rounded border border-line px-2 text-sm"
+            className="h-9 rounded-card border border-border px-2 text-sm"
           >
             <option value="active">Активни</option>
             <option value="suspended">Суспендирани</option>
@@ -189,8 +189,8 @@ function AdminStoresPage() {
                   <div className="flex items-center gap-3">
                     <Avatar src={imageUrl(store.avatarKey)} alt="" size={36} />
                     <span>
-                      <span className="font-semibold text-black/[0.87]">{store.name}</span>
-                      <span className="block text-sm text-black/50">{store.owner.email}</span>
+                      <span className="font-semibold text-ink">{store.name}</span>
+                      <span className="block text-sm text-ink-subtle">{store.owner.email}</span>
                     </span>
                   </div>
                 </TableCell>
@@ -199,11 +199,11 @@ function AdminStoresPage() {
                   <StoreStatusLabel status={store.status} size="small" />
                 </TableCell>
 
-                <TableCell className="whitespace-nowrap text-black/70">
+                <TableCell className="whitespace-nowrap text-ink">
                   {productCountLabel(store.productCount, store.publishedCount)}
                 </TableCell>
 
-                <TableCell className="whitespace-nowrap text-black/60">
+                <TableCell className="whitespace-nowrap text-ink-muted">
                   {formatDate(store.createdAt)}
                 </TableCell>
 

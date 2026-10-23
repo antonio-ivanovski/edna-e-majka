@@ -62,7 +62,7 @@ function AdminProductsPage() {
         />
       </div>
 
-      <p className="mb-3 text-sm text-black/50">
+      <p className="mb-3 text-sm text-ink-subtle">
         {formatCount(total, 'производ', 'производи')}
         {search.q ? ` · пребарување „${search.q}“` : ''}
       </p>

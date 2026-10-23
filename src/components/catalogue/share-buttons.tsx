@@ -30,7 +30,7 @@ export function ShareButtons({ path, title }: { path: string; title: string }) {
       </Button>
       <button
         type="button"
-        className="inline-flex cursor-pointer items-center rounded border border-line px-3 py-1.5 text-sm font-semibold hover:bg-black/[0.03]"
+        className="inline-flex cursor-pointer items-center rounded-card border border-border px-3 py-1.5 text-sm font-semibold hover:bg-hover"
         onClick={() =>
           window.open(
             `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(shareUrl())}`,
@@ -43,7 +43,7 @@ export function ShareButtons({ path, title }: { path: string; title: string }) {
       </button>
       <button
         type="button"
-        className="inline-flex cursor-pointer items-center rounded border border-line px-3 py-1.5 text-sm font-semibold hover:bg-black/[0.03]"
+        className="inline-flex cursor-pointer items-center rounded-card border border-border px-3 py-1.5 text-sm font-semibold hover:bg-hover"
         onClick={() => {
           window.location.href = `viber://forward?text=${encodeURIComponent(shareText)}`
         }}
@@ -52,7 +52,7 @@ export function ShareButtons({ path, title }: { path: string; title: string }) {
       </button>
       <button
         type="button"
-        className="inline-flex cursor-pointer items-center rounded border border-line px-3 py-1.5 text-sm font-semibold hover:bg-black/[0.03]"
+        className="inline-flex cursor-pointer items-center rounded-card border border-border px-3 py-1.5 text-sm font-semibold hover:bg-hover"
         onClick={() =>
           window.open(
             `https://wa.me/?text=${encodeURIComponent(shareText)}`,

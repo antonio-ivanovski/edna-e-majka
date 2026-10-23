@@ -4,7 +4,7 @@ import { Heart } from 'lucide-react'
 /** Full width, like the original: the footer sits outside the white column. */
 export function SiteFooter() {
   return (
-    <footer className="mt-2.5 flex flex-col items-center gap-2 border-t border-line-strong py-2.5 text-center text-black/60">
+    <footer className="mt-2.5 flex flex-col items-center gap-2 border-t border-border-strong py-2.5 text-center text-ink-muted">
       <p>
         © {new Date().getFullYear()}{' '}
         <Link to="/" className="underline-offset-4 hover:underline">

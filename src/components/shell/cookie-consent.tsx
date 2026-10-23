@@ -43,10 +43,10 @@ export function CookieConsent() {
       role="dialog"
       aria-live="polite"
       aria-label="Согласност за колачиња"
-      className="fixed inset-x-0 bottom-0 z-50 border-t border-line bg-white px-4 py-3 shadow-[0_-2px_12px_rgba(0,0,0,0.08)]"
+      className="fixed inset-x-0 bottom-0 z-50 border-t border-border bg-surface-raised px-4 py-3 shadow-[0_-2px_12px_rgba(0,0,0,0.08)]"
     >
       <div className="mx-auto flex max-w-[80rem] flex-wrap items-center justify-between gap-3">
-        <p className="text-sm text-black/70">
+        <p className="text-sm text-ink">
           Користиме колачиња за да се сеќаваме на вашите поставки и да го подобриме сајтот. Повеќе
           во{' '}
           <a href="/cookies" className="font-semibold text-accent-strong hover:underline">

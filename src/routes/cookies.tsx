@@ -11,7 +11,7 @@ function CookiesPage() {
   return (
     <div className="mx-auto w-full max-w-3xl px-4 py-10">
       <h1 className="font-display text-3xl font-semibold">Политика за колачиња</h1>
-      <Panel className="mt-6 space-y-4 p-6 text-black/70">
+      <Panel className="mt-6 space-y-4 p-6 text-ink">
         <p>
           Користиме само неопходни колачиња за најава и безбедност на сесијата. Не користиме
           колачиња за следење или рекламирање.

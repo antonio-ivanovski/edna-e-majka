@@ -55,7 +55,7 @@ function AdminMessagesPage() {
           }
         />
 
-        <p className="text-sm text-black/50">{formatCount(total, 'порака', 'пораки')}</p>
+        <p className="text-sm text-ink-subtle">{formatCount(total, 'порака', 'пораки')}</p>
       </div>
 
       {items.length === 0 ? (

@@ -53,11 +53,11 @@ export function ContactDialog({ trigger }: { trigger?: ReactNode }) {
       <div className="flex flex-col gap-5">
         <img src="/logo.png" alt="Една е Мајка" className="mx-auto w-40" />
         <div>
-          <p className="flex items-center justify-center gap-2 text-center text-lg font-bold text-black/[0.87]">
+          <p className="flex items-center justify-center gap-2 text-center text-lg font-bold text-ink">
             <Heart aria-hidden="true" className="size-5 text-danger" fill="currentColor" />
             Многу сакаме кога ни пишувате
           </p>
-          <p className="mt-3 text-center text-black/60">
+          <p className="mt-3 text-center text-ink-muted">
             Слободно можете да ни пишете на било која од социалните мрежи или на нашата меил адреса.
             Ветуваме, ќе вратиме во најкус можен рок.
           </p>

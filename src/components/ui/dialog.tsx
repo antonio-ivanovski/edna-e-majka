@@ -57,15 +57,13 @@ export function Dialog({
             }
           }}
           className={cn(
-            'fixed top-1/2 left-1/2 z-50 max-h-[88vh] w-[calc(100vw-2rem)] -translate-x-1/2 -translate-y-1/2 overflow-y-auto rounded-[0.2857rem] bg-white shadow-[0_1px_3px_1px_rgba(34,36,38,0.15)] focus:outline-none',
+            'fixed top-1/2 left-1/2 z-50 max-h-[88vh] w-[calc(100vw-2rem)] -translate-x-1/2 -translate-y-1/2 overflow-y-auto rounded-card bg-surface-raised shadow-[0_1px_3px_1px_rgba(34,36,38,0.15)] focus:outline-none',
             sizes[size],
             className,
           )}
         >
-          <div className="flex items-start justify-between gap-4 border-b border-line px-6 py-4">
-            <RadixDialog.Title className="text-lg font-bold text-black/[0.87]">
-              {title}
-            </RadixDialog.Title>
+          <div className="flex items-start justify-between gap-4 border-b border-border px-6 py-4">
+            <RadixDialog.Title className="text-lg font-bold text-ink">{title}</RadixDialog.Title>
             <RadixDialog.Close asChild>
               <Button variant="ghost" size="sm" iconOnly aria-label="Затвори">
                 <X className="size-4" />
@@ -73,13 +71,13 @@ export function Dialog({
             </RadixDialog.Close>
           </div>
           {description ? (
-            <RadixDialog.Description className="px-6 pt-4 text-sm text-black/60">
+            <RadixDialog.Description className="px-6 pt-4 text-sm text-ink-muted">
               {description}
             </RadixDialog.Description>
           ) : null}
           <div className="px-6 py-5">{children}</div>
           {footer ? (
-            <div className="flex flex-wrap justify-end gap-2 border-t border-line bg-surface-footer px-6 py-4">
+            <div className="bg-surface-footer flex flex-wrap justify-end gap-2 border-t border-border px-6 py-4">
               {footer}
             </div>
           ) : null}

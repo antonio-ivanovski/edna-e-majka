@@ -104,7 +104,7 @@ function HomePage() {
                 key={item.id}
                 to="/products/$productId"
                 params={{ productId: item.slug ?? item.id }}
-                className="flex flex-col items-center gap-2 rounded border border-line bg-white p-3 text-center hover:shadow"
+                className="flex flex-col items-center gap-2 rounded-card border border-border bg-surface-raised p-3 text-center hover:shadow"
               >
                 {item.imageKey ? (
                   <img
@@ -112,7 +112,7 @@ function HomePage() {
                     alt={item.title}
                     width={120}
                     height={90}
-                    className="h-[90px] w-full rounded object-cover"
+                    className="h-[90px] w-full rounded-card object-cover"
                   />
                 ) : null}
                 <span className="line-clamp-2 text-sm font-semibold">{item.title}</span>

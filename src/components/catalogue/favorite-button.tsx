@@ -41,7 +41,7 @@ export function FavoriteButton({ productId }: { productId: string }) {
     <button
       type="button"
       aria-label={favorited ? 'Отстрани од омилени' : 'Додај во омилени'}
-      className="cursor-pointer rounded-full p-1 text-black/40 hover:text-danger"
+      className="cursor-pointer rounded-full p-1 text-ink-faint hover:text-danger"
       onClick={() => void toggle()}
     >
       <Heart className={favorited ? 'fill-danger text-danger' : ''} />

@@ -7,7 +7,7 @@ export function Loader({ children, className }: { children?: ReactNode; classNam
   return (
     <div
       role="status"
-      className={cn('flex items-center justify-center gap-3 py-10 text-black/60', className)}
+      className={cn('flex items-center justify-center gap-3 py-10 text-ink-muted', className)}
     >
       <span
         aria-hidden="true"

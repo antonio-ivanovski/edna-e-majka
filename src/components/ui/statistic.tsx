@@ -18,7 +18,7 @@ export function Statistic({
   return (
     <div className={cn('flex flex-col items-center gap-1', className)}>
       <div className="text-2xl leading-none font-normal text-danger uppercase">{value}</div>
-      <div className="text-center text-sm font-bold text-black/[0.87] uppercase">{label}</div>
+      <div className="text-center text-sm font-bold text-ink uppercase">{label}</div>
     </div>
   )
 }

@@ -54,7 +54,7 @@ function ManageProductsPage() {
             <h1 className="font-display text-3xl font-semibold">Производи</h1>
             <StoreStatusLabel status={store.status} size="small" />
           </div>
-          <p className="mt-1 text-black/60">
+          <p className="mt-1 text-ink-muted">
             {store.name} · {formatCount(total, 'производ', 'производи')}
           </p>
         </div>
@@ -161,7 +161,7 @@ function ManageProductsPage() {
           >
             Претходна
           </Button>
-          <span className="text-black/60">
+          <span className="text-ink-muted">
             Страница {page} од {pageCount}
           </span>
           <Button
@@ -176,7 +176,7 @@ function ManageProductsPage() {
         </nav>
       ) : null}
 
-      <div className="mt-8 border-t border-line pt-5">
+      <div className="mt-8 border-t border-border pt-5">
         <Button asChild variant="outline">
           <Link to="/manage/$storeId" params={{ storeId: store.id }}>
             Податоци за продавницата

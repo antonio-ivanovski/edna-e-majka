@@ -67,12 +67,12 @@ export function AdminProductRow({ product }: { product: AdminProduct }) {
               alt=""
               width={48}
               height={36}
-              className="h-9 w-12 rounded-[0.2857rem] border border-line object-cover"
+              className="h-9 w-12 rounded-card border border-border object-cover"
             />
           ) : (
-            <span aria-hidden="true" className="h-9 w-12 rounded-[0.2857rem] bg-black/[0.05]" />
+            <span aria-hidden="true" className="h-9 w-12 rounded-card bg-black/[0.05]" />
           )}
-          <span className="font-semibold text-black/[0.87]">{product.title}</span>
+          <span className="font-semibold text-ink">{product.title}</span>
         </div>
       </TableCell>
 
@@ -80,7 +80,7 @@ export function AdminProductRow({ product }: { product: AdminProduct }) {
         <Link
           to="/admin/stores/$storeId"
           params={{ storeId: product.storeId }}
-          className="text-black/70 hover:underline"
+          className="text-ink hover:underline"
         >
           {product.storeName}
         </Link>
@@ -92,7 +92,7 @@ export function AdminProductRow({ product }: { product: AdminProduct }) {
 
       <TableCell className="whitespace-nowrap">{price}</TableCell>
 
-      <TableCell className="whitespace-nowrap text-black/60">
+      <TableCell className="whitespace-nowrap text-ink-muted">
         {formatDate(product.createdAt)}
       </TableCell>
 

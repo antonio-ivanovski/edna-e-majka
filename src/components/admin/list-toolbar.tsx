@@ -37,10 +37,8 @@ export function AdminFilters<Value extends string>({
             aria-pressed={active}
             onClick={() => onChange(option.value)}
             className={cn(
-              'cursor-pointer rounded-[0.2857rem] px-2.5 py-1.5 text-sm font-semibold',
-              active
-                ? 'bg-black/[0.06] text-black/[0.95]'
-                : 'text-black/50 hover:bg-black/[0.03] hover:text-black/75',
+              'cursor-pointer rounded-card px-2.5 py-1.5 text-sm font-semibold',
+              active ? 'bg-black/[0.06] text-ink' : 'text-ink-subtle hover:bg-hover hover:text-ink',
             )}
           >
             {option.label}

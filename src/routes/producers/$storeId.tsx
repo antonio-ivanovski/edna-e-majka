@@ -73,21 +73,21 @@ function ProducerPage() {
         <img
           src={imageUrl(store.coverKey)}
           alt={`Cover на продавницата ${store.name}`}
-          className="h-[160px] w-full rounded-t-[0.2857rem] object-cover sm:h-[220px]"
+          className="h-[160px] w-full rounded-t-card object-cover sm:h-[220px]"
         />
       ) : null}
       <Panel className={store.coverKey ? 'm-2.5 -mt-2.5 rounded-t-none' : 'm-2.5'}>
         <div className="flex flex-col gap-3">
           <div className="flex items-center gap-2.5">
             <Avatar src={imageUrl(store.avatarKey)} alt={store.name} size={32} />
-            <h1 className="text-[1.2857rem] font-bold text-black/[0.87]">{store.name}</h1>
+            <h1 className="text-[1.2857rem] font-bold text-ink">{store.name}</h1>
             <FollowButton storeId={store.id} />
           </div>
-          <p className="whitespace-pre-wrap text-black/[0.68]">{store.description}</p>
-          {store.city ? <p className="text-sm text-black/45">📍 {store.city}</p> : null}
-          {store.hours ? <p className="text-sm text-black/45">🕐 {store.hours}</p> : null}
+          <p className="whitespace-pre-wrap text-ink-muted">{store.description}</p>
+          {store.city ? <p className="text-sm text-ink-subtle">📍 {store.city}</p> : null}
+          {store.hours ? <p className="text-sm text-ink-subtle">🕐 {store.hours}</p> : null}
           <div>
-            <p className="mb-2 text-sm font-bold text-black/[0.87]">Контакт:</p>
+            <p className="mb-2 text-sm font-bold text-ink">Контакт:</p>
             <ProducerContacts contacts={store} />
           </div>
         </div>

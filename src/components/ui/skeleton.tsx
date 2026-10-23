@@ -9,7 +9,7 @@ export function Skeleton({ className }: { className?: string }) {
   return (
     <span
       aria-hidden="true"
-      className={cn('block animate-pulse rounded-[0.2857rem] bg-black/[0.06]', className)}
+      className={cn('block animate-pulse rounded-card bg-black/[0.06]', className)}
     />
   )
 }

@@ -14,10 +14,7 @@ export function SignInDialog({ googleEnabled }: { googleEnabled: boolean }) {
       open={open}
       onOpenChange={setOpen}
       trigger={
-        <button
-          type="button"
-          className="cursor-pointer px-1.5 py-2 text-black/[0.87] hover:underline"
-        >
+        <button type="button" className="cursor-pointer px-1.5 py-2 text-ink hover:underline">
           Најави се
         </button>
       }

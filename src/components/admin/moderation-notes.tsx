@@ -28,9 +28,12 @@ export function ModerationNotes({ storeId }: { storeId: string }) {
       <h2 className="mb-3 font-display text-xl font-semibold">Белешки (интерни)</h2>
       <ul className="mb-4 space-y-2">
         {(data ?? []).map((note) => (
-          <li key={note.id} className="rounded border border-line bg-black/[0.02] p-3 text-sm">
+          <li
+            key={note.id}
+            className="rounded-card border border-border bg-black/[0.02] p-3 text-sm"
+          >
             <p className="whitespace-pre-wrap">{note.body}</p>
-            <p className="mt-1 text-xs text-black/40">
+            <p className="mt-1 text-xs text-ink-faint">
               {new Date(note.createdAt).toLocaleString('mk-MK')}
             </p>
           </li>
@@ -41,7 +44,7 @@ export function ModerationNotes({ storeId }: { storeId: string }) {
         onChange={(event) => setBody(event.target.value)}
         rows={3}
         placeholder="Нова белешка…"
-        className="w-full rounded border border-line px-3 py-2 text-sm"
+        className="w-full rounded-card border border-border px-3 py-2 text-sm"
       />
       <div className="mt-2 flex justify-end">
         <Button

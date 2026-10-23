@@ -49,17 +49,17 @@ function AdminStorePage() {
             <StoreStatusLabel status={store.status} size="small" />
           </div>
 
-          <p className="mt-1 text-sm text-black/55">
+          <p className="mt-1 text-sm text-ink-muted">
             Сопственик: {store.owner.name || '—'} · {store.owner.email}
           </p>
-          <p className="mt-1 text-sm text-black/45">
+          <p className="mt-1 text-sm text-ink-subtle">
             Регистрирана {formatDate(store.createdAt)} ·{' '}
             {formatCount(store.productCount, 'производ', 'производи')} ({store.publishedCount}{' '}
             објавени)
           </p>
 
           {store.statusNote ? (
-            <p className="mt-2 text-sm text-black/60">Забелешка: {store.statusNote}</p>
+            <p className="mt-2 text-sm text-ink-muted">Забелешка: {store.statusNote}</p>
           ) : null}
         </div>
 
@@ -86,7 +86,7 @@ function AdminStorePage() {
 
       <ModerationNotes storeId={store.id} />
 
-      <div className="border-t border-line pt-5">
+      <div className="border-t border-border pt-5">
         <AdminDeleteStoreButton storeId={store.id} storeName={store.name} />
       </div>
 

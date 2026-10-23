@@ -53,9 +53,16 @@ export const Route = createRootRouteWithContext<RouterContext>()({
       { rel: 'apple-touch-icon', sizes: '180x180', href: '/apple-touch-icon.png' },
       { rel: 'manifest', href: '/site.webmanifest' },
     ],
-    scripts: loaderData?.assetsBaseUrl
-      ? [{ children: `window.__ASSETS_BASE_URL__=${JSON.stringify(loaderData.assetsBaseUrl)}` }]
-      : [],
+    scripts: [
+      {
+        // The theme is chosen before the first paint, so the page never
+        // flashes the wrong colours on the way in.
+        children: `(function(){try{var s=localStorage.getItem('edna-theme');var d=s==='dark'||(!s&&window.matchMedia('(prefers-color-scheme: dark)').matches);document.documentElement.classList.toggle('dark',d);}catch(e){}})();`,
+      },
+      ...(loaderData?.assetsBaseUrl
+        ? [{ children: `window.__ASSETS_BASE_URL__=${JSON.stringify(loaderData.assetsBaseUrl)}` }]
+        : []),
+    ],
   }),
   /**
    * The header needs the producer list and whether Google is configured. It
@@ -70,7 +77,7 @@ export const Route = createRootRouteWithContext<RouterContext>()({
   notFoundComponent: () => (
     <div className="mx-auto max-w-2xl px-6 py-16 text-center">
       <h1 className="font-display text-3xl font-semibold">Страницата не е најдена</h1>
-      <p className="mt-3 text-black/60">
+      <p className="mt-3 text-ink-muted">
         Проверете ја адресата или почете од една од страниците подолу.
       </p>
       <div className="mt-6 flex flex-wrap justify-center gap-3">
@@ -91,8 +98,8 @@ export const Route = createRootRouteWithContext<RouterContext>()({
   errorComponent: ({ error, reset }: { error: unknown; reset: () => void }) => (
     <div className="mx-auto max-w-2xl px-6 py-16 text-center" role="alert">
       <h1 className="font-display text-3xl font-semibold">Нешто тргна наопаку</h1>
-      <p className="mt-3 text-black/60">Страницата не можеше да се вчита. Обидете се повторно.</p>
-      <p className="mt-1 text-sm text-black/40">{error instanceof Error ? error.message : ''}</p>
+      <p className="mt-3 text-ink-muted">Страницата не можеше да се вчита. Обидете се повторно.</p>
+      <p className="mt-1 text-sm text-ink-faint">{error instanceof Error ? error.message : ''}</p>
       <Button type="button" variant="primary" className="mt-6" onClick={reset}>
         Обиди се повторно
       </Button>
@@ -112,13 +119,13 @@ function RootComponent() {
     <RootDocument>
       <a
         href="#main-content"
-        className="sr-only focus:not-sr-only focus:fixed focus:top-2 focus:left-2 focus:z-50 focus:rounded focus:bg-white focus:px-3 focus:py-2 focus:text-sm focus:font-semibold focus:shadow"
+        className="sr-only focus:not-sr-only focus:fixed focus:top-2 focus:left-2 focus:z-50 focus:rounded-card focus:bg-surface-raised focus:px-3 focus:py-2 focus:text-sm focus:font-semibold focus:shadow"
       >
         Скокни на содржината
       </a>
       <div className="flex min-h-screen flex-col">
         <AmberBar />
-        <div className="mx-auto flex w-full max-w-[80rem] flex-1 flex-col bg-white shadow-[0_0_20px_rgba(34,36,38,0.04)]">
+        <div className="mx-auto flex w-full max-w-[80rem] flex-1 flex-col bg-surface-raised shadow-[0_0_20px_var(--shadow-outer)]">
           <SiteHeader stores={stores} googleEnabled={googleEnabled} />
           <main id="main-content" className="flex-1">
             <Outlet />
@@ -132,7 +139,9 @@ function RootComponent() {
 
 function RootDocument({ children }: Readonly<{ children: ReactNode }>) {
   return (
-    <html lang="mk">
+    // The theme script above adds the class before React arrives, so the
+    // document element is allowed to differ from what was rendered.
+    <html lang="mk" suppressHydrationWarning>
       <head>
         <HeadContent />
       </head>

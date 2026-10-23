@@ -22,12 +22,12 @@ function AdminEditProductPage() {
         ← Производи
       </Link>
       <h1 className="mt-2 font-display text-3xl font-semibold">Уреди производ</h1>
-      <p className="mt-2 mb-6 text-black/60">{product.title}</p>
+      <p className="mt-2 mb-6 text-ink-muted">{product.title}</p>
 
       <div className="mb-6 flex items-center gap-3">
         <button
           type="button"
-          className="cursor-pointer rounded border border-line px-3 py-1.5 text-sm font-semibold hover:bg-black/[0.03]"
+          className="cursor-pointer rounded-card border border-border px-3 py-1.5 text-sm font-semibold hover:bg-hover"
           onClick={async () => {
             await adminToggleFeatured({
               data: { productId: product.id, featured: !product.featured },

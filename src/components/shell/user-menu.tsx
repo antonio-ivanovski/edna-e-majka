@@ -21,7 +21,7 @@ export function UserMenu({ googleEnabled }: { googleEnabled: boolean }) {
 
   if (isPending) {
     return (
-      <span className="px-1.5 py-2 text-black/30" aria-hidden="true">
+      <span className="px-1.5 py-2 text-ink-faint" aria-hidden="true">
         ···
       </span>
     )
@@ -45,33 +45,31 @@ export function UserMenu({ googleEnabled }: { googleEnabled: boolean }) {
       trigger={
         <button
           type="button"
-          className="flex max-w-[16rem] cursor-pointer items-center gap-1.5 rounded-[0.2857rem] px-1.5 py-2 text-black/[0.87] hover:bg-black/[0.03]"
+          className="flex max-w-[16rem] cursor-pointer items-center gap-1.5 rounded-card px-1.5 py-2 text-ink hover:bg-hover"
         >
           <Avatar src={user.image} alt={label} />
           <span className="max-w-[9rem] truncate">{label}</span>
-          <ChevronDown aria-hidden="true" className="size-4 text-black/40" />
+          <ChevronDown aria-hidden="true" className="size-4 text-ink-faint" />
         </button>
       }
     >
       <div className="px-3 py-2">
-        <p className="text-[0.7857rem] text-black/45">Најавени како</p>
-        <p className="max-w-[14rem] truncate text-sm font-semibold text-black/[0.87]">
-          {user.email}
-        </p>
+        <p className="text-[0.7857rem] text-ink-subtle">Најавени како</p>
+        <p className="max-w-[14rem] truncate text-sm font-semibold text-ink">{user.email}</p>
       </div>
 
       <DropdownMenuSeparator />
 
       <DropdownMenuItem asChild>
         <Link to="/account" className="w-full">
-          <User aria-hidden="true" className="size-4 text-black/40" />
+          <User aria-hidden="true" className="size-4 text-ink-faint" />
           Мојата сметка
         </Link>
       </DropdownMenuItem>
 
       <DropdownMenuItem asChild>
         <Link to="/manage" className="w-full">
-          <Store aria-hidden="true" className="size-4 text-black/40" />
+          <Store aria-hidden="true" className="size-4 text-ink-faint" />
           Менаџирај продавница
         </Link>
       </DropdownMenuItem>
@@ -79,7 +77,7 @@ export function UserMenu({ googleEnabled }: { googleEnabled: boolean }) {
       {user.role === 'admin' ? (
         <DropdownMenuItem asChild>
           <Link to="/admin/stores" className="w-full">
-            <ShieldCheck aria-hidden="true" className="size-4 text-black/40" />
+            <ShieldCheck aria-hidden="true" className="size-4 text-ink-faint" />
             Администрација
           </Link>
         </DropdownMenuItem>

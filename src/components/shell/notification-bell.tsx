@@ -46,8 +46,8 @@ export function NotificationBell() {
       </Button>
 
       {open ? (
-        <div className="absolute top-full right-0 z-50 mt-1 w-80 overflow-hidden rounded border border-line bg-white shadow-lg">
-          <div className="flex items-center justify-between border-b border-line px-3 py-2">
+        <div className="absolute top-full right-0 z-50 mt-1 w-80 overflow-hidden rounded-card border border-border bg-surface-raised shadow-lg">
+          <div className="flex items-center justify-between border-b border-border px-3 py-2">
             <span className="text-sm font-semibold">Известувања</span>
             {unread > 0 ? (
               <button
@@ -61,13 +61,13 @@ export function NotificationBell() {
           </div>
           <ul className="max-h-80 overflow-y-auto">
             {notifications.length === 0 ? (
-              <li className="px-3 py-4 text-sm text-black/45">Нема известувања.</li>
+              <li className="px-3 py-4 text-sm text-ink-subtle">Нема известувања.</li>
             ) : (
               notifications.map((note) => (
                 <li key={note.id}>
                   <button
                     type="button"
-                    className="block w-full cursor-pointer px-3 py-2 text-left hover:bg-black/[0.03]"
+                    className="block w-full cursor-pointer px-3 py-2 text-left hover:bg-hover"
                     onClick={() => {
                       if (!note.readAt) {
                         markRead.mutate(note.id)
@@ -79,7 +79,7 @@ export function NotificationBell() {
                   >
                     <span className="block text-sm font-semibold">{note.title}</span>
                     {note.body ? (
-                      <span className="block text-xs text-black/60">{note.body}</span>
+                      <span className="block text-xs text-ink-muted">{note.body}</span>
                     ) : null}
                   </button>
                 </li>

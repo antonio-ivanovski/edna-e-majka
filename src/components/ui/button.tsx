@@ -7,24 +7,22 @@ import { cn } from '#/lib/utils'
 /**
  * Colours come from the Semantic UI buttons the site used: amber for the shop
  * front, red for the main action, green for confirmations, grey for secondary
- * actions.
+ * actions. Every colour is a role, so the dark theme needs no extra rules.
  */
 const button = cva(
-  'inline-flex shrink-0 cursor-pointer items-center justify-center gap-2 rounded-[0.2857rem] leading-none font-semibold transition-colors select-none disabled:pointer-events-none disabled:opacity-45',
+  'inline-flex shrink-0 cursor-pointer items-center justify-center gap-2 rounded-card leading-none font-semibold transition-colors select-none disabled:pointer-events-none disabled:opacity-45',
   {
     variants: {
       variant: {
         /** Semantic's plain button: the light grey one in modal footers. */
-        default: 'bg-[#e0e1e2] text-black/60 hover:bg-[#cacbcd]',
-        accent: 'bg-accent text-black/70 hover:bg-accent-strong',
-        primary: 'bg-danger text-white hover:bg-[#c92121]',
-        positive: 'bg-success text-white hover:bg-[#1c9d3a]',
-        neutral: 'bg-muted text-white hover:bg-[#5c5c5c]',
-        outline: 'border border-line bg-white text-black/70 hover:bg-black/[0.03]',
-        ghost: 'text-black/70 hover:bg-black/[0.04]',
+        default: 'bg-border text-ink-muted hover:bg-hover',
+        accent: 'bg-accent text-on-brand hover:bg-accent-strong',
+        primary: 'bg-danger text-white hover:bg-danger-strong',
+        positive: 'bg-success text-white hover:bg-success-strong',
+        outline: 'border border-border bg-surface-raised text-ink hover:bg-hover',
+        ghost: 'text-ink hover:bg-hover',
       },
       size: {
-        mini: 'h-6 px-2.5 text-[0.7857rem]',
         sm: 'h-8 px-3 text-[0.8571rem]',
         md: 'h-9 px-4 text-sm',
         lg: 'h-11 px-6 text-base',

@@ -26,7 +26,7 @@ function ProducersPage() {
   return (
     <div>
       <h1 className="px-4 pt-6 font-display text-3xl font-semibold">Производители</h1>
-      <p className="mt-2 px-4 text-black/60">
+      <p className="mt-2 px-4 text-ink-muted">
         Запознајте ги луѓето зад производите и контактирајте ги директно.
       </p>
 
@@ -42,13 +42,13 @@ function ProducersPage() {
               key={store.id}
               to="/producers/$storeId"
               params={{ storeId: store.slug ?? store.id }}
-              className="flex flex-col items-center gap-3 rounded-[0.2857rem] border border-line bg-white p-6 text-center shadow-[0_1px_2px_0_rgba(34,36,38,0.15)] transition-shadow hover:shadow-[0_2px_8px_0_rgba(34,36,38,0.2)]"
+              className="flex flex-col items-center gap-3 rounded-card border border-border bg-surface-raised p-6 text-center shadow-panel transition-shadow hover:shadow-lift"
             >
               <Avatar src={imageUrl(store.avatarKey)} alt={store.name} size={96} />
-              <span className="text-lg font-bold text-black/[0.87]">{store.name}</span>
-              <span className="line-clamp-3 text-black/60">{store.description}</span>
-              {store.city ? <span className="text-sm text-black/45">{store.city}</span> : null}
-              <span className="text-sm text-black/45">
+              <span className="text-lg font-bold text-ink">{store.name}</span>
+              <span className="line-clamp-3 text-ink-muted">{store.description}</span>
+              {store.city ? <span className="text-sm text-ink-subtle">{store.city}</span> : null}
+              <span className="text-sm text-ink-subtle">
                 {formatCount(store.productCount, 'производ', 'производи')}
               </span>
             </Link>

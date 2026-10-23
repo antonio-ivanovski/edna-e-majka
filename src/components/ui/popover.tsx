@@ -22,7 +22,7 @@ export function Popover({
           align="start"
           collisionPadding={12}
           className={cn(
-            'z-50 max-w-[250px] rounded-[0.2857rem] border border-[#d4d4d5] bg-white px-4 py-3 text-sm shadow-[0_2px_4px_0_rgba(34,36,38,0.12),0_2px_10px_0_rgba(34,36,38,0.15)]',
+            'z-50 max-w-[250px] rounded-card border border-border-strong bg-surface-raised px-4 py-3 text-sm shadow-lift',
             className,
           )}
         >

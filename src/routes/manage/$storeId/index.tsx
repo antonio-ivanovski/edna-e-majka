@@ -39,7 +39,7 @@ function EditStorePage() {
 
       <StoreForm store={store} />
 
-      <div className="mt-8 flex flex-wrap items-center gap-4 border-t border-line pt-5">
+      <div className="mt-8 flex flex-wrap items-center gap-4 border-t border-border pt-5">
         <Button asChild variant="outline">
           <Link to="/manage/$storeId/products" params={{ storeId: store.id }}>
             Производи на продавницата

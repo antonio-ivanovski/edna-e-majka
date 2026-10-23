@@ -61,7 +61,7 @@ export function CooperationForm({ onSent }: { onSent: () => void }) {
 
   return (
     <form onSubmit={onSubmit} noValidate>
-      <p className="mb-5 font-bold text-black/[0.87]">
+      <p className="mb-5 font-bold text-ink">
         Пополнете ја формата за соработка и стапете во контакт со нашиот тим.
       </p>
 

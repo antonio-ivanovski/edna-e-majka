@@ -15,10 +15,10 @@ export function ProducersDropdown({ stores }: { stores: StoreSummary[] }) {
       trigger={
         <button
           type="button"
-          className="flex cursor-pointer items-center gap-1.5 rounded-[0.2857rem] px-2 py-2 text-black/[0.87] hover:bg-black/[0.03]"
+          className="flex cursor-pointer items-center gap-1.5 rounded-card px-2 py-2 text-ink hover:bg-hover"
         >
           Производители
-          <ChevronDown aria-hidden="true" className="size-4 text-black/40" />
+          <ChevronDown aria-hidden="true" className="size-4 text-ink-faint" />
         </button>
       }
       className="max-h-[70vh] overflow-y-auto"

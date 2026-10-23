@@ -26,7 +26,7 @@ function AccountPage() {
   return (
     <div className="mx-auto w-full max-w-2xl px-4 py-10">
       <h1 className="font-display text-3xl font-semibold">Мојата сметка</h1>
-      <p className="mt-1 text-black/60">{account.email}</p>
+      <p className="mt-1 text-ink-muted">{account.email}</p>
 
       <Panel className="mt-6 p-6">
         <h2 className="mb-4 font-display text-xl font-semibold">Податоци</h2>
@@ -35,7 +35,7 @@ function AccountPage() {
 
       <Panel className="mt-6 p-6">
         <h2 className="font-display text-xl font-semibold">Извези податоци</h2>
-        <p className="mt-2 mb-4 text-black/60">
+        <p className="mt-2 mb-4 text-ink-muted">
           Преземете ги вашите податоци (сметка, продавница, производи) во JSON формат.
         </p>
         <Button
@@ -58,7 +58,7 @@ function AccountPage() {
 
       <Panel className="mt-6 p-6">
         <h2 className="font-display text-xl font-semibold">Избриши сметката</h2>
-        <p className="mt-2 mb-4 text-black/60">
+        <p className="mt-2 mb-4 text-ink-muted">
           Со избришување на сметката остануваат без простор за враќање. Производите, сликите и
           продавницата ги бришеме заедно со сметката.
         </p>

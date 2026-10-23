@@ -123,7 +123,7 @@ function ProductPage() {
           {product.images.map((image, index) => (
             <div
               key={image.key}
-              className="max-w-[400px] min-w-[133px] flex-1 overflow-hidden rounded-[0.2857rem] bg-black/[0.04]"
+              className="max-w-[400px] min-w-[133px] flex-1 overflow-hidden rounded-card bg-hover"
             >
               <img
                 src={imageUrl(image.key)}
@@ -156,11 +156,11 @@ function ProductPage() {
           <FavoriteButton productId={product.id} />
         </div>
         {product.availability === 'out_of_stock' ? (
-          <p className="mt-2 inline-block rounded bg-danger/10 px-2 py-1 text-sm font-semibold text-danger">
+          <p className="mt-2 inline-block rounded-card bg-danger/10 px-2 py-1 text-sm font-semibold text-danger">
             Нема на залиха
           </p>
         ) : product.availability === 'on_order' ? (
-          <p className="mt-2 inline-block rounded bg-black/5 px-2 py-1 text-sm font-semibold text-black/60">
+          <p className="mt-2 inline-block rounded-card bg-black/5 px-2 py-1 text-sm font-semibold text-ink-muted">
             По нарачка
           </p>
         ) : null}
@@ -173,7 +173,7 @@ function ProductPage() {
               )
               return (
                 <div key={key} className="flex flex-col">
-                  <dt className="text-black/45">
+                  <dt className="text-ink-subtle">
                     {def?.label ?? key}
                     {def?.unit ? ' (' + def.unit + ')' : ''}
                   </dt>
@@ -200,7 +200,7 @@ function ProductPage() {
                 <button
                   type="button"
                   aria-label={`Повеќе за ${product.store.name}`}
-                  className="cursor-pointer rounded-full p-1 text-black/40 hover:bg-black/[0.04] hover:text-black/70"
+                  className="cursor-pointer rounded-full p-1 text-ink-faint hover:bg-hover hover:text-ink"
                 >
                   <Info className="size-4" />
                 </button>
@@ -211,10 +211,10 @@ function ProductPage() {
           ) : null}
         </div>
 
-        <p className="mt-5 whitespace-pre-wrap text-black/[0.87]">{product.description}</p>
+        <p className="mt-5 whitespace-pre-wrap text-ink">{product.description}</p>
 
         <section className="mt-6">
-          <h2 className="text-[1.2857rem] font-bold text-black/[0.87]">Цена:</h2>
+          <h2 className="text-[1.2857rem] font-bold text-ink">Цена:</h2>
           {product.variants.length > 0 ? (
             <StatisticGroup className="mt-3">
               {product.variants.map((variant) => (
@@ -226,28 +226,26 @@ function ProductPage() {
               ))}
             </StatisticGroup>
           ) : (
-            <p className="mt-2 text-black/55">Цена по договор со производителот.</p>
+            <p className="mt-2 text-ink-muted">Цена по договор со производителот.</p>
           )}
         </section>
 
         <section className="mt-8">
-          <h2 className="text-[1.2857rem] font-bold text-black/[0.87]">
+          <h2 className="text-[1.2857rem] font-bold text-ink">
             Нарачај „{product.title}“ од {product.store.name} преку:
           </h2>
           <ProducerContacts contacts={product.store} className="mt-3" />
         </section>
 
         <section className="mt-6">
-          <h2 className="text-sm font-bold text-black/[0.87]">Сподели</h2>
+          <h2 className="text-sm font-bold text-ink">Сподели</h2>
           <div className="mt-2">
             <ShareButtons path={`/products/${product.id}`} title={product.title} />
           </div>
         </section>
 
         <section className="mt-8">
-          <h2 className="text-[1.2857rem] font-bold text-black/[0.87]">
-            Контактирајте го производителот
-          </h2>
+          <h2 className="text-[1.2857rem] font-bold text-ink">Контактирајте го производителот</h2>
           <div className="mt-3 max-w-xl">
             <EnquiryForm storeId={product.store.id} productId={product.id} />
           </div>

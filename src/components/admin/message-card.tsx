@@ -56,7 +56,7 @@ export function AdminMessageCard({ message }: { message: AdminMessage }) {
   return (
     <article
       className={cn(
-        'rounded-[0.2857rem] border border-line bg-white p-4 shadow-[0_1px_2px_0_rgba(34,36,38,0.15)]',
+        'rounded-card border border-border bg-surface-raised p-4 shadow-panel',
         handled ? 'opacity-70' : 'border-l-4 border-l-accent',
       )}
     >
@@ -65,11 +65,11 @@ export function AdminMessageCard({ message }: { message: AdminMessage }) {
           {KINDS[message.kind]}
         </Label>
 
-        <span className="font-semibold text-black/[0.87]">{message.name || 'Без име'}</span>
-        <span className="text-sm text-black/50">{message.email}</span>
-        {message.phone ? <span className="text-sm text-black/50">· {message.phone}</span> : null}
+        <span className="font-semibold text-ink">{message.name || 'Без име'}</span>
+        <span className="text-sm text-ink-subtle">{message.email}</span>
+        {message.phone ? <span className="text-sm text-ink-subtle">· {message.phone}</span> : null}
 
-        <span className="ml-auto text-sm text-black/45">
+        <span className="ml-auto text-sm text-ink-subtle">
           {formatDate(message.createdAt)}
           {handled && message.handledAt ? ` · прочитана ${formatDate(message.handledAt)}` : ''}
         </span>
@@ -88,7 +88,7 @@ export function AdminMessageCard({ message }: { message: AdminMessage }) {
         </p>
       ) : null}
 
-      <p className="mt-3 whitespace-pre-wrap text-black/75">{message.message}</p>
+      <p className="mt-3 whitespace-pre-wrap text-ink">{message.message}</p>
 
       <div className="mt-4 flex flex-wrap items-center gap-2">
         <Button

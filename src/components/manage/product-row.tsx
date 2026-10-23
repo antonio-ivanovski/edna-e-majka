@@ -67,15 +67,15 @@ export function ProductRow({ storeId, product }: { storeId: string; product: Own
               alt=""
               width={48}
               height={36}
-              className="h-9 w-12 rounded-[0.2857rem] border border-line object-cover"
+              className="h-9 w-12 rounded-card border border-border object-cover"
             />
           ) : (
-            <span aria-hidden="true" className="h-9 w-12 rounded-[0.2857rem] bg-black/[0.05]" />
+            <span aria-hidden="true" className="h-9 w-12 rounded-card bg-black/[0.05]" />
           )}
           <Link
             to="/manage/$storeId/products/$productId"
             params={{ storeId, productId: product.id }}
-            className="font-semibold text-black/[0.87] hover:underline"
+            className="font-semibold text-ink hover:underline"
           >
             {product.title}
           </Link>
@@ -88,7 +88,7 @@ export function ProductRow({ storeId, product }: { storeId: string; product: Own
 
       <TableCell className="whitespace-nowrap">{price}</TableCell>
 
-      <TableCell className="whitespace-nowrap text-black/60">
+      <TableCell className="whitespace-nowrap text-ink-muted">
         {formatDate(product.createdAt)}
       </TableCell>
 

@@ -23,7 +23,7 @@ export function DropdownMenu({
           align={align}
           sideOffset={4}
           className={cn(
-            'z-50 min-w-[11rem] rounded-[0.2857rem] border border-line bg-white py-1 shadow-[0_2px_4px_0_rgba(34,36,38,0.12),0_2px_10px_0_rgba(34,36,38,0.15)]',
+            'z-50 min-w-[11rem] rounded-card border border-border bg-surface-raised py-1 shadow-lift',
             className,
           )}
         >
@@ -35,7 +35,7 @@ export function DropdownMenu({
 }
 
 const itemStyles =
-  'flex cursor-pointer items-center gap-2 px-3 py-2 text-sm text-black/60 outline-none data-[disabled]:pointer-events-none data-[disabled]:opacity-45 data-[highlighted]:bg-black/[0.04] data-[highlighted]:text-black/[0.95]'
+  'flex cursor-pointer items-center gap-2 px-3 py-2 text-sm text-ink-muted outline-none data-[disabled]:pointer-events-none data-[disabled]:opacity-45 data-[highlighted]:bg-hover data-[highlighted]:text-ink'
 
 export function DropdownMenuItem({
   children,
@@ -64,7 +64,7 @@ export function DropdownMenuItem({
         children
       ) : (
         <>
-          {icon ? <span className="text-black/40">{icon}</span> : null}
+          {icon ? <span className="text-ink-faint">{icon}</span> : null}
           {children}
         </>
       )}
@@ -73,5 +73,5 @@ export function DropdownMenuItem({
 }
 
 export function DropdownMenuSeparator() {
-  return <RadixDropdownMenu.Separator className="my-1 h-px bg-line" />
+  return <RadixDropdownMenu.Separator className="bg-line my-1 h-px" />
 }

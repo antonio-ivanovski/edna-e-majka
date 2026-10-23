@@ -43,7 +43,7 @@ function AdminUsersPage() {
         />
       </div>
 
-      <p className="mb-3 text-sm text-black/50">
+      <p className="mb-3 text-sm text-ink-subtle">
         {formatCount(total, 'корисник', 'корисници')}
         {search.q ? ` · пребарување „${search.q}“` : ''}
       </p>

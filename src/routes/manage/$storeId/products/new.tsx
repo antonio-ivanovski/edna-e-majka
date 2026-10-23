@@ -25,7 +25,7 @@ function NewProductPage() {
       </Link>
 
       <h1 className="mt-2 font-display text-3xl font-semibold">Нов производ</h1>
-      <p className="mt-2 mb-6 text-black/60">
+      <p className="mt-2 mb-6 text-ink-muted">
         Додајте го производот во {store.name}. Сликите избрани сега се прикачуваат откако ќе го
         зачувате производот.
       </p>

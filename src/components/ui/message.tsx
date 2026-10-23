@@ -5,23 +5,20 @@ import { cn } from '#/lib/utils'
 
 /**
  * The panel that greets visitors on the home page and every error or success
- * notice in the forms. Semantic's message: light background, 1px inset border,
- * slightly transparent paragraphs.
+ * notice in the forms. Semantic's message: a tinted background with a border
+ * of the same family.
  */
-const message = cva(
-  'rounded-[0.2857rem] px-6 py-4 shadow-[inset_0_0_0_1px_var(--message-border)]',
-  {
-    variants: {
-      variant: {
-        info: 'bg-surface-subtle text-black/[0.87] [--message-border:rgba(34,36,38,0.22)]',
-        error: 'bg-danger-soft text-danger-strong [--message-border:#e0b4b4]',
-        success: 'bg-success-soft text-success-strong [--message-border:#a9d5bd]',
-        warning: 'bg-[#fffaf3] text-[#573a08] [--message-border:#c9ba9b]',
-      },
+const message = cva('rounded-card border px-6 py-4', {
+  variants: {
+    variant: {
+      info: 'border-border bg-surface-sunken text-ink',
+      error: 'border-danger/30 bg-danger-soft text-danger-strong',
+      success: 'border-success/30 bg-success-soft text-success-strong',
+      warning: 'border-accent/40 bg-accent/10 text-ink',
     },
-    defaultVariants: { variant: 'info' },
   },
-)
+  defaultVariants: { variant: 'info' },
+})
 
 type MessageProps = ComponentProps<'div'> &
   VariantProps<typeof message> & {

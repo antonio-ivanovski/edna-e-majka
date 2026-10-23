@@ -34,7 +34,7 @@ export function ReportButton({ storeId, productId }: { storeId?: string; product
     <>
       <button
         type="button"
-        className="cursor-pointer text-xs text-black/40 hover:text-black/70 hover:underline"
+        className="cursor-pointer text-xs text-ink-faint hover:text-ink hover:underline"
         onClick={() => setOpen(true)}
       >
         Пријави
@@ -46,7 +46,7 @@ export function ReportButton({ storeId, productId }: { storeId?: string; product
             onChange={(event) => setReason(event.target.value)}
             rows={4}
             placeholder="Опишете ја причината…"
-            className="w-full rounded border border-line px-3 py-2 text-sm"
+            className="w-full rounded-card border border-border px-3 py-2 text-sm"
           />
           <div className="flex justify-end gap-2">
             <Button type="button" variant="outline" size="sm" onClick={() => setOpen(false)}>

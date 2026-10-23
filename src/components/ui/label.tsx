@@ -6,20 +6,24 @@ import { cn } from '#/lib/utils'
 
 /** The coloured chips: contact details, category chips, status marks. */
 const labelStyles = cva(
-  'inline-flex items-center gap-[0.75em] rounded-[0.2857rem] px-[0.833em] py-[0.5833em] text-[0.8571rem] leading-none font-bold',
+  'inline-flex items-center gap-[0.75em] rounded-card px-[0.833em] py-[0.5833em] text-[0.8571rem] leading-none font-bold',
   {
     variants: {
       color: {
-        grey: 'bg-[#e8e8e8] text-black/60',
+        grey: 'bg-border text-ink-muted',
         green: 'bg-success text-white',
         blue: 'bg-facebook text-white',
         purple: 'bg-instagram text-white',
         red: 'bg-danger text-white',
-        accent: 'bg-accent text-black/70',
-        white: 'border border-line bg-white text-black/70',
+        accent: 'bg-accent text-on-brand',
+        white: 'border border-border bg-surface-raised text-ink',
       },
       size: {
         small: 'text-[0.7857rem]',
+      },
+      /** A chip that can be pressed or followed. */
+      interactive: {
+        true: 'transition-colors hover:brightness-95',
       },
     },
     defaultVariants: { color: 'grey' },
@@ -30,6 +34,7 @@ type LabelProps = {
   className?: string
   color?: VariantProps<typeof labelStyles>['color']
   size?: VariantProps<typeof labelStyles>['size']
+  interactive?: boolean
   /** Placed before the text, inside the chip. */
   icon?: ReactNode
   /** Right-aligned secondary text, as on the contact labels. */
@@ -49,6 +54,7 @@ export function Label({
   className,
   color,
   size,
+  interactive,
   icon,
   detail,
   href,
@@ -56,7 +62,7 @@ export function Label({
   children,
   ...rest
 }: LabelProps) {
-  const styles = cn(labelStyles({ color, size }), className)
+  const styles = cn(labelStyles({ color, size, interactive }), className)
   const content = (
     <>
       {icon}
@@ -68,7 +74,7 @@ export function Label({
   if (asChild) {
     return (
       <Slot.Root className={styles} {...rest}>
-        {children}
+        {content}
       </Slot.Root>
     )
   }

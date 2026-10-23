@@ -98,10 +98,10 @@ export function SignInForm({
 
       {googleEnabled ? (
         <>
-          <div className="flex items-center gap-3 text-xs text-black/40">
-            <span className="h-px flex-1 bg-line" />
+          <div className="flex items-center gap-3 text-xs text-ink-faint">
+            <span className="bg-line h-px flex-1" />
             или
-            <span className="h-px flex-1 bg-line" />
+            <span className="bg-line h-px flex-1" />
           </div>
           <Button
             type="button"
@@ -127,7 +127,7 @@ export function SignInForm({
         </>
       ) : null}
 
-      <p className="text-xs text-black/45">
+      <p className="text-xs text-ink-subtle">
         Без лозинки: ќе добиете еднократен линк на вашата адреса, со важност од 15 минути.
       </p>
     </div>

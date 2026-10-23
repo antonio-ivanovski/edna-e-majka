@@ -13,7 +13,7 @@ export function Breadcrumbs({ items }: { items: BreadcrumbItem[] }) {
   return (
     <nav
       aria-label="Патека"
-      className="flex flex-wrap items-center gap-1 px-4 pt-4 text-sm text-black/50"
+      className="flex flex-wrap items-center gap-1 px-4 pt-4 text-sm text-ink-subtle"
     >
       {items.map((item, index) => (
         <span key={`${item.label}-${index}`} className="flex items-center gap-1">
@@ -22,12 +22,12 @@ export function Breadcrumbs({ items }: { items: BreadcrumbItem[] }) {
             <Link
               to={item.to}
               params={item.params as never}
-              className="hover:text-black/80 hover:underline"
+              className="hover:text-ink hover:underline"
             >
               {item.label}
             </Link>
           ) : (
-            <span className="text-black/70">{item.label}</span>
+            <span className="text-ink">{item.label}</span>
           )}
         </span>
       ))}

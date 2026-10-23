@@ -7,6 +7,9 @@
  * The palette the site has always used, kept as design tokens. Amber is the
  * shop front, red is the action colour, and the muted colours are the contact
  * labels (phone, Facebook, Instagram).
+ *
+ * These are the fixed brand colours. Everything that a surface can change
+ * with the theme lives in the semantic set below.
  */
 @theme {
   --font-sans: 'Onest Variable', ui-sans-serif, system-ui, sans-serif;
@@ -17,28 +20,107 @@
   --color-accent-strong: #eaae00;
 
   --color-danger: #db2828;
-  --color-danger-soft: #fff6f6;
   --color-danger-strong: #9f3a38;
 
-  --color-success: #21ba45;
-  --color-success-soft: #fcfff5;
-  --color-success-strong: #2c662d;
+  --color-success: #15803d;
+  --color-success-strong: #14532d;
 
-  --color-facebook: #2185d0;
-  --color-instagram: #a333c8;
-  --color-muted: #767676;
+  --color-facebook: #1d4ed8;
+  --color-instagram: #9d174d;
+  --color-muted: #6b6b6b;
 
-  --color-line: rgb(34 36 38 / 15%);
-  --color-line-strong: #dddddd;
-  --color-surface-subtle: #f8f8f9;
-  --color-surface-footer: #f9fafb;
+  /** Amber is light in both themes, so the text on it is always dark. */
+  --color-on-brand: #1a1a1a;
 
   /* The legacy look is nearly square: 0.2857rem, not a modern pill. */
   --radius-card: 0.2857rem;
-  --shadow-panel: 0 1px 3px 0 #d4d4d5, 0 0 0 1px #d4d4d5;
 
   /* Category tiles glow amber on hover, as they did. */
   --background-image-tile-hover: radial-gradient(circle, #ffc145 0%, #ffffff 70%);
+}
+
+/*
+ * The semantic set. A component never names a colour directly; it names a
+ * role, and the role is filled in differently for the light and the dark
+ * theme. `inline` keeps the generated utilities pointing at the variable
+ * rather than copying its value, so the theme switch is a single class on
+ * the document.
+ */
+@theme inline {
+  --color-surface: var(--surface);
+  --color-surface-raised: var(--surface-raised);
+  --color-surface-sunken: var(--surface-sunken);
+  --color-hover: var(--hover);
+
+  --color-ink: var(--ink);
+  --color-ink-muted: var(--ink-muted);
+  --color-ink-subtle: var(--ink-subtle);
+  --color-ink-faint: var(--ink-faint);
+
+  --color-border: var(--border);
+  --color-border-strong: var(--border-strong);
+  --color-focus: var(--focus);
+
+  --color-danger-soft: var(--danger-soft);
+  --color-success-soft: var(--success-soft);
+
+  --shadow-panel: var(--shadow-panel-value);
+  --shadow-card: var(--shadow-card-value);
+  --shadow-lift: var(--shadow-lift-value);
+}
+
+:root {
+  color-scheme: light;
+
+  --surface: #f4f4f5;
+  --surface-raised: #ffffff;
+  --surface-sunken: #f8f8f9;
+  --hover: rgb(34 36 38 / 7%);
+
+  --ink: rgb(0 0 0 / 88%);
+  --ink-muted: rgb(0 0 0 / 68%);
+  --ink-subtle: rgb(0 0 0 / 56%);
+  --ink-faint: rgb(0 0 0 / 40%);
+
+  --border: rgb(34 36 38 / 16%);
+  --border-strong: rgb(34 36 38 / 28%);
+  --focus: #a86f00;
+
+  --shadow-panel-value: 0 1px 2px 0 rgb(34 36 38 / 12%), 0 0 0 1px rgb(34 36 38 / 16%);
+  --shadow-card-value: 0 1px 3px 0 rgb(34 36 38 / 14%);
+  --shadow-lift-value: 0 2px 8px 0 rgb(34 36 38 / 18%);
+
+  --danger-soft: #fff6f6;
+  --success-soft: #f2fbf4;
+
+  --shadow-outer: rgb(34 36 38 / 4%);
+}
+
+.dark {
+  color-scheme: dark;
+
+  --surface: #101012;
+  --surface-raised: #1b1b1f;
+  --surface-sunken: #161618;
+  --hover: rgb(255 255 255 / 8%);
+
+  --ink: rgb(255 255 255 / 92%);
+  --ink-muted: rgb(255 255 255 / 72%);
+  --ink-subtle: rgb(255 255 255 / 58%);
+  --ink-faint: rgb(255 255 255 / 42%);
+
+  --border: rgb(255 255 255 / 14%);
+  --border-strong: rgb(255 255 255 / 24%);
+  --focus: #ffc145;
+
+  --shadow-panel-value: 0 1px 2px 0 rgb(0 0 0 / 55%), 0 0 0 1px rgb(255 255 255 / 10%);
+  --shadow-card-value: 0 1px 3px 0 rgb(0 0 0 / 60%);
+  --shadow-lift-value: 0 2px 8px 0 rgb(0 0 0 / 70%);
+
+  --danger-soft: #2c1416;
+  --success-soft: #10220f;
+
+  --shadow-outer: rgb(0 0 0 / 45%);
 }
 
 @layer base {
@@ -47,8 +129,8 @@
   }
 
   body {
-    background-color: var(--color-surface-subtle);
-    color: rgb(0 0 0 / 87%);
+    background-color: var(--surface);
+    color: var(--ink);
     font-family: var(--font-sans);
     font-size: 0.875rem;
     line-height: 1.4285;
@@ -66,8 +148,12 @@
   }
 
   :focus-visible {
-    outline: 2px solid var(--color-accent-strong);
+    outline: 2px solid var(--focus);
     outline-offset: 2px;
+  }
+
+  ::selection {
+    background-color: color-mix(in srgb, var(--color-brand) 55%, transparent);
   }
 }
 
@@ -80,9 +166,4 @@
     transition-duration: 0.01ms !important;
     scroll-behavior: auto !important;
   }
-}
-
-.dark body {
-  background-color: #18181b;
-  color: rgb(255 255 255 / 87%);
 }

@@ -13,12 +13,12 @@ const LINKS = [
 
 export function AdminNav() {
   return (
-    <nav aria-label="Администрација" className="flex flex-wrap gap-1 border-b border-line">
+    <nav aria-label="Администрација" className="flex flex-wrap gap-1 border-b border-border">
       {LINKS.map((link) => (
         <Link
           key={link.to}
           to={link.to}
-          className="border-b-2 border-transparent px-3 py-2.5 text-sm font-semibold text-black/50 hover:text-black/80 data-[status=active]:border-accent data-[status=active]:text-black/[0.95]"
+          className="border-b-2 border-transparent px-3 py-2.5 text-sm font-semibold text-ink-subtle hover:text-ink data-[status=active]:border-accent data-[status=active]:text-ink"
         >
           {link.label}
         </Link>

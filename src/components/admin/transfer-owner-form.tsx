@@ -41,7 +41,7 @@ export function TransferOwnerForm({ store }: { store: AdminStore }) {
   return (
     <Panel>
       <h2 className="font-display text-xl font-semibold">Сопственик</h2>
-      <p className="mt-1 mb-4 text-sm text-black/55">
+      <p className="mt-1 mb-4 text-sm text-ink-muted">
         Сега: {store.owner.name || store.owner.email}. Префрлувањето и ги дава продавницата и
         производите на друга сметка, која не смее да има своја продавница.
       </p>

@@ -80,10 +80,7 @@ async function waitForMagicLink(email: string): Promise<string> {
 /** The path of the first product in the catalogue. */
 export async function firstProductPath(page: Page): Promise<string> {
   await page.goto('/')
-  const href = await page
-    .locator('a[href^="/products/"]')
-    .first()
-    .getAttribute('href')
+  const href = await page.locator('a[href^="/products/"]').first().getAttribute('href')
 
   if (!href) throw new Error('The catalogue has no products.')
 
@@ -93,12 +90,25 @@ export async function firstProductPath(page: Page): Promise<string> {
 /** The path of the first producer. */
 export async function firstProducerPath(page: Page): Promise<string> {
   await page.goto('/producers')
-  const href = await page
-    .locator('a[href^="/producers/"]')
-    .first()
-    .getAttribute('href')
+  const href = await page.locator('a[href^="/producers/"]').first().getAttribute('href')
 
   if (!href) throw new Error('There are no producers.')
 
   return href
+}
+
+/**
+ * Waits until React has taken over the server-rendered markup. Until then the
+ * page shows the right thing but does not react to anything, so a test that
+ * clicks would be clicking into a dead page.
+ */
+export async function waitForHydration(page: Page): Promise<void> {
+  await page.waitForFunction(
+    () => {
+      const main = document.querySelector('main')
+      return main ? Object.keys(main).some((key) => key.startsWith('__react')) : false
+    },
+    undefined,
+    { timeout: 15_000 },
+  )
 }

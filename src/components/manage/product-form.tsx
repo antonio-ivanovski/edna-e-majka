@@ -311,8 +311,8 @@ export function ProductForm({
       </Field>
 
       {attributeDefs.length > 0 ? (
-        <fieldset className="mb-6 space-y-3 rounded border border-line p-4">
-          <legend className="px-1 text-sm font-semibold text-black/70">Атрибути</legend>
+        <fieldset className="mb-6 space-y-3 rounded-card border border-border p-4">
+          <legend className="px-1 text-sm font-semibold text-ink">Атрибути</legend>
           {attributeDefs.map((def) => (
             <Field key={def.key} label={def.label + (def.unit ? ' (' + def.unit + ')' : '')}>
               {def.type === 'select' ? (
@@ -356,7 +356,7 @@ export function ProductForm({
       </Field>
 
       <fieldset className="mb-6">
-        <legend className="mb-2 block text-sm font-bold text-black/[0.87]">Пакувања и цени</legend>
+        <legend className="mb-2 block text-sm font-bold text-ink">Пакувања и цени</legend>
 
         <div className="flex flex-col gap-3">
           {variants.fields.map((field, index) => (
@@ -437,10 +437,10 @@ export function ProductForm({
                   alt={image.alt ?? ''}
                   width={120}
                   height={90}
-                  className="h-[90px] w-[120px] rounded-[0.2857rem] border border-line object-cover"
+                  className="h-[90px] w-[120px] rounded-card border border-border object-cover"
                 />
                 {index === 0 ? (
-                  <span className="absolute bottom-1 left-1 rounded bg-black/70 px-1.5 py-0.5 text-[10px] font-bold text-white">
+                  <span className="absolute bottom-1 left-1 rounded-card bg-black/70 px-1.5 py-0.5 text-[10px] font-bold text-white">
                     Главна
                   </span>
                 ) : null}
@@ -459,7 +459,7 @@ export function ProductForm({
                 defaultValue={image.alt ?? ''}
                 placeholder="Alt текст"
                 aria-label="Alt текст за сликата"
-                className="h-7 w-[120px] rounded border border-line px-1 text-xs"
+                className="h-7 w-[120px] rounded-card border border-border px-1 text-xs"
                 onBlur={async (event) => {
                   const value = event.target.value
                   const result = await updateProductImageAlt({
@@ -480,7 +480,7 @@ export function ProductForm({
                   aria-label="Премести нагоре"
                   disabled={busyImages || index === 0}
                   onClick={() => moveImage(index, -1)}
-                  className="cursor-pointer rounded border border-line px-1.5 py-0.5 text-xs disabled:cursor-not-allowed disabled:opacity-40"
+                  className="cursor-pointer rounded-card border border-border px-1.5 py-0.5 text-xs disabled:cursor-not-allowed disabled:opacity-40"
                 >
                   ↑
                 </button>
@@ -489,7 +489,7 @@ export function ProductForm({
                   aria-label="Премести надолу"
                   disabled={busyImages || index === images.length - 1}
                   onClick={() => moveImage(index, 1)}
-                  className="cursor-pointer rounded border border-line px-1.5 py-0.5 text-xs disabled:cursor-not-allowed disabled:opacity-40"
+                  className="cursor-pointer rounded-card border border-border px-1.5 py-0.5 text-xs disabled:cursor-not-allowed disabled:opacity-40"
                 >
                   ↓
                 </button>
@@ -497,7 +497,7 @@ export function ProductForm({
                   type="button"
                   disabled={busyImages || index === 0}
                   onClick={() => setAsCover(index)}
-                  className="cursor-pointer rounded border border-line px-1.5 py-0.5 text-xs disabled:cursor-not-allowed disabled:opacity-40"
+                  className="cursor-pointer rounded-card border border-border px-1.5 py-0.5 text-xs disabled:cursor-not-allowed disabled:opacity-40"
                 >
                   Главна
                 </button>
@@ -512,7 +512,7 @@ export function ProductForm({
                 alt=""
                 width={120}
                 height={90}
-                className="h-[90px] w-[120px] rounded-[0.2857rem] border border-line object-cover opacity-70"
+                className="h-[90px] w-[120px] rounded-card border border-border object-cover opacity-70"
               />
               <button
                 type="button"
@@ -540,7 +540,7 @@ export function ProductForm({
           </Button>
         </div>
 
-        <p className="mt-2 text-sm text-black/45">
+        <p className="mt-2 text-sm text-ink-subtle">
           Сликите се смалуваат во вашиот прелистувач пред да се испратат. Првата слика е онаа што се
           гледа на картичката.
         </p>

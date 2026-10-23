@@ -94,7 +94,7 @@ export function StoreFields({
           label="Facebook"
           htmlFor="store-facebook"
           error={errors.facebook?.message}
-          className="[&_label]:font-normal [&_label]:text-black/60"
+          className="[&_label]:font-normal [&_label]:text-ink-muted"
         >
           <Input
             id="store-facebook"
@@ -108,7 +108,7 @@ export function StoreFields({
           label="Instagram"
           htmlFor="store-instagram"
           error={errors.instagram?.message}
-          className="[&_label]:font-normal [&_label]:text-black/60"
+          className="[&_label]:font-normal [&_label]:text-ink-muted"
         >
           <Input
             id="store-instagram"
@@ -122,7 +122,7 @@ export function StoreFields({
           label="Град / регион"
           htmlFor="store-city"
           error={errors.city?.message}
-          className="[&_label]:font-normal [&_label]:text-black/60"
+          className="[&_label]:font-normal [&_label]:text-ink-muted"
         >
           <Input
             id="store-city"
@@ -136,7 +136,7 @@ export function StoreFields({
           label="Работно време"
           htmlFor="store-hours"
           error={errors.hours?.message}
-          className="[&_label]:font-normal [&_label]:text-black/60"
+          className="[&_label]:font-normal [&_label]:text-ink-muted"
         >
           <Input
             id="store-hours"
@@ -226,7 +226,7 @@ export function StoreForm({
       </Button>
 
       {!store ? (
-        <p className="mt-3 text-sm text-black/45">
+        <p className="mt-3 text-sm text-ink-subtle">
           Продавницата се појавува меѓу производителите штом ќе помине автоматската проверка.
         </p>
       ) : null}
@@ -385,12 +385,12 @@ export function StoreCoverField({ store }: { store: OwnerStore }) {
             alt=""
             width={240}
             height={90}
-            className="h-[90px] w-[240px] rounded-[0.2857rem] border border-line object-cover"
+            className="h-[90px] w-[240px] rounded-card border border-border object-cover"
           />
         ) : (
           <span
             aria-hidden="true"
-            className="flex h-[90px] w-[240px] items-center justify-center rounded-[0.2857rem] border border-dashed border-line bg-black/[0.02] text-xs text-black/40"
+            className="flex h-[90px] w-[240px] items-center justify-center rounded-card border border-dashed border-border bg-black/[0.02] text-xs text-ink-faint"
           >
             Нема cover слика
           </span>

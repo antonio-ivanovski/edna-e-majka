@@ -17,7 +17,7 @@ function SignInPage() {
   return (
     <div className="mx-auto w-full max-w-md px-4 py-12">
       <h1 className="font-display text-3xl font-semibold">Најава</h1>
-      <p className="mt-2 mb-6 text-black/60">
+      <p className="mt-2 mb-6 text-ink-muted">
         Внесете ја вашата е-маил адреса и ќе ви пратиме линк за најава. Лозинка не ви треба.
       </p>
       <SignInForm googleEnabled={googleEnabled} />

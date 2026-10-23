@@ -36,7 +36,7 @@ function ManageHome() {
     <div className="mx-auto w-full max-w-5xl px-4 py-8">
       <div className="mb-6">
         <h1 className="font-display text-3xl font-semibold">Менаџирај</h1>
-        <p className="mt-1 text-black/60">Вашата продавница и производите во неа.</p>
+        <p className="mt-1 text-ink-muted">Вашата продавница и производите во неа.</p>
       </div>
 
       {store ? <StoreOverview store={store} products={products} /> : <NoStore />}
@@ -48,7 +48,7 @@ function NoStore() {
   return (
     <Panel className="px-6 py-12 text-center">
       <h2 className="font-display text-2xl font-semibold">Сѐ уште немате продавница</h2>
-      <p className="mx-auto mt-2 max-w-lg text-black/60">
+      <p className="mx-auto mt-2 max-w-lg text-ink-muted">
         Регистрирајте ја вашата продавница, додајте ги производите и добијте своја страница на која
         посетителите можат да ве најдат и да ве контактираат.
       </p>
@@ -118,8 +118,8 @@ function StoreOverview({ store, products }: { store: OwnerStore; products: Owner
             <h2 className="font-display text-2xl font-semibold">{store.name}</h2>
             <StoreStatusLabel status={store.status} size="small" />
           </div>
-          <p className="mt-1 line-clamp-2 text-black/60">{store.description}</p>
-          <p className="mt-2 text-sm text-black/45">
+          <p className="mt-1 line-clamp-2 text-ink-muted">{store.description}</p>
+          <p className="mt-2 text-sm text-ink-subtle">
             {store.email} · {store.phone}
           </p>
         </div>
@@ -190,7 +190,7 @@ function StoreOverview({ store, products }: { store: OwnerStore; products: Owner
                       {product.title}
                     </Link>
                   </TableCell>
-                  <TableCell className="whitespace-nowrap text-black/60">
+                  <TableCell className="whitespace-nowrap text-ink-muted">
                     {formatDate(product.createdAt)}
                   </TableCell>
                   <TableCell className="text-right">
@@ -230,8 +230,8 @@ function StoreOverview({ store, products }: { store: OwnerStore; products: Owner
 function Stat({ label, value }: { label: string; value: string }) {
   return (
     <Panel className="px-4 py-3">
-      <p className="text-[0.7857rem] font-bold tracking-wide text-black/45 uppercase">{label}</p>
-      <p className="mt-1 text-lg font-semibold text-black/[0.87]">{value}</p>
+      <p className="text-[0.7857rem] font-bold tracking-wide text-ink-subtle uppercase">{label}</p>
+      <p className="mt-1 text-lg font-semibold text-ink">{value}</p>
     </Panel>
   )
 }

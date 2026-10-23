@@ -98,26 +98,26 @@ export function SearchForm() {
           }}
           onFocus={() => setOpen(true)}
           placeholder="Пребарај сите производи"
-          className="h-9 w-full min-w-0 rounded-l-[0.2857rem] rounded-r-none border border-r-0 border-line bg-white px-3 text-sm placeholder:text-black/35 focus:z-10 focus:border-accent-strong focus:ring-1 focus:ring-accent-strong focus:outline-none"
+          className="h-9 w-full min-w-0 rounded-l-card rounded-r-none border border-r-0 border-border bg-surface-raised px-3 text-sm placeholder:text-ink-faint focus:z-10 focus:border-accent-strong focus:ring-1 focus:ring-accent-strong focus:outline-none"
         />
-        <Button type="submit" variant="primary" className="rounded-l-none">
+        <Button type="submit" variant="primary" className="rounded-l-none" aria-label="Пребарај">
           <Search aria-hidden="true" className="size-4" />
-          Пребарај
+          <span className="hidden sm:inline">Пребарај</span>
         </Button>
       </form>
 
       {open && (recent.length > 0 || hasSuggestions) ? (
-        <div className="absolute top-full left-0 z-50 mt-1 w-full overflow-hidden rounded-[0.2857rem] border border-line bg-white shadow-lg">
+        <div className="absolute top-full left-0 z-50 mt-1 w-full overflow-hidden rounded-card border border-border bg-surface-raised shadow-lg">
           {hasSuggestions ? (
             <ul className="py-1">
               {suggestions!.products.map((product) => (
                 <li key={product.id}>
                   <button
                     type="button"
-                    className="flex w-full cursor-pointer items-center gap-2 px-3 py-2 text-left text-sm hover:bg-black/[0.04]"
+                    className="flex w-full cursor-pointer items-center gap-2 px-3 py-2 text-left text-sm hover:bg-hover"
                     onClick={() => submit(product.title)}
                   >
-                    <Search aria-hidden="true" className="size-3.5 text-black/30" />
+                    <Search aria-hidden="true" className="size-3.5 text-ink-faint" />
                     {product.title}
                   </button>
                 </li>
@@ -126,12 +126,12 @@ export function SearchForm() {
                 <li key={store.id}>
                   <button
                     type="button"
-                    className="flex w-full cursor-pointer items-center gap-2 px-3 py-2 text-left text-sm hover:bg-black/[0.04]"
+                    className="flex w-full cursor-pointer items-center gap-2 px-3 py-2 text-left text-sm hover:bg-hover"
                     onClick={() => submit(store.name)}
                   >
-                    <Search aria-hidden="true" className="size-3.5 text-black/30" />
+                    <Search aria-hidden="true" className="size-3.5 text-ink-faint" />
                     {store.name}
-                    <span className="ml-auto text-xs text-black/40">продавница</span>
+                    <span className="ml-auto text-xs text-ink-faint">продавница</span>
                   </button>
                 </li>
               ))}
@@ -139,8 +139,8 @@ export function SearchForm() {
           ) : null}
 
           {recent.length > 0 ? (
-            <div className="border-t border-line py-1">
-              <p className="px-3 py-1 text-xs font-semibold text-black/40">
+            <div className="border-t border-border py-1">
+              <p className="px-3 py-1 text-xs font-semibold text-ink-faint">
                 Неодамнешни пребарувања
               </p>
               <ul>
@@ -148,7 +148,7 @@ export function SearchForm() {
                   <li key={entry}>
                     <button
                       type="button"
-                      className="flex w-full cursor-pointer items-center gap-2 px-3 py-2 text-left text-sm hover:bg-black/[0.04]"
+                      className="flex w-full cursor-pointer items-center gap-2 px-3 py-2 text-left text-sm hover:bg-hover"
                       onClick={() => submit(entry)}
                     >
                       {entry}

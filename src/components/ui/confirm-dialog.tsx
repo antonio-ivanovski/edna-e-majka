@@ -55,7 +55,7 @@ export function ConfirmDialog({
         </>
       }
     >
-      <p className="text-sm text-black/60">Оваа акција не може да се врати.</p>
+      <p className="text-sm text-ink-muted">Оваа акција не може да се врати.</p>
     </Dialog>
   )
 }

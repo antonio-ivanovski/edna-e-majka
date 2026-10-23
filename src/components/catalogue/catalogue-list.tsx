@@ -74,7 +74,7 @@ export function CatalogueList({
   return (
     <section>
       <div className="flex flex-wrap items-center gap-x-1 gap-y-2 px-3 pt-4 text-[1.0714rem]">
-        <span className="mr-2 flex items-center gap-1 text-[0.9286rem] font-bold tracking-wide text-black/[0.85] uppercase">
+        <span className="mr-2 flex items-center gap-1 text-[0.9286rem] font-bold tracking-wide text-ink uppercase">
           Подредување
           <button
             type="button"
@@ -82,7 +82,7 @@ export function CatalogueList({
               onParamsChange({ direction: direction === 'asc' ? 'desc' : 'asc', page: 1 })
             }
             aria-label={direction === 'asc' ? 'Подреди опаѓачки' : 'Подреди растечки'}
-            className="cursor-pointer rounded-[0.2857rem] p-1 text-black/45 hover:bg-black/[0.04] hover:text-black/70"
+            className="cursor-pointer rounded-card p-1 text-ink-subtle hover:bg-hover hover:text-ink"
           >
             {direction === 'asc' ? <SortAsc className="size-4" /> : <SortDesc className="size-4" />}
           </button>
@@ -102,7 +102,7 @@ export function CatalogueList({
             }
             className={cn(
               'cursor-pointer px-2 py-1 font-semibold',
-              sort === option.value ? 'text-black/[0.95]' : 'text-black/45 hover:text-black/70',
+              sort === option.value ? 'text-ink' : 'text-ink-subtle hover:text-ink',
             )}
           >
             {option.label}
@@ -110,11 +110,11 @@ export function CatalogueList({
         ))}
       </div>
 
-      <details className="mx-4 mt-3 rounded border border-line bg-white p-3">
-        <summary className="cursor-pointer text-sm font-semibold text-black/70">Филтри</summary>
+      <details className="mx-4 mt-3 rounded-card border border-border bg-surface-raised p-3">
+        <summary className="cursor-pointer text-sm font-semibold text-ink">Филтри</summary>
         <div className="mt-3 flex flex-wrap items-end gap-4">
           <label className="flex flex-col gap-1 text-sm">
-            <span className="text-black/60">Мин. цена (ден.)</span>
+            <span className="text-ink-muted">Мин. цена (ден.)</span>
             <input
               type="number"
               min={0}
@@ -123,12 +123,12 @@ export function CatalogueList({
                 const value = event.target.value.trim()
                 onParamsChange({ minPrice: value ? Number(value) : undefined, page: 1 })
               }}
-              className="h-9 w-24 rounded border border-line px-2"
+              className="h-9 w-24 rounded-card border border-border px-2"
             />
           </label>
 
           <label className="flex flex-col gap-1 text-sm">
-            <span className="text-black/60">Макс. цена (ден.)</span>
+            <span className="text-ink-muted">Макс. цена (ден.)</span>
             <input
               type="number"
               min={0}
@@ -137,7 +137,7 @@ export function CatalogueList({
                 const value = event.target.value.trim()
                 onParamsChange({ maxPrice: value ? Number(value) : undefined, page: 1 })
               }}
-              className="h-9 w-24 rounded border border-line px-2"
+              className="h-9 w-24 rounded-card border border-border px-2"
             />
           </label>
 
@@ -191,7 +191,7 @@ export function CatalogueList({
       </details>
 
       {total > 0 ? (
-        <p className="px-4 pt-2 text-sm text-black/45">
+        <p className="px-4 pt-2 text-sm text-ink-subtle">
           {formatCount(total, 'производ', 'производи')}
         </p>
       ) : null}
@@ -218,7 +218,7 @@ export function CatalogueList({
           >
             Претходна
           </Button>
-          <span className="text-black/60">
+          <span className="text-ink-muted">
             Страница {page} од {pageCount}
           </span>
           <Button

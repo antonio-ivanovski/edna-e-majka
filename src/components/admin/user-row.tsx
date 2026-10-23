@@ -42,8 +42,8 @@ export function AdminUserRow({ user, isSelf }: { user: AdminUser; isSelf: boolea
   return (
     <TableRow>
       <TableCell>
-        <span className="font-semibold text-black/[0.87]">{user.name || '—'}</span>
-        <span className="block text-sm text-black/50">
+        <span className="font-semibold text-ink">{user.name || '—'}</span>
+        <span className="block text-sm text-ink-subtle">
           {user.email}
           {user.emailVerified ? '' : ' · непотврдена адреса'}
         </span>
@@ -61,27 +61,27 @@ export function AdminUserRow({ user, isSelf }: { user: AdminUser; isSelf: boolea
             <Link
               to="/admin/stores/$storeId"
               params={{ storeId: user.store.id }}
-              className="text-black/70 hover:underline"
+              className="text-ink hover:underline"
             >
               {user.store.name}
             </Link>
             <StoreStatusLabel status={user.store.status} size="small" />
-            <span className="text-sm text-black/45">
+            <span className="text-sm text-ink-subtle">
               {formatCount(user.productCount, 'производ', 'производи')}
             </span>
           </div>
         ) : (
-          <span className="text-black/40">—</span>
+          <span className="text-ink-faint">—</span>
         )}
       </TableCell>
 
-      <TableCell className="whitespace-nowrap text-black/60">
+      <TableCell className="whitespace-nowrap text-ink-muted">
         {formatDate(user.createdAt)}
       </TableCell>
 
       <TableCell className="text-right">
         {isSelf ? (
-          <span className="text-sm text-black/40">Ова сте вие</span>
+          <span className="text-sm text-ink-faint">Ова сте вие</span>
         ) : (
           <div className="flex flex-wrap justify-end gap-2">
             <ConfirmDialog

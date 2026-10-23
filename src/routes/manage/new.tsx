@@ -38,7 +38,7 @@ function NewStorePage() {
   return (
     <div className="mx-auto w-full max-w-2xl px-4 py-10">
       <h1 className="font-display text-3xl font-semibold">Регистрација на продавница</h1>
-      <p className="mt-2 mb-6 text-black/60">
+      <p className="mt-2 mb-6 text-ink-muted">
         Кажете ни со што се занимавате и како да ве контактираат. Продавницата се регистрира веднаш,
         а автоматската проверка решава дали ќе се појави јавно или ќе чека рачен преглед.
       </p>

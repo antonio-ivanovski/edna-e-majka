@@ -34,7 +34,7 @@ function AdminLayout() {
     <div className="mx-auto w-full max-w-6xl px-4 py-8">
       <div className="mb-5">
         <h1 className="font-display text-3xl font-semibold">Администрација</h1>
-        <p className="mt-1 text-black/60">Продавници, производи, корисници и пораки.</p>
+        <p className="mt-1 text-ink-muted">Продавници, производи, корисници и пораки.</p>
       </div>
 
       <AdminNav />
