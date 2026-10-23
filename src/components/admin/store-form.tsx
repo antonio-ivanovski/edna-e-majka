@@ -40,7 +40,13 @@ export function AdminStoreForm({ store }: { store: AdminStore }) {
   const onSubmit = handleSubmit(async (values) => {
     setServerError('')
 
-    const result = toResult(await adminUpdateStore({ data: { ...values, storeId: store.id } }))
+    let result
+    try {
+      result = toResult(await adminUpdateStore({ data: { ...values, storeId: store.id } }))
+    } catch {
+      setServerError('Грешка при зачувување.')
+      return
+    }
 
     if (result._tag === 'Failure') {
       setServerError(result.failure.message)

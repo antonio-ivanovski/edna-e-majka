@@ -40,12 +40,16 @@ export const Route = createRootRouteWithContext<RouterContext>()({
       { property: 'og:title', content: 'ЕДНА Е МАЈКА' },
       { property: 'og:description', content: 'Тука се сите домашни производи.' },
       { property: 'og:image', content: 'https://ednaemajka.mk/edna-e-majka-og.jpg' },
+      { property: 'og:image:alt', content: 'ЕДНА Е МАЈКА' },
+      { property: 'og:image:width', content: '1200' },
+      { property: 'og:image:height', content: '630' },
       { property: 'og:url', content: 'https://ednaemajka.mk/' },
       { property: 'og:locale', content: 'mk_MK' },
       { name: 'twitter:card', content: 'summary_large_image' },
       { name: 'twitter:title', content: 'ЕДНА Е МАЈКА' },
       { name: 'twitter:description', content: 'Тука се сите домашни производи.' },
       { name: 'twitter:image', content: 'https://ednaemajka.mk/edna-e-majka-og.jpg' },
+      { name: 'twitter:image:alt', content: 'ЕДНА Е МАЈКА' },
     ],
     links: [
       { rel: 'icon', href: '/favicon.ico', sizes: 'any' },
@@ -128,7 +132,7 @@ function RootComponent() {
         <AmberBar />
         <div className="mx-auto flex w-full max-w-[80rem] flex-1 flex-col bg-surface-raised shadow-[0_0_20px_var(--shadow-outer)]">
           <SiteHeader stores={stores} googleEnabled={googleEnabled} />
-          <main id="main-content" className="flex-1">
+          <main id="main-content" tabIndex={-1} className="flex-1 focus:outline-none">
             <Outlet />
           </main>
         </div>

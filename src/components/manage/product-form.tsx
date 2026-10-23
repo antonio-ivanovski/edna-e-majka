@@ -16,17 +16,7 @@ import { imageUrl } from '#/lib/images'
 import { effectResolver } from '#/lib/effect-resolver'
 import { deleteProductImage, reorderProductImages, uploadProductImage } from '#/lib/uploads'
 
-import { ProductFormValues } from '#/api/schemas/products'
-type ProductFormData = {
-  storeId: string
-  title: string
-  description: string
-  categories: string[]
-  availability: 'in_stock' | 'out_of_stock' | 'on_order'
-  attributes?: string
-  variants: { title: string; price: number }[]
-  productId?: string
-}
+import { ProductFormValues, type ProductFormData } from '#/api/schemas/products'
 import { saveProduct, updateProductImageAlt } from '#/server/functions/manage'
 import type { OwnerProductDetail, OwnerProductImage } from '#/server/queries/manage'
 import { toResult } from '#/lib/server-result'
@@ -119,10 +109,18 @@ export function ProductForm({
     setBusyImages(true)
 
     for (const file of picked) {
-      const result = toResult(await uploadProductImage(product.id, file))
+      let result
+      try {
+        result = toResult(await uploadProductImage(product.id, file))
+      } catch {
+        setImageError('Сликата не може да се прикачи. Обидете се повторно.')
+        toast.error('Сликата не може да се прикачи. Обидете се повторно.')
+        break
+      }
 
       if (result._tag === 'Failure') {
         setImageError(result.failure.message)
+        toast.error(result.failure.message)
         break
       }
 
@@ -141,10 +139,19 @@ export function ProductForm({
     setBusyImages(true)
     setImageError('')
 
-    const result = toResult(await deleteProductImage(imageId))
+    let result
+    try {
+      result = toResult(await deleteProductImage(imageId))
+    } catch {
+      setImageError('Сликата не може да се избрише. Обидете се повторно.')
+      toast.error('Сликата не може да се избрише. Обидете се повторно.')
+      setBusyImages(false)
+      return
+    }
 
     if (result._tag === 'Failure') {
       setImageError(result.failure.message)
+      toast.error(result.failure.message)
     } else {
       setImages((current) => current.filter((image) => image.id !== imageId))
       await router.invalidate()
@@ -164,15 +171,24 @@ export function ProductForm({
       return
     }
 
-    const result = toResult(
-      await reorderProductImages(
-        product.id,
-        next.map((image) => image.id),
-      ),
-    )
+    let result
+    try {
+      result = toResult(
+        await reorderProductImages(
+          product.id,
+          next.map((image) => image.id),
+        ),
+      )
+    } catch {
+      setImageError('Редоследот не може да се зачува. Обидете се повторно.')
+      toast.error('Редоследот не може да се зачува. Обидете се повторно.')
+      await router.invalidate()
+      return
+    }
 
     if (result._tag === 'Failure') {
       setImageError(result.failure.message)
+      toast.error(result.failure.message)
       await router.invalidate()
     }
   }
@@ -246,13 +262,27 @@ export function ProductForm({
       return
     }
 
-    for (const item of pending) {
-      const uploaded = toResult(await uploadProductImage(result.success.productId, item.file))
+    for (let index = 0; index < pending.length; index += 1) {
+      const item = pending[index]!
+      let uploaded
+      try {
+        uploaded = toResult(await uploadProductImage(result.success.productId, item.file))
+      } catch {
+        URL.revokeObjectURL(item.url)
+        for (let rest = index + 1; rest < pending.length; rest += 1) {
+          URL.revokeObjectURL(pending[rest]!.url)
+        }
+        toast.error('Сликата не може да се прикачи. Обидете се повторно.')
+        break
+      }
 
       URL.revokeObjectURL(item.url)
 
       if (uploaded._tag === 'Failure') {
         toast.error(uploaded.failure.message)
+        for (let rest = index + 1; rest < pending.length; rest += 1) {
+          URL.revokeObjectURL(pending[rest]!.url)
+        }
         break
       }
     }
@@ -369,12 +399,14 @@ export function ProductForm({
               <Field
                 label="Цена"
                 htmlFor={`variant-price-${index}`}
+                hint="1–1000000 МКД"
                 error={errors.variants?.[index]?.price?.message}
                 className="mb-0 w-40"
               >
                 <Input
                   id={`variant-price-${index}`}
                   inputMode="numeric"
+                  maxLength={7}
                   suffix="МКД"
                   aria-invalid={Boolean(errors.variants?.[index]?.price)}
                   {...register(`variants.${index}.price`)}
@@ -462,17 +494,25 @@ export function ProductForm({
                 className="h-7 w-[120px] rounded-card border border-border px-1 text-xs"
                 onBlur={async (event) => {
                   const value = event.target.value
-                  const result = toResult(
-                    await updateProductImageAlt({
-                      data: { imageId: image.id, alt: value },
-                    }),
-                  )
+                  let result
+                  try {
+                    result = toResult(
+                      await updateProductImageAlt({
+                        data: { imageId: image.id, alt: value },
+                      }),
+                    )
+                  } catch {
+                    toast.error('Alt-текстот не може да се зачува. Обидете се повторно.')
+                    return
+                  }
                   if (result._tag === 'Success') {
                     setImages((current) =>
                       current.map((entry) =>
                         entry.id === image.id ? { ...entry, alt: value.trim() || null } : entry,
                       ),
                     )
+                  } else {
+                    toast.error(result.failure.message)
                   }
                 }}
               />

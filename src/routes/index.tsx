@@ -54,6 +54,8 @@ function HomePage() {
     (params.categorySlugs == null || params.categorySlugs === '')
   const newArrivals = isDefaultView ? page.items.slice(0, 4) : []
   const restItems = isDefaultView ? page.items.slice(4) : page.items
+  const restTotal = isDefaultView ? Math.max(0, page.total - newArrivals.length) : page.total
+  const hideMoreProducts = isDefaultView && restItems.length === 0 && newArrivals.length > 0
 
   const onParamsChange = useCallback(
     (next: {
@@ -102,7 +104,7 @@ function HomePage() {
               key={category.slug}
               to="/categories/$slug"
               params={{ slug: category.slug }}
-              className="flex flex-col items-center gap-2 rounded-card px-2 py-3 text-center transition-transform duration-200 ease-out hover:-translate-y-0.5 hover:bg-[radial-gradient(closest-side,var(--color-brand),transparent)]"
+              className="flex flex-col items-center gap-2 rounded-card px-2 py-3 text-center transition-transform duration-200 ease-out hover:-translate-y-0.5 hover:bg-[radial-gradient(closest-side,var(--color-brand),var(--color-cream))]"
             >
               <img
                 src={category.icon}
@@ -168,31 +170,33 @@ function HomePage() {
         </section>
       ) : null}
 
-      <section className="pt-10">
-        <h2 className="px-4 font-display text-xl font-semibold">{mk.product.moreProducts}</h2>
-        <CatalogueList
-          products={restItems}
-          total={page.total}
-          sort={params.sort}
-          direction={params.direction}
-          page={params.page}
-          pageSize={PRODUCT_PAGE_SIZE}
-          emptyTitle={mk.home.noProducts}
-          emptyDescription={mk.home.noProductsHint}
-          emptyAction={
-            <Button asChild variant="primary">
-              <Link to="/producers">{mk.home.viewProducers}</Link>
-            </Button>
-          }
-          onParamsChange={onParamsChange}
-          filters={{
-            minPrice: params.minPrice,
-            maxPrice: params.maxPrice,
-            inStock: params.inStock,
-            categorySlugs: params.categorySlugs,
-          }}
-        />
-      </section>
+      {hideMoreProducts ? null : (
+        <section className="pt-10">
+          <h2 className="px-4 font-display text-xl font-semibold">{mk.product.moreProducts}</h2>
+          <CatalogueList
+            products={restItems}
+            total={restTotal}
+            sort={params.sort}
+            direction={params.direction}
+            page={params.page}
+            pageSize={PRODUCT_PAGE_SIZE}
+            emptyTitle={mk.home.noProducts}
+            emptyDescription={mk.home.noProductsHint}
+            emptyAction={
+              <Button asChild variant="primary">
+                <Link to="/producers">{mk.home.viewProducers}</Link>
+              </Button>
+            }
+            onParamsChange={onParamsChange}
+            filters={{
+              minPrice: params.minPrice,
+              maxPrice: params.maxPrice,
+              inStock: params.inStock,
+              categorySlugs: params.categorySlugs,
+            }}
+          />
+        </section>
+      )}
     </div>
   )
 }

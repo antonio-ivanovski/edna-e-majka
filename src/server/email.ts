@@ -27,17 +27,17 @@ export async function sendMagicLinkEmail({ to, url, expiresInMinutes }: SendMagi
 
   const html = `<!doctype html>
 <html lang="mk">
-  <body style="margin:0;padding:24px;background:#f8f8f9;font-family:Onest,Helvetica,Arial,sans-serif;color:#222426">
+  <body style="margin:0;padding:24px;background:#faf6ec;font-family:Onest,Helvetica,Arial,sans-serif;color:#222426">
     <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:520px;margin:0 auto;background:#fff;border:1px solid rgba(34,36,38,.15);border-radius:5px">
       <tr>
         <td style="padding:24px 28px 8px">
-          <h1 style="margin:0;font-size:20px;color:#DB2828">Една е Мајка</h1>
+          <h1 style="margin:0;font-size:20px;color:#9f3a38">Една е Мајка</h1>
           <p style="margin:16px 0 0;font-size:15px;line-height:1.5">Побарана е најава на твојата е-пошта на ednaemajka.mk.</p>
         </td>
       </tr>
       <tr>
         <td style="padding:20px 28px">
-          <a href="${url}" style="display:inline-block;padding:12px 20px;background:#FBBD08;color:#222426;font-weight:600;text-decoration:none;border-radius:5px">Најави се</a>
+          <a href="${url}" style="display:inline-block;padding:12px 20px;background:#ffc145;color:#222426;font-weight:600;text-decoration:none;border-radius:5px">Најави се</a>
         </td>
       </tr>
       <tr>

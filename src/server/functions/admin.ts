@@ -11,7 +11,7 @@ import { createServerFn } from '@tanstack/react-start'
 import { and, desc, eq, sql } from 'drizzle-orm'
 import { Effect, Result, Schema } from 'effect'
 import type { DomainError } from '../errors'
-import { InvalidInputError, NotAllowedError, NotFoundError } from '../errors'
+import { DatabaseError, InvalidInputError, NotAllowedError, NotFoundError } from '../errors'
 import {
   toValidator,
   AdminAuditList,
@@ -30,6 +30,7 @@ import {
   AdminUserRole,
   ProductDelete,
   ProductForm,
+  ProductId,
   ProductStatusSchema as ProductStatus,
   StoreId,
   ToggleFeatured,
@@ -193,9 +194,20 @@ export const setStoreStatus = createServerFn({ method: 'POST', strict: { output:
 export const adminUpdateStore = createServerFn({ method: 'POST', strict: { output: false } })
   .middleware([withAdmin])
   .validator(toValidator(AdminStoreDetails))
-  .handler(async ({ data }): Promise<Result.Result<null, DomainError>> => {
+  .handler(async ({ context, data }): Promise<Result.Result<null, DomainError>> => {
     try {
-      await runEffect(updateStoreDetailsEffect(data.storeId, data, { kind: 'admin', id: 'admin' }))
+      await runEffect(
+        updateStoreDetailsEffect(data.storeId, data, { kind: 'admin', id: context.admin.id }),
+      )
+      await runEffect(
+        recordAudit({
+          actorId: context.admin.id,
+          actorKind: 'admin',
+          action: 'update_store',
+          targetType: 'store',
+          targetId: data.storeId,
+        }),
+      )
       return Result.succeed(null)
     } catch (e) {
       return Result.fail(new NotFoundError({ message: (e as Error).message || 'Грешка.' }))
@@ -220,6 +232,15 @@ export const adminDeleteStore = createServerFn({ method: 'POST', strict: { outpu
       return Result.fail(new NotFoundError({ message: 'Продавницата не е најдена.' }))
     }
 
+    try {
+      await runEffect(deleteStoreCascade(data.storeId))
+    } catch (e) {
+      return Result.fail(
+        new DatabaseError({ message: (e as Error).message || 'Грешка.', cause: e }),
+      )
+    }
+
+    // Logged after the cascade: a failed delete must not leave a false entry.
     await runEffect(
       recordAudit({
         actorId: context.admin.id,
@@ -229,7 +250,6 @@ export const adminDeleteStore = createServerFn({ method: 'POST', strict: { outpu
         targetId: data.storeId,
       }),
     )
-    await runEffect(deleteStoreCascade(data.storeId))
 
     return Result.succeed(null)
   })
@@ -241,7 +261,7 @@ export const adminDeleteStore = createServerFn({ method: 'POST', strict: { outpu
 export const adminToggleFeatured = createServerFn({ method: 'POST', strict: { output: false } })
   .middleware([withAdmin])
   .validator(toValidator(ToggleFeatured))
-  .handler(async ({ data }): Promise<Result.Result<null, DomainError>> => {
+  .handler(async ({ context, data }): Promise<Result.Result<null, DomainError>> => {
     const rows = await getDb()
       .select({ id: product.id })
       .from(product)
@@ -257,45 +277,85 @@ export const adminToggleFeatured = createServerFn({ method: 'POST', strict: { ou
       .set({ featured: data.featured })
       .where(eq(product.id, data.productId))
 
+    await runEffect(
+      recordAudit({
+        actorId: context.admin.id,
+        actorKind: 'admin',
+        action: 'toggle_featured',
+        targetType: 'product',
+        targetId: data.productId,
+        details: data.featured ? 'featured' : 'unfeatured',
+      }),
+    )
+
     return Result.succeed(null)
   })
 
 export const adminBulkSetStoreStatus = createServerFn({ method: 'POST', strict: { output: false } })
   .middleware([withAdmin])
   .validator(toValidator(AdminBulkStoreStatus))
-  .handler(async ({ context, data }): Promise<Result.Result<null, DomainError>> => {
-    const failed: string[] = []
+  .handler(
+    async ({
+      context,
+      data,
+    }): Promise<
+      Result.Result<{ succeeded: string[]; failed: { id: string; error: string }[] }, DomainError>
+    > => {
+      const succeeded: string[] = []
+      const failed: { id: string; error: string }[] = []
 
-    for (const storeId of data.storeIds) {
-      try {
-        await runEffect(
-          setStoreStatusEffect(storeId, data.status, null, { kind: 'admin', id: context.admin.id }),
-        )
-        await runEffect(
-          recordAudit({
-            actorId: context.admin.id,
-            actorKind: 'admin',
-            action: 'bulk_set_store_status',
-            targetType: 'store',
-            targetId: storeId,
-            details: data.status,
-          }),
-        )
-      } catch {
-        failed.push(storeId)
+      for (const storeId of data.storeIds) {
+        try {
+          // `undefined` keeps the existing note: a quick approval from the list
+          // must not erase the reason an earlier suspension gave.
+          await runEffect(
+            setStoreStatusEffect(storeId, data.status, undefined, {
+              kind: 'admin',
+              id: context.admin.id,
+            }),
+          )
+          await runEffect(
+            recordAudit({
+              actorId: context.admin.id,
+              actorKind: 'admin',
+              action: 'bulk_set_store_status',
+              targetType: 'store',
+              targetId: storeId,
+              details: data.status,
+            }),
+          )
+          // Best-effort in-app notice, without the e-mail burst the single
+          // decision sends: a bulk action should not flood inboxes.
+          try {
+            const ownerRows = await getDb()
+              .select({ ownerId: store.ownerId })
+              .from(store)
+              .where(eq(store.id, storeId))
+              .limit(1)
+            const ownerId = ownerRows[0]?.ownerId
+            if (ownerId) {
+              await createNotification({
+                userId: ownerId,
+                kind: 'moderation',
+                title: 'Измена на статусот',
+                body: data.status,
+                link: '/manage',
+              }).catch(() => undefined)
+            }
+          } catch {
+            // The status change itself succeeded; a missed notice is not a failure.
+          }
+          succeeded.push(storeId)
+        } catch (e) {
+          // Keep the original message: a missing shop reads differently from a
+          // database failure, and the dashboard shows which rows need attention.
+          failed.push({ id: storeId, error: (e as Error)?.message || 'Грешка.' })
+        }
       }
-    }
 
-    if (failed.length > 0) {
-      return Result.fail(
-        new NotFoundError({
-          message: `Не успеавме да ажурираме ${failed.length} продавници.`,
-        }),
-      )
-    }
-
-    return Result.succeed(null)
-  })
+      return Result.succeed({ succeeded, failed })
+    },
+  )
 
 export const adminSetUserBanned = createServerFn({ method: 'POST', strict: { output: false } })
   .middleware([withAdmin])
@@ -330,6 +390,16 @@ export const addModerationNote = createServerFn({ method: 'POST', strict: { outp
         body: data.body,
       })
 
+    await runEffect(
+      recordAudit({
+        actorId: context.admin.id,
+        actorKind: 'admin',
+        action: 'add_moderation_note',
+        targetType: data.storeId ? 'store' : 'product',
+        targetId: data.storeId ?? data.productId ?? '',
+      }),
+    )
+
     return Result.succeed(null)
   })
 
@@ -352,9 +422,11 @@ export const listModerationNotes = createServerFn({ method: 'GET', strict: { out
         id: moderationNote.id,
         body: moderationNote.body,
         authorId: moderationNote.authorId,
+        authorName: sql<string | null>`${user.name}`.as('author_name'),
         createdAt: moderationNote.createdAt,
       })
       .from(moderationNote)
+      .leftJoin(user, eq(user.id, moderationNote.authorId))
       .where(conditions.length > 0 ? and(...conditions) : undefined)
       .orderBy(desc(moderationNote.createdAt))
     return rows
@@ -467,6 +539,15 @@ export const adminDeleteProduct = createServerFn({ method: 'POST', strict: { out
       return Result.fail(new NotFoundError({ message: 'Производот не е најден.' }))
     }
 
+    try {
+      await runEffect(deleteProductCascade(data.productId))
+    } catch (e) {
+      return Result.fail(
+        new DatabaseError({ message: (e as Error).message || 'Грешка.', cause: e }),
+      )
+    }
+
+    // Logged after the cascade: a failed delete must not leave a false entry.
     await runEffect(
       recordAudit({
         actorId: context.admin.id,
@@ -476,7 +557,6 @@ export const adminDeleteProduct = createServerFn({ method: 'POST', strict: { out
         targetId: data.productId,
       }),
     )
-    await runEffect(deleteProductCascade(data.productId))
 
     return Result.succeed(null)
   })
@@ -525,7 +605,7 @@ export const setUserRole = createServerFn({ method: 'POST', strict: { output: fa
 export const setMessageHandled = createServerFn({ method: 'POST', strict: { output: false } })
   .middleware([withAdmin])
   .validator(toValidator(AdminMessageHandled))
-  .handler(async ({ data }): Promise<Result.Result<null, DomainError>> => {
+  .handler(async ({ context, data }): Promise<Result.Result<null, DomainError>> => {
     const rows = await getDb()
       .select({ id: contactMessage.id })
       .from(contactMessage)
@@ -541,13 +621,24 @@ export const setMessageHandled = createServerFn({ method: 'POST', strict: { outp
       .set({ handledAt: data.handled ? new Date() : null })
       .where(eq(contactMessage.id, data.messageId))
 
+    await runEffect(
+      recordAudit({
+        actorId: context.admin.id,
+        actorKind: 'admin',
+        action: 'set_message_handled',
+        targetType: 'message',
+        targetId: data.messageId,
+        details: data.handled ? 'handled' : 'reopened',
+      }),
+    )
+
     return Result.succeed(null)
   })
 
 export const deleteMessage = createServerFn({ method: 'POST', strict: { output: false } })
   .middleware([withAdmin])
   .validator(toValidator(AdminMessage))
-  .handler(async ({ data }): Promise<Result.Result<null, DomainError>> => {
+  .handler(async ({ context, data }): Promise<Result.Result<null, DomainError>> => {
     const rows = await getDb()
       .select({ id: contactMessage.id })
       .from(contactMessage)
@@ -560,12 +651,22 @@ export const deleteMessage = createServerFn({ method: 'POST', strict: { output: 
 
     await getDb().delete(contactMessage).where(eq(contactMessage.id, data.messageId))
 
+    await runEffect(
+      recordAudit({
+        actorId: context.admin.id,
+        actorKind: 'admin',
+        action: 'delete_message',
+        targetType: 'message',
+        targetId: data.messageId,
+      }),
+    )
+
     return Result.succeed(null)
   })
 
 export const getAdminProduct = createServerFn({ method: 'GET', strict: { output: false } })
   .middleware([withAdmin])
-  .validator(toValidator(ProductDelete))
+  .validator(toValidator(ProductId))
   .handler(async ({ data }) => {
     const row = await runEffect(selectAdminProductRow(data.productId))
 
@@ -591,48 +692,67 @@ export const getAdminProduct = createServerFn({ method: 'GET', strict: { output:
 export const adminSaveProduct = createServerFn({ method: 'POST', strict: { output: false } })
   .middleware([withAdmin])
   .validator(toValidator(ProductForm))
-  .handler(async ({ data }): Promise<Result.Result<{ productId: string }, DomainError>> => {
-    if (!data.productId) {
-      return Result.fail(new InvalidInputError({ message: 'Недостасува производ.' }))
-    }
+  .handler(
+    async ({ context, data }): Promise<Result.Result<{ productId: string }, DomainError>> => {
+      if (!data.productId) {
+        return Result.fail(new InvalidInputError({ message: 'Недостасува производ.' }))
+      }
 
-    const row = await runEffect(selectAdminProductRow(data.productId))
+      const row = await runEffect(selectAdminProductRow(data.productId))
 
-    if (!row) {
-      return Result.fail(new NotFoundError({ message: 'Производот не е најден.' }))
-    }
+      if (!row) {
+        return Result.fail(new NotFoundError({ message: 'Производот не е најден.' }))
+      }
 
-    const db = getDb()
-    const searchText = buildSearchText(data.title, data.description)
-    const productId = data.productId
+      const db = getDb()
+      const searchText = buildSearchText(data.title, data.description)
+      const productId = data.productId
 
-    await db
-      .update(product)
-      .set({
-        title: data.title,
-        description: data.description,
-        searchText,
-        availability: data.availability,
-        attributes: data.attributes ?? null,
-      })
-      .where(eq(product.id, productId))
+      try {
+        await db
+          .update(product)
+          .set({
+            title: data.title,
+            description: data.description,
+            searchText,
+            availability: data.availability,
+            attributes: data.attributes ?? null,
+          })
+          .where(eq(product.id, productId))
 
-    await db.delete(productVariant).where(eq(productVariant.productId, productId))
-    await db.delete(productCategory).where(eq(productCategory.productId, productId))
+        await db.delete(productVariant).where(eq(productVariant.productId, productId))
+        await db.delete(productCategory).where(eq(productCategory.productId, productId))
 
-    for (const [position, variant] of data.variants.entries()) {
-      await db.insert(productVariant).values({
-        id: crypto.randomUUID(),
-        productId,
-        title: variant.title,
-        price: variant.price,
-        position,
-      })
-    }
+        for (const [position, variant] of data.variants.entries()) {
+          await db.insert(productVariant).values({
+            id: crypto.randomUUID(),
+            productId,
+            title: variant.title,
+            price: variant.price,
+            position,
+          })
+        }
 
-    for (const categorySlug of data.categories) {
-      await db.insert(productCategory).values({ productId, categorySlug })
-    }
+        for (const categorySlug of data.categories) {
+          await db.insert(productCategory).values({ productId, categorySlug })
+        }
+      } catch (e) {
+        // A failure halfway through must surface, never a silent partial save.
+        return Result.fail(
+          new DatabaseError({ message: (e as Error).message || 'Грешка.', cause: e }),
+        )
+      }
 
-    return Result.succeed({ productId })
-  })
+      await runEffect(
+        recordAudit({
+          actorId: context.admin.id,
+          actorKind: 'admin',
+          action: 'save_product',
+          targetType: 'product',
+          targetId: productId,
+        }),
+      )
+
+      return Result.succeed({ productId })
+    },
+  )

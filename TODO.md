@@ -138,7 +138,7 @@ Goal: one typed contract layer, Effect everywhere on the server, one client cach
 - [x] **T2-11** Accessibility audit (focus management, keyboard nav, aria-live, skip link, reduced motion). Blockers: none.
 - [x] **T2-12** Structured data (JSON-LD: Product, Organization, BreadcrumbList, LocalBusiness). Blockers: T1-04 (slugs) for canonical URLs.
 - [x] **T2-13** Twitter card + richer OG meta (twitter:card, og:locale, per-product). Blockers: none.
-- [x] **T2-14** Canonical URLs + trailing-slash consistency. Blockers: none.
+- [ ] **T2-14** Canonical URLs + trailing-slash consistency. Only product and category pages set a canonical link so far — producers and the rest still need one. Blockers: none.
 - [x] **T2-15** RSS/Atom feed of new products. Blockers: none.
 
 ## Tier 3 — Engagement & growth
@@ -163,8 +163,8 @@ Goal: one typed contract layer, Effect everywhere on the server, one client cach
 
 ## Testing (production gate)
 
-- [x] **TX-01** E2E (Playwright): public pages, product, search, manage, admin happy paths + auth. Blockers: none.
-- [x] **TX-02** Accessibility tests (axe) on key pages. `e2e/a11y.spec.ts` runs axe clean on home, search, producers, product and producer pages, plus landmark/heading/image/keyboard assertions. Blockers: T2-11.
+- [ ] **TX-01** E2E (Playwright): public pages, product, search, manage, admin happy paths + auth. No admin spec yet — admin happy paths uncovered. Blockers: none.
+- [x] **TX-02** Accessibility tests (axe) on key pages. `e2e/a11y.spec.ts` runs axe clean on home, search, producers, category, product and producer pages, plus landmark/heading/image/keyboard assertions. Blockers: T2-11.
 - [ ] **TX-03** Visual regression (optional). Blockers: TX-01 baseline.
 - [ ] **TX-04** Load/perf smoke on search + catalogue. Blockers: none.
 

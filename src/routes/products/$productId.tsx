@@ -20,26 +20,32 @@ import { attributesForCategories } from '#/lib/attributes'
 import { formatPrice, truncate } from '#/lib/format'
 import { imageUrl } from '#/lib/images'
 import { productQueries } from '#/lib/queries/products'
+import { getSiteBase } from '#/server/functions/products'
 
 /**
  * Absolute site origin for canonical/OG/JSON-LD URLs. `head` runs on both the
- * server and the browser with no request in hand, so prefer the live origin
- * and fall back to production (same pattern as sitemap/robots, which read
- * `APP_URL` on the server).
+ * server and the browser with no request in hand, so the loader hands over
+ * the base it read from `APP_URL` on the server (same source as
+ * sitemap/robots), falling back to `https://ednaemajka.mk`. The live
+ * `window.location.origin` is only a client-side fallback when the loader
+ * provided nothing (e.g. the server function failed).
  */
 const SITE_BASE_FALLBACK = 'https://ednaemajka.mk'
 
-function siteBase(): string {
+function siteBase(loaderBase?: string | null): string {
+  const configured = loaderBase?.trim()
+  if (configured) return configured.replace(/\/$/, '')
   if (typeof window !== 'undefined' && window.location?.origin) {
     return window.location.origin.replace(/\/$/, '')
   }
   return SITE_BASE_FALLBACK
 }
 
-function absoluteUrl(value: string | undefined): string | undefined {
+function absoluteUrl(value: string | undefined, base?: string | null): string | undefined {
   if (!value) return undefined
   if (/^https?:\/\//i.test(value)) return value
-  return value.startsWith('/') ? `${siteBase()}${value}` : `${siteBase()}/${value}`
+  const origin = siteBase(base)
+  return value.startsWith('/') ? `${origin}${value}` : `${origin}/${value}`
 }
 
 export const Route = createFileRoute('/products/$productId')({
@@ -54,19 +60,20 @@ export const Route = createFileRoute('/products/$productId')({
 
     const related = await queryClient.ensureQueryData(productQueries.related(product.id))
 
-    return { product, related }
+    const base = await getSiteBase().catch(() => SITE_BASE_FALLBACK)
+
+    return { product, related, base }
   },
   head: ({ loaderData }) => {
+    const base = loaderData?.base ?? null
     const title = loaderData ? `${loaderData.product.title} | ЕДНА Е МАЈКА` : 'ЕДНА Е МАЈКА'
     const description = loaderData ? truncate(loaderData.product.description, 160) : ''
     const path = loaderData ? `/products/${loaderData.product.slug ?? loaderData.product.id}` : null
-    const canonical = path ? absoluteUrl(path) : undefined
+    const canonical = path ? absoluteUrl(path, base) : undefined
+    // The fallback art is also absolutized: crawlers need an absolute
+    // og:image even when the listing has no image of its own.
     const image = loaderData
-      ? (absoluteUrl(
-          loaderData.product.image
-            ? imageUrl(loaderData.product.image.key)
-            : '/edna-e-majka-og.jpg',
-        ) ?? '/edna-e-majka-og.jpg')
+      ? absoluteUrl(imageUrl(loaderData.product.image?.key) ?? '/edna-e-majka-og.jpg', base)
       : undefined
     const firstVariant = loaderData?.product.variants?.[0]
 
@@ -82,6 +89,9 @@ export const Route = createFileRoute('/products/$productId')({
         { property: 'og:type', content: 'product' },
         ...(canonical ? [{ property: 'og:url', content: canonical }] : []),
         ...(image ? [{ property: 'og:image', content: image }] : []),
+        { name: 'twitter:title', content: title },
+        { name: 'twitter:description', content: description },
+        ...(image ? [{ name: 'twitter:image', content: image }] : []),
       ],
       links: canonical
         ? [
@@ -95,6 +105,8 @@ export const Route = createFileRoute('/products/$productId')({
         ? [
             {
               type: 'application/ld+json',
+              // Titles and descriptions are user input: escape `<` so a
+              // `</script>` inside them cannot break out of the JSON-LD block.
               children: JSON.stringify({
                 '@context': 'https://schema.org',
                 '@type': 'Product',
@@ -115,7 +127,7 @@ export const Route = createFileRoute('/products/$productId')({
                     }
                   : {}),
                 brand: { '@type': 'Brand', name: loaderData.product.store.name },
-              }),
+              }).replace(/</g, '\\u003c'),
             },
           ]
         : [],

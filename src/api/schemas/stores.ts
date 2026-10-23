@@ -76,6 +76,7 @@ export const AdminAuditList = Schema.Struct({
 
 export const AdminProductList = Schema.Struct({
   status: Schema.optional(Schema.Literals(['published', 'archived'])),
+  storeId: Schema.optional(Schema.String.pipe(Schema.check(Schema.isMinLength(1)))),
   query: Schema.optional(
     Schema.Trim.pipe(Schema.check(Schema.isMinLength(1), Schema.isMaxLength(64))),
   ),

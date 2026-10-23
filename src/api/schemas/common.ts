@@ -44,12 +44,19 @@ export type InStockFlag = Schema.Schema.Type<typeof InStockFlag>
 /** The last catalogue page the pager can reach. */
 export const MAX_CATALOGUE_PAGE = Math.max(1, Math.ceil(MAX_CATALOGUE_ITEMS / PRODUCT_PAGE_SIZE))
 
-const coercePage = (value: unknown): number => {
-  const candidate =
-    typeof value === 'number' ? value : typeof value === 'string' ? Number(value) : NaN
-  if (!Number.isInteger(candidate)) return 1
-  return Math.min(Math.max(candidate, 1), MAX_CATALOGUE_PAGE)
-}
+/** Admin and manage tables page more densely, so they allow more pages. */
+export const MAX_ADMIN_PAGE = 50
+
+const coercePageWithCap =
+  (cap: number) =>
+  (value: unknown): number => {
+    const candidate =
+      typeof value === 'number' ? value : typeof value === 'string' ? Number(value) : NaN
+    if (!Number.isInteger(candidate)) return 1
+    return Math.min(Math.max(candidate, 1), cap)
+  }
+
+const coercePage = coercePageWithCap(MAX_CATALOGUE_PAGE)
 
 /**
  * A page number that never fails decoding. A hand-typed `?page=-1`, `1.5`,
@@ -59,6 +66,33 @@ const coercePage = (value: unknown): number => {
 export const LenientPage = Schema.optional(Schema.Unknown).pipe(
   Schema.decodeTo(Schema.Number, {
     decode: SchemaGetter.transform(coercePage),
+    encode: SchemaGetter.transform((page: number) => page),
+  }),
+  Schema.withDecodingDefault(Effect.succeed(1)),
+)
+
+/** Catalogue pages never run past the catalogue cap. */
+export const LenientCataloguePage = Schema.optional(Schema.Unknown).pipe(
+  Schema.decodeTo(Schema.Number, {
+    decode: SchemaGetter.transform(coercePageWithCap(MAX_CATALOGUE_PAGE)),
+    encode: SchemaGetter.transform((page: number) => page),
+  }),
+  Schema.withDecodingDefault(Effect.succeed(1)),
+)
+
+/** Manage tables allow up to 50 pages. */
+export const LenientManagePage = Schema.optional(Schema.Unknown).pipe(
+  Schema.decodeTo(Schema.Number, {
+    decode: SchemaGetter.transform(coercePageWithCap(MAX_ADMIN_PAGE)),
+    encode: SchemaGetter.transform((page: number) => page),
+  }),
+  Schema.withDecodingDefault(Effect.succeed(1)),
+)
+
+/** Admin tables allow up to 50 pages. */
+export const LenientAdminPage = Schema.optional(Schema.Unknown).pipe(
+  Schema.decodeTo(Schema.Number, {
+    decode: SchemaGetter.transform(coercePageWithCap(MAX_ADMIN_PAGE)),
     encode: SchemaGetter.transform((page: number) => page),
   }),
   Schema.withDecodingDefault(Effect.succeed(1)),
@@ -95,6 +129,27 @@ const coerceOptionalString = (value: unknown): string | undefined =>
 export const LenientOptionalString = Schema.optional(Schema.Unknown).pipe(
   Schema.decodeTo(Schema.optional(Schema.String), {
     decode: SchemaGetter.transform(coerceOptionalString),
+    encode: SchemaGetter.transform((value: string | undefined) => value),
+  }),
+)
+
+const coerceSearchQuery = (value: unknown): string | undefined => {
+  if (value == null) return undefined
+  const text = typeof value === 'string' ? value : String(value)
+  const trimmed = text.trim()
+  if (trimmed === '') return undefined
+  if (trimmed.length < MIN_SEARCH_LENGTH) return undefined
+  return trimmed.slice(0, 64)
+}
+
+/**
+ * The search box query: trimmed, dropped when shorter than the minimum so
+ * the server never sees a one-character query, truncated past 64 chars
+ * instead of failing validation.
+ */
+export const LenientSearchQuery = Schema.optional(Schema.Unknown).pipe(
+  Schema.decodeTo(Schema.optional(Schema.String), {
+    decode: SchemaGetter.transform(coerceSearchQuery),
     encode: SchemaGetter.transform((value: string | undefined) => value),
   }),
 )
@@ -150,4 +205,10 @@ export const ModerationNote = Schema.Struct({
   storeId: Schema.optional(Schema.String.pipe(Schema.check(Schema.isMinLength(1)))),
   productId: Schema.optional(Schema.String.pipe(Schema.check(Schema.isMinLength(1)))),
   body: Schema.Trim.pipe(Schema.check(Schema.isMinLength(2), Schema.isMaxLength(1000))),
-})
+}).pipe(
+  Schema.check(
+    Schema.makeFilter((note) => note.storeId != null || note.productId != null, {
+      message: 'storeId or productId is required',
+    }),
+  ),
+)

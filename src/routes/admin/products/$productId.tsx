@@ -8,7 +8,9 @@ import { toResult } from '#/lib/server-result'
 
 export const Route = createFileRoute('/admin/products/$productId')({
   loader: ({ params }) => getAdminProduct({ data: { productId: params.productId } }),
-  head: () => ({ meta: [{ title: 'Уреди производ | Администрација' }] }),
+  head: () => ({
+    meta: [{ title: 'Уреди производ | Администрација' }, { name: 'robots', content: 'noindex' }],
+  }),
   component: AdminEditProductPage,
 })
 
@@ -41,6 +43,9 @@ function AdminEditProductPage() {
             }
 
             await router.invalidate()
+            toast.success(
+              product.featured ? 'Производот повеќе не е издвоен.' : 'Производот е издвоен.',
+            )
           }}
         >
           {product.featured ? '★ Издвоен' : '☆ Означи како издвоен'}

@@ -10,9 +10,9 @@ const formatStandard = SchemaIssue.makeFormatterStandardSchemaV1()
  * The issue tree nests: a bad pack points at `variants`, which points at the
  * row, which points at the price. The walk below follows those pointers down
  * to the leaf, so the error lands on the field the user actually filled —
- * and as a nested object, the way react-hook-form reads it. Every message is
- * the same Macedonian fallback: the schema's own messages are English, and
- * the site speaks Macedonian.
+ * and as a nested object, the way react-hook-form reads it. A custom schema
+ * message (like the Macedonian price range) is preserved; otherwise the
+ * generic Macedonian fallback is used.
  *
  * `errors: "all"` collects every failure instead of stopping at the first,
  * so one submit can light up all the fields that need fixing.
@@ -36,9 +36,13 @@ export function effectResolver<S extends Schema.Top>(schema: S): Resolver<any> {
                 ? Number(segment)
                 : segment,
             )
+            const message =
+              typeof item.message === 'string' && item.message.length > 0
+                ? item.message
+                : 'Невалидна вредност.'
             setNested(errors, segments as Array<string | number>, {
               type: 'validation',
-              message: 'Невалидна вредност.',
+              message,
             })
           }
         } catch {

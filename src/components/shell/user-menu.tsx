@@ -39,6 +39,7 @@ export function UserMenu({ googleEnabled }: { googleEnabled: boolean }) {
   const signOut = async () => {
     await authClient.signOut()
     queryClient.removeQueries({ queryKey: ['notifications'] })
+    queryClient.removeQueries({ queryKey: ['favorites'] })
     await router.invalidate()
   }
 

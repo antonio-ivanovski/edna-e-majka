@@ -22,11 +22,18 @@ export function AdminProductRow({ product }: { product: AdminProduct }) {
   const toggleArchived = async () => {
     setBusy(true)
 
-    const result = toResult(
-      await adminSetProductArchived({
-        data: { productId: product.id, archived: published },
-      }),
-    )
+    let result
+    try {
+      result = toResult(
+        await adminSetProductArchived({
+          data: { productId: product.id, archived: published },
+        }),
+      )
+    } catch {
+      setBusy(false)
+      toast.error('Грешка.')
+      return
+    }
 
     setBusy(false)
 
@@ -40,7 +47,13 @@ export function AdminProductRow({ product }: { product: AdminProduct }) {
   }
 
   const remove = async () => {
-    const result = toResult(await adminDeleteProduct({ data: { productId: product.id } }))
+    let result
+    try {
+      result = toResult(await adminDeleteProduct({ data: { productId: product.id } }))
+    } catch {
+      toast.error('Грешка.')
+      return false
+    }
 
     if (result._tag === 'Failure') {
       toast.error(result.failure.message)

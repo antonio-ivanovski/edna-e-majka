@@ -1,7 +1,7 @@
 import { Link } from '@tanstack/react-router'
 
 /**
- * The four admin sections. `data-[status=active]` is what the router puts on
+ * The five admin sections. `data-[status=active]` is what the router puts on
  * the current link, so the underline follows the page without a lookup.
  */
 const LINKS = [

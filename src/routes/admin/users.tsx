@@ -33,6 +33,7 @@ function AdminUsersPage() {
 
   return (
     <div>
+      <h2 className="mb-4 font-display text-2xl font-semibold">Корисници</h2>
       <div className="mb-4 flex flex-wrap items-center justify-end gap-3">
         <AdminSearch
           value={search.q}

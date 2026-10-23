@@ -22,7 +22,14 @@ export function AdminDeleteStoreButton({
   const remove = async () => {
     setBusy(true)
 
-    const result = toResult(await adminDeleteStore({ data: { storeId } }))
+    let result
+    try {
+      result = toResult(await adminDeleteStore({ data: { storeId } }))
+    } catch {
+      setBusy(false)
+      toast.error('Грешка.')
+      return false
+    }
 
     setBusy(false)
 

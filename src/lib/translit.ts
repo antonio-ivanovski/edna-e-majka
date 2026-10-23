@@ -156,3 +156,27 @@ export function buildSearchVariants(query: string): readonly string[] {
     (variant) => variant.length > 0,
   )
 }
+
+/**
+ * Where the query first shows up in a title, trying every script variant so
+ * `med` still highlights «Мед». Returns the [start, end] slice in the
+ * original title, or null when no variant appears (e.g. the row matched via
+ * its description instead).
+ */
+export function findHighlightIndices(title: string, query: string): [number, number] | null {
+  const lowered = title.toLowerCase()
+
+  for (const variant of buildSearchVariants(query)) {
+    if (!variant) {
+      continue
+    }
+
+    const at = lowered.indexOf(variant.toLowerCase())
+
+    if (at >= 0) {
+      return [at, at + variant.length]
+    }
+  }
+
+  return null
+}

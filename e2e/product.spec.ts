@@ -26,6 +26,30 @@ test('the product page server-renders its title', async ({ page, pageErrors }) =
   expectNoPageErrors(pageErrors)
 })
 
+test('the product page exposes canonical, OG and JSON-LD head tags', async ({
+  page,
+  pageErrors,
+}) => {
+  const path = await firstProductPath(page)
+  await page.goto(path)
+  await waitForHydration(page)
+
+  const canonical = page.locator('link[rel="canonical"]')
+  await expect(canonical).toHaveCount(1)
+  await expect(canonical).toHaveAttribute('href', /\/products\//)
+
+  await expect(page.locator('meta[property="og:type"]')).toHaveAttribute('content', 'product')
+
+  const ogTitle = await page.locator('meta[property="og:title"]').getAttribute('content')
+  expect((ogTitle ?? '').trim().length).toBeGreaterThan(0)
+
+  const ldJson = page.locator('script[type="application/ld+json"]')
+  expect(await ldJson.count()).toBeGreaterThan(0)
+  expect(((await ldJson.first().textContent()) ?? '').length).toBeGreaterThan(0)
+
+  expectNoPageErrors(pageErrors)
+})
+
 test('the enquiry form accepts and submits a valid email', async ({ page, pageErrors }) => {
   const path = await firstProductPath(page)
   await page.goto(path)

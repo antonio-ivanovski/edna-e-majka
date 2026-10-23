@@ -90,17 +90,36 @@ function AdminStoresPage() {
 
     setBusy(false)
 
+    // Refresh even on partial failure: some shops may have changed.
+    await router.invalidate()
+
     if (result._tag === 'Failure') {
       toast.error(result.failure.message)
       return
     }
 
+    const { succeeded, failed } = result.success
+
+    if (failed.length > 0) {
+      setSelected(new Set(failed.map((entry) => entry.id)))
+
+      if (succeeded.length > 0) {
+        toast.success(`Ажурирани: ${formatCount(succeeded.length, 'продавница', 'продавници')}.`)
+      }
+
+      toast.error(
+        `Не успеавме да ажурираме ${formatCount(failed.length, 'продавница', 'продавници')}.`,
+      )
+      return
+    }
+
     setSelected(new Set())
-    await router.invalidate()
+    toast.success('Статусот е ажуриран.')
   }
 
   return (
     <div>
+      <h2 className="mb-4 font-display text-2xl font-semibold">Продавници</h2>
       <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
         <AdminFilters
           label="Статус на продавницата"

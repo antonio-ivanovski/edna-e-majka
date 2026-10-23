@@ -3,8 +3,7 @@ import { and, desc, eq } from 'drizzle-orm'
 
 import { Db } from '../services/db'
 import { type DatabaseError } from '../errors'
-import { favoriteProduct, product, storeFollower } from '../db/schema'
-import { store } from '../db/schema'
+import { favoriteProduct, product, store, storeFollower } from '../db/schema'
 import { selectProductSummaries, type ProductSummary } from './products'
 import { storeSummaryColumns, type StoreSummary } from './stores'
 
@@ -34,7 +33,7 @@ export const selectFavoriteProducts = Effect.fn('selectFavoriteProducts')(functi
   return yield* selectProductSummaries(rows.map((row) => row.productId))
 })
 
-/** The shops the signed-in person follows, by name. */
+/** The shops the signed-in person follows, newest first. */
 export const selectFollowedStores = Effect.fn('selectFollowedStores')(function* (
   userId: string,
 ): Effect.fn.Return<StoreSummary[], DatabaseError, Db> {

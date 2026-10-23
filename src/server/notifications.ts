@@ -3,13 +3,13 @@ import { Effect } from 'effect'
 import { Mailer } from './services/mailer'
 
 const baseStyle =
-  'margin:0;padding:24px;background:#f8f8f9;font-family:Onest,Helvetica,Arial,sans-serif;color:#222426'
+  'margin:0;padding:24px;background:#faf6ec;font-family:Onest,Helvetica,Arial,sans-serif;color:#222426'
 
 function shell(title: string, body: string): string {
   return (
     '<!doctype html>\n<html lang="mk">\n  <body style="' +
     baseStyle +
-    '">\n    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:520px;margin:0 auto;background:#fff;border:1px solid rgba(34,36,38,.15);border-radius:5px">\n      <tr>\n        <td style="padding:24px 28px 8px">\n          <h1 style="margin:0;font-size:20px;color:#DB2828">Една е Мајка</h1>\n          <h2 style="margin:12px 0 0;font-size:17px;color:#222426">' +
+    '">\n    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:520px;margin:0 auto;background:#fff;border:1px solid rgba(34,36,38,.15);border-radius:5px">\n      <tr>\n        <td style="padding:24px 28px 8px">\n          <h1 style="margin:0;font-size:20px;color:#9f3a38">Една е Мајка</h1>\n          <h2 style="margin:12px 0 0;font-size:17px;color:#222426">' +
     title +
     '</h2>\n        </td>\n      </tr>\n      <tr>\n        <td style="padding:16px 28px 24px;font-size:15px;line-height:1.5;color:#222426">\n          ' +
     body +

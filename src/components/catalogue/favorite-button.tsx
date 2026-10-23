@@ -15,14 +15,18 @@ export function FavoriteButton({ productId }: { productId: string }) {
 
   useEffect(() => {
     const handle = setTimeout(() => {
-      void isFavoriteProduct({ data: { productId } }).then((wire) => {
-        const result = toResult(wire)
+      void isFavoriteProduct({ data: { productId } })
+        .then((wire) => {
+          const result = toResult(wire)
 
-        if (result._tag === 'Success') {
-          setFavorited(result.success.favorited)
-        }
-        setLoaded(true)
-      })
+          if (result._tag === 'Success') {
+            setFavorited(result.success.favorited)
+          }
+          setLoaded(true)
+        })
+        .catch(() => {
+          setLoaded(true)
+        })
     }, 0)
 
     return () => clearTimeout(handle)
@@ -50,7 +54,7 @@ export function FavoriteButton({ productId }: { productId: string }) {
       aria-label={favorited ? 'Отстрани од омилени' : 'Додај во омилени'}
       aria-pressed={favorited}
       title={favorited ? 'Отстрани од омилени' : 'Додај во омилени'}
-      className="cursor-pointer rounded-full p-2 text-ink-subtle transition-colors hover:bg-hover hover:text-danger"
+      className="min-h-11 min-w-11 cursor-pointer rounded-full p-2 text-ink-subtle transition-colors hover:bg-hover hover:text-danger"
       onClick={() => void toggle()}
     >
       <Heart

@@ -12,9 +12,51 @@ import {
   TableRow,
 } from '#/components/ui/table'
 import { toValidator, AdminAuditSearch } from '#/api/schemas'
-import { formatCount, formatDate } from '#/lib/format'
+import { formatCount } from '#/lib/format'
 import { ADMIN_PAGE_SIZE } from '#/lib/pagination'
 import { adminQueries } from '#/lib/queries/admin'
+
+const ACTION_LABELS: Record<string, string> = {
+  set_store_status: 'Промена на статус на продавница',
+  bulk_set_store_status: 'Групна промена на статус на продавници',
+  update_store: 'Измена на податоци за продавница',
+  delete_store: 'Бришење на продавница',
+  transfer_store: 'Пренесување на продавница',
+  toggle_featured: 'Издвојување на производ',
+  archive_product: 'Архивирање на производ',
+  publish_product: 'Објавување на производ',
+  delete_product: 'Бришење на производ',
+  save_product: 'Измена на производ',
+  ban_user: 'Бан на корисник',
+  unban_user: 'Отстранување на бан',
+  set_user_role: 'Промена на улога',
+  set_message_handled: 'Обележување на порака',
+  delete_message: 'Бришење на порака',
+  add_moderation_note: 'Интерна белешка',
+}
+
+const TARGET_LABELS: Record<string, string> = {
+  store: 'Продавница',
+  product: 'Производ',
+  user: 'Корисник',
+  message: 'Порака',
+}
+
+const ACTOR_LABELS: Record<string, string> = {
+  admin: 'Администратор',
+  owner: 'Сопственик',
+  system: 'Систем',
+}
+
+function formatDateTime(value: Date): string {
+  return new Date(value).toLocaleString('mk-MK', {
+    day: '2-digit',
+    month: '2-digit',
+    year: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit',
+  })
+}
 
 export const Route = createFileRoute('/admin/audit')({
   validateSearch: toValidator(AdminAuditSearch),
@@ -37,6 +79,7 @@ function AdminAuditPage() {
 
   return (
     <div>
+      <h2 className="mb-3 font-display text-2xl font-semibold">Евиденција</h2>
       <p className="mb-3 text-sm text-ink-subtle">{formatCount(total, 'запис', 'записи')}</p>
 
       {items.length === 0 ? (
@@ -56,18 +99,23 @@ function AdminAuditPage() {
           <TableBody>
             {items.map((entry) => (
               <TableRow key={entry.id}>
-                <TableCell>{entry.actorName || entry.actorId}</TableCell>
                 <TableCell>
-                  {entry.action}
+                  {entry.actorName || entry.actorId}
+                  <span className="block text-sm text-ink-subtle">
+                    {ACTOR_LABELS[entry.actorKind] ?? entry.actorKind}
+                  </span>
+                </TableCell>
+                <TableCell>
+                  {ACTION_LABELS[entry.action] ?? entry.action}
                   {entry.details ? (
                     <span className="block text-sm text-ink-subtle">{entry.details}</span>
                   ) : null}
                 </TableCell>
                 <TableCell className="whitespace-nowrap text-ink-muted">
-                  {entry.targetType} · {entry.targetId}
+                  {TARGET_LABELS[entry.targetType] ?? entry.targetType} · {entry.targetId}
                 </TableCell>
                 <TableCell className="whitespace-nowrap text-ink-muted">
-                  {formatDate(entry.createdAt)}
+                  {formatDateTime(entry.createdAt)}
                 </TableCell>
               </TableRow>
             ))}

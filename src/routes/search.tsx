@@ -37,6 +37,9 @@ export const Route = createFileRoute('/search')({
 
     return { query, params: deps, page }
   },
+  // Search results stay out of the index and deliberately set no OG tags:
+  // the root layout's homepage tags (title, image, og:url) apply instead, so
+  // a shared search link unfurls as the site rather than as a query.
   head: ({ loaderData }) => ({
     meta: [
       {

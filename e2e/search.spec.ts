@@ -13,6 +13,21 @@ async function productTitles(page: Page): Promise<string[]> {
   return page.locator('article h2').allInnerTexts()
 }
 
+/**
+ * The cheapest price on each card, in denars. Prices print grouped
+ * (`1.200 МКД`), so every non-digit goes: what is left is whole denars.
+ */
+async function productPrices(page: Page): Promise<number[]> {
+  return page.locator('article').evaluateAll((cards) =>
+    cards.map((card) => {
+      const amounts = [...(card.textContent ?? '').matchAll(/([\d.]+)\s*МКД/g)].map((match) =>
+        Number(match[1]!.replace(/\D/g, '')),
+      )
+      return amounts.length > 0 ? Math.min(...amounts) : Number.NaN
+    }),
+  )
+}
+
 test('the search page honours the category filter', async ({ page, pageErrors }) => {
   const term = encodeURIComponent('мед')
   await page.goto(`/search?q=${term}`)
@@ -69,7 +84,7 @@ test('the search page honours the stock filter', async ({ page, pageErrors }) =>
   expectNoPageErrors(pageErrors)
 })
 
-test('the sort control reorders the catalogue', async ({ page, pageErrors }) => {
+test('the sort control reorders the catalogue by price', async ({ page, pageErrors }) => {
   const term = encodeURIComponent('мед')
   await page.goto(`/search?q=${term}`)
   await waitForHydration(page)
@@ -79,10 +94,69 @@ test('the sort control reorders the catalogue', async ({ page, pageErrors }) => 
 
   await page.getByText('Филтри', { exact: true }).click()
   await page.getByRole('button', { name: 'Цена', exact: true }).click()
-  await expect.poll(() => page.url(), { timeout: 10_000 }).toContain('sort=')
+  await expect.poll(() => page.url(), { timeout: 10_000 }).toContain('sort=price')
 
-  const after = await productTitles(page)
-  expect(after.slice().sort()).toEqual(before.slice().sort())
+  // Same products, cheapest first.
+  const afterTitles = await productTitles(page)
+  expect(afterTitles.slice().sort()).toEqual(before.slice().sort())
+
+  // The address updates before the loader data lands, so wait for the
+  // cheapest prices to settle into ascending order.
+  await expect
+    .poll(
+      async () => {
+        const prices = await productPrices(page)
+        if (prices.length === 0) return false
+        const sorted = prices.slice().sort((a, b) => a - b)
+        return prices.every((p, i) => p === sorted[i])
+      },
+      { timeout: 10_000 },
+    )
+    .toBe(true)
+
+  const afterPrices = await productPrices(page)
+  expect(afterPrices.every((price) => Number.isFinite(price))).toBe(true)
+  expect(afterPrices).toEqual(afterPrices.slice().sort((a, b) => a - b))
+
+  expectNoPageErrors(pageErrors)
+})
+
+test('an out-of-range page clamps to the catalogue instead of crashing', async ({
+  page,
+  pageErrors,
+}) => {
+  const term = encodeURIComponent('мед')
+  await page.goto(`/search?q=${term}`)
+  await waitForHydration(page)
+
+  const firstPage = await productTitles(page)
+  expect(firstPage.length).toBeGreaterThan(0)
+
+  // The server clamps a beyond-the-end page to the last page, so the list
+  // stays whole instead of an error boundary. (A dedicated empty state with
+  // a back-to-first-page link would live in the catalogue list, which this
+  // slice does not own.)
+  await page.goto(`/search?q=${term}&page=999`)
+  await waitForHydration(page)
+
+  await expect(page.getByRole('heading', { name: /Резултати за/ })).toBeVisible()
+  expect(await productTitles(page)).toEqual(firstPage)
+  await expect(page.getByRole('alert')).toHaveCount(0)
+
+  expectNoPageErrors(pageErrors)
+})
+
+test('garbage search params degrade to the default list instead of crashing', async ({
+  page,
+  pageErrors,
+}) => {
+  await page.goto('/search?q=мед&page=-1&sort=nope&minPrice=abc')
+  await waitForHydration(page)
+
+  // Lenient schemas normalise the address; the page still lists results.
+  await expect(page.getByRole('heading', { name: /Резултати за/ })).toBeVisible()
+  expect((await productTitles(page)).length).toBeGreaterThan(0)
+  await expect(page.getByRole('alert')).toHaveCount(0)
 
   expectNoPageErrors(pageErrors)
 })

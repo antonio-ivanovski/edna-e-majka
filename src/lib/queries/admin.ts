@@ -7,8 +7,6 @@ import {
   getAdminUsers,
   getAdminMessages,
   getAdminAuditLogs,
-  getAdminStore,
-  getAdminProduct,
 } from '#/server/functions/admin'
 
 import { adminKeys } from './keys'
@@ -21,22 +19,10 @@ export const adminQueries = {
       queryFn: () => getAdminStores({ data: filters }),
       staleTime: 0,
     }),
-  store: (id: string) =>
-    queryOptions({
-      queryKey: adminKeys.store(id),
-      queryFn: () => getAdminStore({ data: { storeId: id } }),
-      staleTime: 0,
-    }),
   products: (filters: any) =>
     queryOptions({
       queryKey: adminKeys.products(filters),
       queryFn: () => getAdminProducts({ data: filters }),
-      staleTime: 0,
-    }),
-  product: (id: string) =>
-    queryOptions({
-      queryKey: adminKeys.product(id),
-      queryFn: () => getAdminProduct({ data: { productId: id } }),
       staleTime: 0,
     }),
   users: (filters: any) =>

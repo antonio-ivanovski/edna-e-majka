@@ -17,27 +17,19 @@ import {
 } from '#/lib/uploads'
 import { applyForStore, updateStore } from '#/server/functions/manage'
 import type { OwnerStore } from '#/server/queries/manage'
-import { Email } from '#/api/schemas/common'
+import { StoreDetails } from '#/api/schemas/stores'
 import { toResult } from '#/lib/server-result'
 
 /**
  * The form always has a value for the two optional addresses: an empty string.
  * Exported because the admin dashboard edits a shop with the same fields.
+ *
+ * The shape comes from the shared `StoreDetails` schema; only the four
+ * optional addresses are required here, because the form always submits them
+ * (possibly empty) rather than omitting them.
  */
 export const storeFormSchema = Schema.Struct({
-  name: Schema.Trim.pipe(
-    Schema.check(Schema.isMinLength(3)),
-    Schema.check(Schema.isMaxLength(120)),
-  ),
-  description: Schema.Trim.pipe(
-    Schema.check(Schema.isMinLength(30)),
-    Schema.check(Schema.isMaxLength(4000)),
-  ),
-  email: Email,
-  phone: Schema.Trim.pipe(
-    Schema.check(Schema.isMinLength(6)),
-    Schema.check(Schema.isMaxLength(60)),
-  ),
+  ...StoreDetails.fields,
   facebook: Schema.Trim.pipe(Schema.check(Schema.isMaxLength(300))),
   instagram: Schema.Trim.pipe(Schema.check(Schema.isMaxLength(300))),
   city: Schema.Trim.pipe(Schema.check(Schema.isMaxLength(120))),

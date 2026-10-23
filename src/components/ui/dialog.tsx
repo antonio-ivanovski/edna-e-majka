@@ -57,7 +57,7 @@ export function Dialog({
             }
           }}
           className={cn(
-            'fixed top-1/2 left-1/2 z-50 max-h-[88vh] w-[calc(100vw-2rem)] -translate-x-1/2 -translate-y-1/2 overflow-y-auto rounded-card bg-surface-raised shadow-[0_1px_3px_1px_rgba(34,36,38,0.15)] focus:outline-none',
+            'fixed top-1/2 left-1/2 z-50 max-h-[88vh] w-[calc(100vw-2rem)] -translate-x-1/2 -translate-y-1/2 overflow-y-auto rounded-card bg-surface-raised shadow-[0_1px_3px_1px_rgba(34,36,38,0.15)] focus-visible:outline-none',
             sizes[size],
             className,
           )}

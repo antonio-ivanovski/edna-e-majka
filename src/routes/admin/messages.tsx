@@ -43,6 +43,7 @@ function AdminMessagesPage() {
 
   return (
     <div>
+      <h2 className="mb-4 font-display text-2xl font-semibold">Пораки</h2>
       <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
         <AdminFilters
           label="Состојба на пораката"

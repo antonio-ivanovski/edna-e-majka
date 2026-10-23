@@ -24,6 +24,7 @@ export const Route = createFileRoute('/admin/products/')({
     status: search.status,
     query: search.q,
     page: search.page ?? 1,
+    storeId: search.storeId,
   }),
   loader: ({ context: { queryClient }, deps }) =>
     queryClient.ensureQueryData(adminQueries.products(deps)),
@@ -43,6 +44,7 @@ function AdminProductsPage() {
 
   return (
     <div>
+      <h2 className="mb-4 font-display text-2xl font-semibold">Производи</h2>
       <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
         <AdminFilters
           label="Статус на производот"

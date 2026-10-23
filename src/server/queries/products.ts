@@ -118,8 +118,14 @@ function ordering(filters: ProductListFiltersType) {
   const direction = filters.direction
   if (filters.sort === 'alpha')
     return [direction === 'desc' ? desc(product.title) : asc(product.title)]
-  if (filters.sort === 'price')
-    return [direction === 'desc' ? desc(lowestVariantPrice) : asc(lowestVariantPrice)]
+  if (filters.sort === 'price') {
+    // Products without variants have a NULL lowest price. NULLS LAST in both
+    // directions: non-null rows first, then the actual price order.
+    const nonNullFirst = asc(sql`${lowestVariantPrice} IS NULL`)
+    return direction === 'desc'
+      ? [nonNullFirst, desc(lowestVariantPrice)]
+      : [nonNullFirst, asc(lowestVariantPrice)]
+  }
   return [direction === 'asc' ? asc(product.createdAt) : desc(product.createdAt)]
 }
 
@@ -128,32 +134,36 @@ export const selectProductPage = Effect.fn('selectProductPage')(function* (
 ): Effect.fn.Return<ProductPage, DatabaseError, Db> {
   const db = yield* Db
   const where = publicProductConditions(filters)
-  // Real offset paging: each page reads exactly one slice. The page is
-  // clamped so the offset never runs past the catalogue cap.
+  // Real offset paging: each page reads exactly one slice. Count first so
+  // the page clamps to the actual last page; the offset never runs past the
+  // catalogue cap.
   const maxPage = Math.max(1, Math.ceil(MAX_CATALOGUE_ITEMS / PRODUCT_PAGE_SIZE))
-  const safePage = Math.min(Math.max(filters.page, 1), maxPage)
+  const requested = Math.min(Math.max(filters.page, 1), maxPage)
+  const countRows = yield* db.run((d) =>
+    d
+      .select({ total: count() })
+      .from(product)
+      .innerJoin(store, eq(store.id, product.storeId))
+      .where(where),
+  )
+  const uncappedTotal = countRows[0]?.total ?? 0
+  const total = Math.min(uncappedTotal, MAX_CATALOGUE_ITEMS)
+  const lastPage = Math.max(1, Math.ceil(total / PRODUCT_PAGE_SIZE))
+  const safePage = Math.min(requested, lastPage)
   const limit = PRODUCT_PAGE_SIZE
   const offset = (safePage - 1) * PRODUCT_PAGE_SIZE
-  const [idRows, totalRows] = yield* db.run(
-    (d) =>
-      d.batch([
-        d
-          .select({ id: product.id })
-          .from(product)
-          .innerJoin(store, eq(store.id, product.storeId))
-          .where(where)
-          .orderBy(...ordering(filters), asc(product.id))
-          .limit(limit)
-          .offset(offset),
-        d
-          .select({ total: count() })
-          .from(product)
-          .innerJoin(store, eq(store.id, product.storeId))
-          .where(where),
-      ]) as unknown as Promise<[{ id: string }[], { total: number }[]]>,
+  const idRows = yield* db.run((d) =>
+    d
+      .select({ id: product.id })
+      .from(product)
+      .innerJoin(store, eq(store.id, product.storeId))
+      .where(where)
+      .orderBy(...ordering(filters), asc(product.id))
+      .limit(limit)
+      .offset(offset),
   )
   const items = yield* selectProductSummaries(idRows.map((r) => r.id))
-  return { items, total: totalRows[0]?.total ?? 0 }
+  return { items, total }
 })
 
 /** D1 caps bound parameters at ~100, so large id lists go in small batches. */

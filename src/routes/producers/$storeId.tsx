@@ -1,4 +1,4 @@
-import { createFileRoute, redirect } from '@tanstack/react-router'
+import { Link, createFileRoute, redirect } from '@tanstack/react-router'
 import { useCallback } from 'react'
 
 import { CatalogueList } from '#/components/catalogue/catalogue-list'
@@ -6,7 +6,9 @@ import { ProducerContacts } from '#/components/catalogue/producer-contacts'
 import { FollowButton } from '#/components/catalogue/follow-button'
 import { Avatar } from '#/components/ui/avatar'
 import { Breadcrumbs } from '#/components/ui/breadcrumbs'
+import { Button } from '#/components/ui/button'
 import { Panel } from '#/components/ui/panel'
+import { truncate } from '#/lib/format'
 import { imageUrl } from '#/lib/images'
 import type { ProductSort, SortDirection } from '#/api/schemas'
 import { toValidator, ProductSearch } from '#/api/schemas'
@@ -14,15 +16,40 @@ import { productQueries } from '#/lib/queries/products'
 import { storeQueries } from '#/lib/queries/stores'
 import { PRODUCT_PAGE_SIZE } from '#/lib/pagination'
 
+/**
+ * Absolute site origin for canonical/OG URLs. `head` runs on both the server
+ * and the browser with no request in hand, so prefer the live origin and fall
+ * back to production (same pattern as sitemap/robots, which read `APP_URL`
+ * on the server).
+ */
+const SITE_BASE_FALLBACK = 'https://ednaemajka.mk'
+
+function siteBase(): string {
+  if (typeof window !== 'undefined' && window.location?.origin) {
+    return window.location.origin.replace(/\/$/, '')
+  }
+  return SITE_BASE_FALLBACK
+}
+
+function absoluteUrl(value: string | undefined): string | undefined {
+  if (!value) return undefined
+  if (/^https?:\/\//i.test(value)) return value
+  return value.startsWith('/') ? `${siteBase()}${value}` : `${siteBase()}/${value}`
+}
+
 export const Route = createFileRoute('/producers/$storeId')({
   validateSearch: toValidator(ProductSearch),
   loaderDeps: ({ search }) => search,
   loader: async ({ context: { queryClient }, params, deps }) => {
     const store = await queryClient.ensureQueryData(storeQueries.detail(params.storeId))
 
-    // One address per shop: the slug.
+    // One address per shop: the slug. Keep the query (sort, filters, page).
     if (store.slug && params.storeId !== store.slug) {
-      throw redirect({ to: '/producers/$storeId', params: { storeId: store.slug } })
+      throw redirect({
+        to: '/producers/$storeId',
+        params: { storeId: store.slug },
+        search: deps,
+      })
     }
 
     const page = await queryClient.ensureQueryData(
@@ -31,15 +58,25 @@ export const Route = createFileRoute('/producers/$storeId')({
 
     return { store, params: deps, page }
   },
-  head: ({ loaderData }) => ({
-    meta: [
-      { title: loaderData ? `${loaderData.store.name} | ЕДНА Е МАЈКА` : 'ЕДНА Е МАЈКА' },
-      {
-        name: 'description',
-        content: loaderData?.store.description ?? 'Производител на домашни производи.',
-      },
-    ],
-  }),
+  head: ({ loaderData }) => {
+    const title = loaderData ? `${loaderData.store.name} | ЕДНА Е МАЈКА` : 'ЕДНА Е МАЈКА'
+    const description = loaderData
+      ? truncate(loaderData.store.description, 160)
+      : 'Производител на домашни производи.'
+    const path = loaderData ? `/producers/${loaderData.store.slug ?? loaderData.store.id}` : null
+    const canonical = path ? absoluteUrl(path) : undefined
+
+    return {
+      meta: [
+        { title },
+        { name: 'description', content: description },
+        { property: 'og:title', content: title },
+        { property: 'og:description', content: description },
+        ...(canonical ? [{ property: 'og:url', content: canonical }] : []),
+      ],
+      links: canonical ? [{ rel: 'canonical', href: canonical }] : [],
+    }
+  },
   component: ProducerPage,
 })
 
@@ -102,6 +139,11 @@ function ProducerPage() {
         pageSize={PRODUCT_PAGE_SIZE}
         emptyTitle={`${store.name} сѐ уште нема објавени производи.`}
         emptyDescription="Погледнете ги другите производители дотогаш."
+        emptyAction={
+          <Button asChild>
+            <Link to="/producers">Други производители</Link>
+          </Button>
+        }
         onParamsChange={onParamsChange}
         filters={{
           minPrice: params.minPrice,

@@ -241,13 +241,17 @@ export const saveProduct = createServerFn({ method: 'POST', strict: { output: fa
         const productUrl = appUrl + '/products/' + slug
 
         for (const follower of followers) {
-          await createNotification({
-            userId: follower.id,
-            kind: 'new_product',
-            title: 'Нов производ',
-            body: data.title,
-            link: '/products/' + slug,
-          })
+          try {
+            await createNotification({
+              userId: follower.id,
+              kind: 'new_product',
+              title: 'Нов производ',
+              body: data.title,
+              link: '/products/' + slug,
+            })
+          } catch {
+            // Best-effort: a D1 failure must not fail saveProduct after the insert.
+          }
           await runEffect(
             sendNewProductNotification({
               to: follower.email,
@@ -338,7 +342,7 @@ export const updateProductImageAlt = createServerFn({ method: 'POST', strict: { 
     if (!image) return Result.fail(new NotFoundError({ message: 'Сликата не е најдена.' }))
     const owned =
       viewer.role === 'admin'
-        ? await selectAdminProductRow(image.productId)
+        ? await runEffect(selectAdminProductRow(image.productId))
         : await runEffect(selectOwnedProductRow(image.productId, viewer.id))
     if (!owned)
       return Result.fail(new NotAllowedError({ message: 'Немате дозвола за оваа акција.' }))

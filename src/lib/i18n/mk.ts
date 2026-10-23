@@ -75,8 +75,6 @@ export const mk = {
     becomeProducer: 'Стани производител',
     contact: 'Контакт',
     categories: 'Категории',
-    newArrivals: 'Нови производи',
-    moreProducts: 'Повеќе производи',
     noProducts: 'Сѐ уште нема објавени производи.',
     noProductsHint: 'Штом производителите ги објават своите производи, тие ќе се појават тука.',
   },

@@ -158,25 +158,38 @@ export const contactMessage = sqliteTable(
   (table) => [index('contact_message_created_at_idx').on(table.createdAt)],
 )
 
-export const auditLog = sqliteTable('audit_log', {
-  id: text('id').primaryKey(),
-  actorId: text('actor_id').notNull(),
-  actorKind: text('actor_kind', { enum: ['admin', 'owner', 'system'] }).notNull(),
-  action: text('action').notNull(),
-  targetType: text('target_type').notNull(),
-  targetId: text('target_id').notNull(),
-  details: text('details'),
-  createdAt: integer('created_at', { mode: 'timestamp_ms' }).notNull().default(now),
-})
+export const auditLog = sqliteTable(
+  'audit_log',
+  {
+    id: text('id').primaryKey(),
+    actorId: text('actor_id').notNull(),
+    actorKind: text('actor_kind', { enum: ['admin', 'owner', 'system'] }).notNull(),
+    action: text('action').notNull(),
+    targetType: text('target_type').notNull(),
+    targetId: text('target_id').notNull(),
+    details: text('details'),
+    createdAt: integer('created_at', { mode: 'timestamp_ms' }).notNull().default(now),
+  },
+  // Declared for a future migration; the admin audit list always sorts by time.
+  (table) => [index('audit_log_created_at_idx').on(table.createdAt)],
+)
 
-export const moderationNote = sqliteTable('moderation_note', {
-  id: text('id').primaryKey(),
-  storeId: text('store_id').references(() => store.id, { onDelete: 'cascade' }),
-  productId: text('product_id').references(() => product.id, { onDelete: 'cascade' }),
-  authorId: text('author_id').notNull(),
-  body: text('body').notNull(),
-  createdAt: integer('created_at', { mode: 'timestamp_ms' }).notNull().default(now),
-})
+export const moderationNote = sqliteTable(
+  'moderation_note',
+  {
+    id: text('id').primaryKey(),
+    storeId: text('store_id').references(() => store.id, { onDelete: 'cascade' }),
+    productId: text('product_id').references(() => product.id, { onDelete: 'cascade' }),
+    authorId: text('author_id').notNull(),
+    body: text('body').notNull(),
+    createdAt: integer('created_at', { mode: 'timestamp_ms' }).notNull().default(now),
+  },
+  // Declared for a future migration; notes are looked up per store/product.
+  (table) => [
+    index('moderation_note_store_id_idx').on(table.storeId),
+    index('moderation_note_product_id_idx').on(table.productId),
+  ],
+)
 
 export const favoriteProduct = sqliteTable(
   'favorite_product',
@@ -217,18 +230,27 @@ export const storeFollower = sqliteTable(
       .references(() => store.id, { onDelete: 'cascade' }),
     createdAt: integer('created_at', { mode: 'timestamp_ms' }).notNull().default(now),
   },
-  (table) => [primaryKey({ columns: [table.userId, table.storeId] })],
+  (table) => [
+    primaryKey({ columns: [table.userId, table.storeId] }),
+    // Declared for a future migration; the follower count runs per store.
+    index('store_follower_store_id_idx').on(table.storeId),
+  ],
 )
 
-export const notification = sqliteTable('notification', {
-  id: text('id').primaryKey(),
-  userId: text('user_id')
-    .notNull()
-    .references(() => user.id, { onDelete: 'cascade' }),
-  kind: text('kind').notNull(),
-  title: text('title').notNull(),
-  body: text('body'),
-  link: text('link'),
-  readAt: integer('read_at', { mode: 'timestamp_ms' }),
-  createdAt: integer('created_at', { mode: 'timestamp_ms' }).notNull().default(now),
-})
+export const notification = sqliteTable(
+  'notification',
+  {
+    id: text('id').primaryKey(),
+    userId: text('user_id')
+      .notNull()
+      .references(() => user.id, { onDelete: 'cascade' }),
+    kind: text('kind').notNull(),
+    title: text('title').notNull(),
+    body: text('body'),
+    link: text('link'),
+    readAt: integer('read_at', { mode: 'timestamp_ms' }),
+    createdAt: integer('created_at', { mode: 'timestamp_ms' }).notNull().default(now),
+  },
+  // Declared for a future migration; the bell lists newest-first per viewer.
+  (table) => [index('notification_user_id_created_at_idx').on(table.userId, table.createdAt)],
+)

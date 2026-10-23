@@ -23,14 +23,16 @@ test('search suggestions highlight the match and answer to the keyboard', async 
   // The matched part stands out.
   await expect(list.locator('mark').first()).toContainText('мед', { ignoreCase: true })
 
-  // Arrow keys walk the rows, enter picks the highlighted one.
+  // Arrow keys walk the rows, enter picks the highlighted one. Product and
+  // producer suggestions go straight to the entity; recent searches submit
+  // a text search.
   await box.press('ArrowDown')
   await expect(list.getByRole('option').first()).toHaveAttribute('aria-selected', 'true')
   await box.press('Enter')
 
   await expect
-    .poll(() => new URL(page.url()).searchParams.get('q'), { timeout: 10_000 })
-    .toBe('Акациев мед')
+    .poll(() => page.url(), { timeout: 10_000 })
+    .toMatch(/\/products\/|q=%D0%90%D0%BA%D0%B0%D1%86%D0%B8%D1%98%D0%B5%D0%B2|q=Акациев/)
 
   expectNoPageErrors(pageErrors)
 })

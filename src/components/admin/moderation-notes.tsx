@@ -5,13 +5,12 @@ import { toast } from 'sonner'
 import { Button } from '#/components/ui/button'
 import { Panel } from '#/components/ui/panel'
 import { addModerationNote, listModerationNotes } from '#/server/functions/admin'
+import { formatDate } from '#/lib/format'
 import { toResult } from '#/lib/server-result'
 
 export function ModerationNotes({ storeId, productId }: { storeId?: string; productId?: string }) {
   const queryClient = useQueryClient()
-  const key = storeId
-    ? (['moderation-notes', storeId] as const)
-    : (['moderation-notes', productId] as const)
+  const key = ['moderation-notes', storeId ?? null, productId ?? null] as const
   const { data } = useQuery({
     queryKey: key,
     queryFn: () => listModerationNotes({ data: { storeId, productId } }),
@@ -40,18 +39,16 @@ export function ModerationNotes({ storeId, productId }: { storeId?: string; prod
       <h2 className="mb-3 font-display text-xl font-semibold">Белешки (интерни)</h2>
       <ul className="mb-4 space-y-2">
         {(data ?? []).map((note) => (
-          <li
-            key={note.id}
-            className="rounded-card border border-border bg-black/[0.02] p-3 text-sm"
-          >
+          <li key={note.id} className="rounded-card border border-border bg-hover p-3 text-sm">
             <p className="whitespace-pre-wrap">{note.body}</p>
             <p className="mt-1 text-xs text-ink-subtle">
-              {new Date(note.createdAt).toLocaleString('mk-MK')}
+              {note.authorName || note.authorId} · {formatDate(new Date(note.createdAt))}
             </p>
           </li>
         ))}
       </ul>
       <textarea
+        aria-label="Белешка"
         value={body}
         onChange={(event) => setBody(event.target.value)}
         rows={3}

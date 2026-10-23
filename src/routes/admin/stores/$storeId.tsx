@@ -93,6 +93,19 @@ function AdminStorePage() {
       <section>
         <h2 className="mb-3 font-display text-xl font-semibold">Производи</h2>
 
+        <div className="mb-3 flex flex-wrap items-center gap-x-3 gap-y-1 text-sm">
+          <p className="text-ink-subtle">{formatCount(products.total, 'производ', 'производи')}</p>
+          {products.total > products.items.length ? (
+            <Link
+              className="font-semibold text-accent-ink hover:underline"
+              to="/admin/products"
+              search={{ storeId: store.id }}
+            >
+              Прикажани се првите {products.items.length} — погледни ги сите →
+            </Link>
+          ) : null}
+        </div>
+
         {products.items.length === 0 ? (
           <Panel>
             <EmptyState

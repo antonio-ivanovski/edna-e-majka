@@ -14,14 +14,18 @@ export function FollowButton({ storeId }: { storeId: string }) {
 
   useEffect(() => {
     const handle = setTimeout(() => {
-      void isFollowingStore({ data: { storeId } }).then((wire) => {
-        const result = toResult(wire)
+      void isFollowingStore({ data: { storeId } })
+        .then((wire) => {
+          const result = toResult(wire)
 
-        if (result._tag === 'Success') {
-          setFollowing(result.success.following)
-        }
-        setLoaded(true)
-      })
+          if (result._tag === 'Success') {
+            setFollowing(result.success.following)
+          }
+          setLoaded(true)
+        })
+        .catch(() => {
+          setLoaded(true)
+        })
     }, 0)
 
     return () => clearTimeout(handle)

@@ -77,6 +77,8 @@ export function CatalogueList({
   // Paged: the server sends exactly one page slice, but never render more
   // than a page even if a stale payload carries extra cards.
   const visibleProducts = products.slice(0, pageSize)
+  const outOfRange = visibleProducts.length === 0 && total > 0
+  const start = (page - 1) * pageSize
 
   const activeCategories = (filters?.categorySlugs ?? '')
     .split(',')
@@ -146,10 +148,10 @@ export function CatalogueList({
           </button>
         </div>
 
-        {total > 0 ? (
+        {total > 0 && !outOfRange ? (
           <p className="text-sm text-ink-subtle">
             {visibleProducts.length < total
-              ? `прикажани ${visibleProducts.length} од ${formatCount(total, 'производ', 'производи')}`
+              ? `прикажани ${start + 1}–${start + visibleProducts.length} од ${formatCount(total, 'производ', 'производи')}`
               : formatCount(total, 'производ', 'производи')}
           </p>
         ) : null}
@@ -256,12 +258,29 @@ export function CatalogueList({
         </details>
       </div>
 
-      <ProductGrid
-        products={visibleProducts}
-        emptyTitle={emptyTitle}
-        emptyDescription={emptyDescription}
-        emptyAction={emptyAction}
-      />
+      {outOfRange ? (
+        <div className="flex flex-col items-center gap-3 p-4 text-center">
+          <p className="text-sm text-ink-muted">
+            Нема производи на оваа страница. {formatCount(total, 'производ', 'производи')} се на
+            претходните страници.
+          </p>
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            onClick={() => onParamsChange({ page: 1 })}
+          >
+            Врати се на првата страница
+          </Button>
+        </div>
+      ) : (
+        <ProductGrid
+          products={visibleProducts}
+          emptyTitle={emptyTitle}
+          emptyDescription={emptyDescription}
+          emptyAction={emptyAction}
+        />
+      )}
 
       <Pager
         page={page}

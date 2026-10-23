@@ -37,7 +37,11 @@
   --radius-card: 0.2857rem;
 
   /* Category tiles glow amber on hover, as they did. */
-  --background-image-tile-hover: radial-gradient(circle, #ffc145 0%, #fdf6e3 70%);
+  --background-image-tile-hover: radial-gradient(
+    circle,
+    var(--color-brand) 0%,
+    var(--color-cream) 70%
+  );
 }
 
 /*

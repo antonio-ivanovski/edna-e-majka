@@ -108,3 +108,5 @@ export const ProductFormValues = Schema.Struct({
 })
 
 export type ProductFormValues = Schema.Schema.Type<typeof ProductFormValues>
+
+export type ProductFormData = Schema.Schema.Type<typeof ProductForm>

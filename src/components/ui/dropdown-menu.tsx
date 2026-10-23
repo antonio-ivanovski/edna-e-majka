@@ -35,7 +35,7 @@ export function DropdownMenu({
 }
 
 const itemStyles =
-  'flex cursor-pointer items-center gap-2 px-3 py-2 text-sm text-ink-muted outline-none data-[disabled]:pointer-events-none data-[disabled]:opacity-45 data-[highlighted]:bg-hover data-[highlighted]:text-ink'
+  'flex cursor-pointer items-center gap-2 px-3 py-2 text-sm text-ink-muted focus-visible:outline-2 focus-visible:outline-focus data-[disabled]:pointer-events-none data-[disabled]:opacity-45 data-[highlighted]:bg-hover data-[highlighted]:text-ink'
 
 export function DropdownMenuItem({
   children,

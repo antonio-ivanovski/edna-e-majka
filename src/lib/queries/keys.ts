@@ -17,6 +17,11 @@ export const storeKeys = {
   detail: (id: string) => [...storeKeys.details(), id] as const,
 }
 
+/**
+ * Global by design: the favorites server functions are cookie-scoped, so the
+ * key needs no viewer id. Sign-out clears it (see user menu), so one viewer
+ * never reuses another's cached list in the same SPA.
+ */
 export const favoriteKeys = {
   all: ['favorites'] as const,
   products: () => [...favoriteKeys.all, 'products'] as const,
