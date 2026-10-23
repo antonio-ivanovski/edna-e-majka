@@ -24,7 +24,7 @@ test('favourited products appear on the favourites page', async ({ page, pageErr
   await waitForHydration(page)
 
   await expect(page.getByRole('heading', { level: 1 })).toContainText('Омилени')
-  const card = page.locator('article h3').first()
+  const card = page.locator('article h2').first()
   await expect(card).toBeVisible()
 
   const title = await card.textContent()

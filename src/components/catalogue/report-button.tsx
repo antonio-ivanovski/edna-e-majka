@@ -49,7 +49,7 @@ export function ReportButton({ storeId, productId }: { storeId?: string; product
     <>
       <button
         type="button"
-        className="cursor-pointer text-xs text-ink-faint hover:text-ink hover:underline"
+        className="cursor-pointer text-xs text-ink-subtle hover:text-ink hover:underline"
         onClick={() => setOpen(true)}
       >
         Пријави

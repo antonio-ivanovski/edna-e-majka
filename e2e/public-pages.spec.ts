@@ -17,7 +17,7 @@ test('the home page renders the catalogue', async ({ page, pageErrors }) => {
 test('the home page shows a product once', async ({ page, pageErrors }) => {
   await page.goto('/')
 
-  const titles = await page.locator('article h3').allInnerTexts()
+  const titles = await page.locator('article h2').allInnerTexts()
 
   expect(titles.length).toBeGreaterThan(0)
   // The pinned products have a row of their own, so they must not also turn

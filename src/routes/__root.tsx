@@ -99,7 +99,7 @@ export const Route = createRootRouteWithContext<RouterContext>()({
     <div className="mx-auto max-w-2xl px-6 py-16 text-center" role="alert">
       <h1 className="font-display text-3xl font-semibold">Нешто тргна наопаку</h1>
       <p className="mt-3 text-ink-muted">Страницата не можеше да се вчита. Обидете се повторно.</p>
-      <p className="mt-1 text-sm text-ink-faint">{error instanceof Error ? error.message : ''}</p>
+      <p className="mt-1 text-sm text-ink-subtle">{error instanceof Error ? error.message : ''}</p>
       <Button type="button" variant="primary" className="mt-6" onClick={reset}>
         Обиди се повторно
       </Button>

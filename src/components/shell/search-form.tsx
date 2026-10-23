@@ -174,7 +174,7 @@ export function SearchForm() {
           onFocus={() => setOpen(true)}
           onKeyDown={onKeyDown}
           placeholder="Пребарај сите производи"
-          className="h-9 w-full min-w-0 rounded-l-card rounded-r-none border border-r-0 border-border bg-surface-raised px-3 text-sm placeholder:text-ink-faint focus:z-10 focus:border-accent-strong focus:ring-1 focus:ring-accent-strong focus:outline-none"
+          className="h-9 w-full min-w-0 rounded-l-card rounded-r-none border border-r-0 border-border bg-surface-raised px-3 text-sm placeholder:text-ink-subtle focus:z-10 focus:border-accent-strong focus:ring-1 focus:ring-accent-strong focus:outline-none"
         />
         <Button type="submit" variant="primary" className="rounded-l-none" aria-label="Пребарај">
           <Search aria-hidden="true" className="size-4" />
@@ -204,7 +204,7 @@ export function SearchForm() {
                     <Highlighted text={item.label} query={trimmedTerm} />
                   </span>
                   {item.detail ? (
-                    <span className="shrink-0 text-xs text-ink-faint">{item.detail}</span>
+                    <span className="shrink-0 text-xs text-ink-subtle">{item.detail}</span>
                   ) : null}
                 </button>
               </li>

@@ -148,7 +148,7 @@ export function NotificationBell() {
                       <span className="text-sm font-semibold">{note.title}</span>
                       <time
                         dateTime={new Date(note.createdAt).toISOString()}
-                        className="shrink-0 text-xs text-ink-faint"
+                        className="shrink-0 text-xs text-ink-subtle"
                       >
                         {formatRelativeTime(new Date(note.createdAt))}
                       </time>

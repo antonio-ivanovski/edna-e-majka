@@ -46,7 +46,7 @@ export function FavoriteButton({ productId }: { productId: string }) {
       aria-label={favorited ? 'Отстрани од омилени' : 'Додај во омилени'}
       aria-pressed={favorited}
       title={favorited ? 'Отстрани од омилени' : 'Додај во омилени'}
-      className="cursor-pointer rounded-full p-2 text-ink-faint transition-colors hover:bg-hover hover:text-danger"
+      className="cursor-pointer rounded-full p-2 text-ink-subtle transition-colors hover:bg-hover hover:text-danger"
       onClick={() => void toggle()}
     >
       <Heart

@@ -42,7 +42,7 @@ export function ModerationNotes({ storeId }: { storeId: string }) {
             className="rounded-card border border-border bg-black/[0.02] p-3 text-sm"
           >
             <p className="whitespace-pre-wrap">{note.body}</p>
-            <p className="mt-1 text-xs text-ink-faint">
+            <p className="mt-1 text-xs text-ink-subtle">
               {new Date(note.createdAt).toLocaleString('mk-MK')}
             </p>
           </li>

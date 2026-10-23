@@ -218,7 +218,7 @@ function ProductPage() {
                 <button
                   type="button"
                   aria-label={`Повеќе за ${product.store.name}`}
-                  className="cursor-pointer rounded-full p-1 text-ink-faint hover:bg-hover hover:text-ink"
+                  className="cursor-pointer rounded-full p-1 text-ink-subtle hover:bg-hover hover:text-ink"
                 >
                   <Info className="size-4" />
                 </button>

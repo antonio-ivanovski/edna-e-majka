@@ -59,7 +59,7 @@ export function ProductCard({ product }: { product: ProductSummary }) {
         </div>
 
         <div className="border-t border-border px-4 py-4">
-          <h3 className="text-lg leading-snug font-bold text-ink">{product.title}</h3>
+          <h2 className="text-lg leading-snug font-bold text-ink">{product.title}</h2>
           <p className="mt-1 text-ink-subtle">Додадено {formatDate(product.createdAt)}</p>
           <p className="mt-2 line-clamp-3 text-ink-muted">{product.description}</p>
         </div>

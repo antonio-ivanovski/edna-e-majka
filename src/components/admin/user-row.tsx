@@ -74,7 +74,7 @@ export function AdminUserRow({ user, isSelf }: { user: AdminUser; isSelf: boolea
             </span>
           </div>
         ) : (
-          <span className="text-ink-faint">—</span>
+          <span className="text-ink-subtle">—</span>
         )}
       </TableCell>
 
@@ -84,7 +84,7 @@ export function AdminUserRow({ user, isSelf }: { user: AdminUser; isSelf: boolea
 
       <TableCell className="text-right">
         {isSelf ? (
-          <span className="text-sm text-ink-faint">Ова сте вие</span>
+          <span className="text-sm text-ink-subtle">Ова сте вие</span>
         ) : (
           <div className="flex flex-wrap justify-end gap-2">
             <ConfirmDialog

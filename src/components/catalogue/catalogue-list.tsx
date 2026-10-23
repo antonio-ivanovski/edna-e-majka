@@ -162,7 +162,7 @@ export function CatalogueList({
             ) : null}
             <span
               aria-hidden="true"
-              className="ml-auto text-ink-faint transition-transform group-open:rotate-180"
+              className="ml-auto text-ink-subtle transition-transform group-open:rotate-180"
             >
               ▾
             </span>

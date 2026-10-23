@@ -10,7 +10,7 @@ import { waitForHydration } from './helpers'
 
 /** The titles of the products in the list. */
 async function productTitles(page: Page): Promise<string[]> {
-  return page.locator('article h3').allInnerTexts()
+  return page.locator('article h2').allInnerTexts()
 }
 
 test('the search page honours the category filter', async ({ page, pageErrors }) => {

@@ -98,7 +98,7 @@ export function SignInForm({
 
       {googleEnabled ? (
         <>
-          <div className="flex items-center gap-3 text-xs text-ink-faint">
+          <div className="flex items-center gap-3 text-xs text-ink-subtle">
             <span className="bg-line h-px flex-1" />
             или
             <span className="bg-line h-px flex-1" />

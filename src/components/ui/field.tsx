@@ -94,7 +94,7 @@ export function Field({
 }
 
 const controlStyles =
-  'w-full rounded-card border border-border bg-surface-raised px-3 text-sm text-ink placeholder:text-ink-faint focus:border-accent-strong focus:ring-1 focus:ring-accent-strong focus:outline-none aria-invalid:border-danger'
+  'w-full rounded-card border border-border bg-surface-raised px-3 text-sm text-ink placeholder:text-ink-subtle focus:border-accent-strong focus:ring-1 focus:ring-accent-strong focus:outline-none aria-invalid:border-danger'
 
 type InputProps = ComponentProps<'input'> & {
   /** Trailing unit, as in the price fields that read `МКД`. */
