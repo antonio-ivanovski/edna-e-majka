@@ -6,6 +6,7 @@ dist/
 .playwright-mcp/
 test-results/
 playwright-report/
+e2e/.artifacts/
 coverage/
 
 # Local Cloudflare secrets (never commit)
