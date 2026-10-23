@@ -19,8 +19,20 @@ export const Route = createFileRoute('/search')({
       return { query, params: deps, page: { items: [], total: 0 } }
     }
 
+    // Every filter travels with the query. The price, stock and category
+    // filters used to be dropped here, so the list came back unchanged even
+    // though the address said otherwise.
     const page = await queryClient.ensureQueryData(
-      productQueries.list({ sort: deps.sort, direction: deps.direction, page: deps.page, query }),
+      productQueries.list({
+        sort: deps.sort,
+        direction: deps.direction,
+        page: deps.page,
+        query,
+        minPrice: deps.minPrice,
+        maxPrice: deps.maxPrice,
+        inStock: deps.inStock,
+        categorySlugs: deps.categorySlugs,
+      }),
     )
 
     return { query, params: deps, page }

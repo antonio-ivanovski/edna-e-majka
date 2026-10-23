@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { Effect, Schema } from 'effect'
 
-import { ProductAvailability, ProductSort, SortDirection } from './common'
+import { InStockFlag, ProductAvailability, ProductSort, SortDirection } from './common'
 
 export const ProductListFilters = Schema.Struct({
   sort: ProductSort.pipe(Schema.withDecodingDefault(Effect.succeed('newest' as any))),
@@ -14,7 +14,7 @@ export const ProductListFilters = Schema.Struct({
   ),
   minPrice: Schema.optional(Schema.NumberFromString),
   maxPrice: Schema.optional(Schema.NumberFromString),
-  inStock: Schema.optional(Schema.String),
+  inStock: InStockFlag,
   /** Keeps the pinned products out of the list, for the home page. */
   excludeFeatured: Schema.optional(Schema.Boolean),
   page: Schema.NumberFromString.pipe(

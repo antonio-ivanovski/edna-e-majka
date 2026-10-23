@@ -1,4 +1,4 @@
-import { Schema } from 'effect'
+import { Schema, SchemaGetter } from 'effect'
 
 /** A trimmed, bounded string. */
 export const TrimmedString = (min: number, max: number) =>
@@ -19,6 +19,25 @@ export const PageNumber = Schema.Number.pipe(
   Schema.check(Schema.isGreaterThanOrEqualTo(1)),
   Schema.check(Schema.isLessThanOrEqualTo(500)),
 )
+
+/**
+ * The in-stock flag arrives as a JSON-parsed search value, so a hand-typed
+ * `?inStock=1` is the number `1` and `?inStock=true` is a boolean, while
+ * navigation inside the app sends the string `'1'`. Every truthy spelling
+ * normalises to the single `'1'` the catalogue query understands; anything
+ * else means no filter rather than a broken page.
+ */
+export const InStockFlag = Schema.optional(
+  Schema.Union([Schema.String, Schema.Number, Schema.Boolean]),
+).pipe(
+  Schema.decodeTo(Schema.optional(Schema.String), {
+    decode: SchemaGetter.transform((value) =>
+      value === '1' || value === 1 || value === true || value === 'true' ? '1' : undefined,
+    ),
+    encode: SchemaGetter.transform((value) => value),
+  }),
+)
+export type InStockFlag = Schema.Schema.Type<typeof InStockFlag>
 
 export const SortDirection = Schema.Literals(['asc', 'desc'])
 export type SortDirection = Schema.Schema.Type<typeof SortDirection>

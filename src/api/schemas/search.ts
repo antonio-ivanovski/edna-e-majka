@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { Effect, Schema } from 'effect'
 
-import { ProductSort, SortDirection } from './common'
+import { InStockFlag, ProductSort, SortDirection } from './common'
 
 export const ProductSearch = Schema.Struct({
   sort: ProductSort.pipe(Schema.withDecodingDefault(Effect.succeed('newest' as any))),
@@ -11,7 +11,7 @@ export const ProductSearch = Schema.Struct({
   ),
   minPrice: Schema.optional(Schema.Union([Schema.Number, Schema.NumberFromString])),
   maxPrice: Schema.optional(Schema.Union([Schema.Number, Schema.NumberFromString])),
-  inStock: Schema.optional(Schema.String),
+  inStock: InStockFlag,
   categorySlugs: Schema.optional(Schema.String),
 })
 

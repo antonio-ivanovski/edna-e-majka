@@ -114,3 +114,20 @@ export function Textarea({ className, ...props }: ComponentProps<'textarea'>) {
 export function Select({ className, ...props }: ComponentProps<'select'>) {
   return <select className={cn(controlStyles, 'h-9 pr-8', className)} {...props} />
 }
+
+/**
+ * A labelled checkbox. The label wraps the control, so the two are associated
+ * without an id, and the accent colour comes from the theme.
+ */
+export function Checkbox({
+  label,
+  className,
+  ...props
+}: ComponentProps<'input'> & { label: ReactNode }) {
+  return (
+    <label className={cn('flex cursor-pointer items-center gap-2 text-sm', className)}>
+      <input type="checkbox" className="size-4 accent-[var(--color-accent)]" {...props} />
+      {label}
+    </label>
+  )
+}
