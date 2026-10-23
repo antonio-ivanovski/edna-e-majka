@@ -5,6 +5,7 @@ import { toast } from 'sonner'
 import { Button } from '#/components/ui/button'
 import { Panel } from '#/components/ui/panel'
 import { addModerationNote, listModerationNotes } from '#/server/functions/admin'
+import { toResult } from '#/lib/server-result'
 
 export function ModerationNotes({ storeId }: { storeId: string }) {
   const queryClient = useQueryClient()
@@ -15,7 +16,15 @@ export function ModerationNotes({ storeId }: { storeId: string }) {
   const [body, setBody] = useState('')
 
   const mutation = useMutation({
-    mutationFn: () => addModerationNote({ data: { storeId, body } }),
+    mutationFn: async () => {
+      const result = toResult(await addModerationNote({ data: { storeId, body } }))
+
+      if (result._tag === 'Failure') {
+        throw new Error(result.failure.message)
+      }
+
+      return result.success
+    },
     onSuccess: () => {
       setBody('')
       void queryClient.invalidateQueries({ queryKey: ['moderation-notes', storeId] })

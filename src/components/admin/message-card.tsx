@@ -1,4 +1,4 @@
-import { useRouter } from '@tanstack/react-router'
+import { Link, useRouter } from '@tanstack/react-router'
 import { useState } from 'react'
 import { toast } from 'sonner'
 
@@ -11,9 +11,10 @@ import { deleteMessage, setMessageHandled } from '#/server/functions/admin'
 import type { AdminMessage } from '#/server/queries/admin'
 import { toResult } from '#/lib/server-result'
 
-const KINDS: Record<AdminMessage['kind'], string> = {
-  contact: 'Контакт',
-  cooperation: 'Соработка',
+const KINDS: Record<AdminMessage['kind'], { label: string; color: 'grey' | 'blue' | 'red' }> = {
+  contact: { label: 'Контакт', color: 'grey' },
+  cooperation: { label: 'Соработка', color: 'blue' },
+  report: { label: 'Пријава', color: 'red' },
 }
 
 /** One enquiry from the contact or cooperation form. */
@@ -64,11 +65,13 @@ export function AdminMessageCard({ message }: { message: AdminMessage }) {
       )}
     >
       <div className="flex flex-wrap items-center gap-2">
-        <Label color={message.kind === 'cooperation' ? 'blue' : 'grey'} size="small">
-          {KINDS[message.kind]}
+        <Label color={KINDS[message.kind].color} size="small">
+          {KINDS[message.kind].label}
         </Label>
 
-        <span className="font-semibold text-ink">{message.name || 'Без име'}</span>
+        <span className="font-semibold text-ink">
+          {message.kind === 'report' ? null : message.name || 'Без име'}
+        </span>
         <span className="text-sm text-ink-subtle">{message.email}</span>
         {message.phone ? <span className="text-sm text-ink-subtle">· {message.phone}</span> : null}
 
@@ -77,6 +80,31 @@ export function AdminMessageCard({ message }: { message: AdminMessage }) {
           {handled && message.handledAt ? ` · прочитана ${formatDate(message.handledAt)}` : ''}
         </span>
       </div>
+
+      {message.kind === 'report' && (message.productId || message.storeId) ? (
+        <p className="mt-2 text-sm text-ink-subtle">
+          Пријавено:{' '}
+          {message.productId ? (
+            <Link
+              to="/products/$productId"
+              params={{ productId: message.productId }}
+              className="font-semibold text-accent-ink hover:underline"
+            >
+              {message.productTitle ?? 'производ'}
+            </Link>
+          ) : null}
+          {message.productId && message.storeId ? ' · ' : null}
+          {message.storeId ? (
+            <Link
+              to="/producers/$storeId"
+              params={{ storeId: message.storeId }}
+              className="font-semibold text-accent-ink hover:underline"
+            >
+              {message.storeName ?? 'продавница'}
+            </Link>
+          ) : null}
+        </p>
+      ) : null}
 
       {message.website ? (
         <p className="mt-2 text-sm">

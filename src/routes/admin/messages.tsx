@@ -1,6 +1,6 @@
 import { createFileRoute } from '@tanstack/react-router'
 
-import { AdminPager } from '#/components/admin/admin-pager'
+import { Pager } from '#/components/ui/pager'
 import { AdminFilters } from '#/components/admin/list-toolbar'
 import { AdminMessageCard } from '#/components/admin/message-card'
 import { EmptyState } from '#/components/ui/empty-state'
@@ -73,10 +73,9 @@ function AdminMessagesPage() {
         </div>
       )}
 
-      <AdminPager
+      <Pager
         page={search.page ?? 1}
-        total={total}
-        pageSize={ADMIN_PAGE_SIZE}
+        pageCount={Math.max(1, Math.ceil(total / ADMIN_PAGE_SIZE))}
         onPageChange={(page) => void navigate({ search: (prev) => ({ ...prev, page }) })}
       />
     </div>

@@ -101,7 +101,7 @@ function AdminStorePage() {
             />
           </Panel>
         ) : (
-          <Table>
+          <Table label={`Производи на ${store.name}`}>
             <TableHead>
               <TableRow>
                 <TableHeaderCell>Производ</TableHeaderCell>

@@ -57,7 +57,7 @@ export type AdminUser = {
 }
 export type AdminMessage = {
   id: string
-  kind: 'contact' | 'cooperation'
+  kind: 'contact' | 'cooperation' | 'report'
   name: string
   email: string
   phone: string | null
@@ -65,6 +65,11 @@ export type AdminMessage = {
   message: string
   createdAt: Date
   handledAt: Date | null
+  /** What the report is about, if anything. */
+  productId: string | null
+  productTitle: string | null
+  storeId: string | null
+  storeName: string | null
 }
 
 function matchesQuery(values: readonly (string | null)[], query: string): boolean {
@@ -362,8 +367,14 @@ export const selectAdminMessages = Effect.fn('selectAdminMessages')(function* (f
             message: contactMessage.message,
             createdAt: contactMessage.createdAt,
             handledAt: contactMessage.handledAt,
+            productId: contactMessage.productId,
+            productTitle: sql<string | null>`${product.title}`.as('product_title'),
+            storeId: contactMessage.storeId,
+            storeName: sql<string | null>`${store.name}`.as('store_name'),
           })
           .from(contactMessage)
+          .leftJoin(product, eq(product.id, contactMessage.productId))
+          .leftJoin(store, eq(store.id, contactMessage.storeId))
           .where(where)
           .orderBy(desc(contactMessage.createdAt))
           .limit(ADMIN_PAGE_SIZE)

@@ -38,7 +38,7 @@ export function AdminFilters<Value extends string>({
             onClick={() => onChange(option.value)}
             className={cn(
               'cursor-pointer rounded-card px-2.5 py-1.5 text-sm font-semibold',
-              active ? 'bg-black/[0.06] text-ink' : 'text-ink-subtle hover:bg-hover hover:text-ink',
+              active ? 'bg-border text-ink' : 'text-ink-subtle hover:bg-hover hover:text-ink',
             )}
           >
             {option.label}

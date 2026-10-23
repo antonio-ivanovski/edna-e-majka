@@ -1,8 +1,9 @@
 import { Link, createFileRoute } from '@tanstack/react-router'
 import { useState } from 'react'
 import { ExternalLink } from 'lucide-react'
+import { toast } from 'sonner'
 
-import { AdminPager } from '#/components/admin/admin-pager'
+import { Pager } from '#/components/ui/pager'
 import { AdminFilters, AdminSearch } from '#/components/admin/list-toolbar'
 import { StoreQuickAction } from '#/components/admin/store-quick-action'
 import { StoreStatusLabel } from '#/components/manage/status-label'
@@ -24,6 +25,7 @@ import { imageUrl } from '#/lib/images'
 import { ADMIN_PAGE_SIZE } from '#/lib/pagination'
 import { adminQueries } from '#/lib/queries/admin'
 import { adminBulkSetStoreStatus } from '#/server/functions/admin'
+import { toResult } from '#/lib/server-result'
 import type { StoreStatus } from '#/server/queries/manage'
 
 const STATUS_FILTERS: { value?: StoreStatus; label: string }[] = [
@@ -79,12 +81,20 @@ function AdminStoresPage() {
 
     setBusy(true)
 
-    await adminBulkSetStoreStatus({
-      data: { storeIds: [...selected], status: bulkStatus },
-    })
+    const result = toResult(
+      await adminBulkSetStoreStatus({
+        data: { storeIds: [...selected], status: bulkStatus },
+      }),
+    )
+
+    setBusy(false)
+
+    if (result._tag === 'Failure') {
+      toast.error(result.failure.message)
+      return
+    }
 
     setSelected(new Set())
-    setBusy(false)
     await navigate({ search: (prev) => ({ ...prev }) })
   }
 
@@ -152,12 +162,13 @@ function AdminStoresPage() {
           />
         </Panel>
       ) : (
-        <Table>
+        <Table label="Продавници">
           <TableHead>
             <TableRow>
               <TableHeaderCell>
                 <input
                   type="checkbox"
+                  aria-label="Избери ги сите продавници"
                   checked={items.length > 0 && items.every((store) => selected.has(store.id))}
                   onChange={(event) => {
                     if (event.target.checked) {
@@ -181,6 +192,7 @@ function AdminStoresPage() {
                 <TableCell>
                   <input
                     type="checkbox"
+                    aria-label={`Избери ја продавницата ${store.name}`}
                     checked={selected.has(store.id)}
                     onChange={() => toggle(store.id)}
                   />
@@ -225,10 +237,9 @@ function AdminStoresPage() {
         </Table>
       )}
 
-      <AdminPager
+      <Pager
         page={search.page ?? 1}
-        total={total}
-        pageSize={ADMIN_PAGE_SIZE}
+        pageCount={Math.max(1, Math.ceil(total / ADMIN_PAGE_SIZE))}
         onPageChange={(page) => void navigate({ search: (prev) => ({ ...prev, page }) })}
       />
     </div>

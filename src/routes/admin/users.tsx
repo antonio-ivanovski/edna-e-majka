@@ -1,6 +1,6 @@
 import { createFileRoute } from '@tanstack/react-router'
 
-import { AdminPager } from '#/components/admin/admin-pager'
+import { Pager } from '#/components/ui/pager'
 import { AdminSearch } from '#/components/admin/list-toolbar'
 import { AdminUserRow } from '#/components/admin/user-row'
 import { EmptyState } from '#/components/ui/empty-state'
@@ -58,7 +58,7 @@ function AdminUsersPage() {
           />
         </Panel>
       ) : (
-        <Table>
+        <Table label="Корисници">
           <TableHead>
             <TableRow>
               <TableHeaderCell>Корисник</TableHeaderCell>
@@ -76,10 +76,9 @@ function AdminUsersPage() {
         </Table>
       )}
 
-      <AdminPager
+      <Pager
         page={search.page ?? 1}
-        total={total}
-        pageSize={ADMIN_PAGE_SIZE}
+        pageCount={Math.max(1, Math.ceil(total / ADMIN_PAGE_SIZE))}
         onPageChange={(page) => void navigate({ search: (prev) => ({ ...prev, page }) })}
       />
     </div>
