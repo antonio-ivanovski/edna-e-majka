@@ -47,7 +47,7 @@ export function UserMenu({ googleEnabled }: { googleEnabled: boolean }) {
           type="button"
           className="flex max-w-[16rem] cursor-pointer items-center gap-1.5 rounded-card px-1.5 py-2 text-ink hover:bg-hover"
         >
-          <Avatar src={user.image} alt={label} />
+          <Avatar src={user.image} alt="" />
           <span className="max-w-[9rem] truncate">{label}</span>
           <ChevronDown aria-hidden="true" className="size-4 text-ink-faint" />
         </button>

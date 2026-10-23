@@ -1,5 +1,7 @@
+import AxeBuilder from '@axe-core/playwright'
+
 import { expectNoPageErrors, expect, test } from './fixtures'
-import { firstProductPath, waitForHydration } from './helpers'
+import { firstProducerPath, firstProductPath, waitForHydration } from './helpers'
 
 /**
  * The accessibility sweep: the landmarks, headings, image alternatives and
@@ -44,6 +46,24 @@ test('landmarks, one heading and labelled images hold on every public page', asy
       .locator('img')
       .evaluateAll((nodes) => nodes.filter((node) => !node.hasAttribute('alt')).length)
     expect(missingAlt).toBe(0)
+  }
+
+  expectNoPageErrors(pageErrors)
+})
+
+test('axe finds no violations on the key pages', async ({ page, pageErrors }) => {
+  const productPath = await firstProductPath(page)
+  const producerPath = await firstProducerPath(page)
+
+  for (const path of ['/', '/search?q=мед', '/producers', productPath, producerPath]) {
+    await page.goto(path)
+    await waitForHydration(page)
+
+    const results = await new AxeBuilder({ page }).analyze()
+    expect(
+      results.violations,
+      `${path} has axe violations:\n${results.violations.map((violation) => ` - ${violation.id}: ${violation.nodes.length} nodes`).join('\n')}`,
+    ).toEqual([])
   }
 
   expectNoPageErrors(pageErrors)

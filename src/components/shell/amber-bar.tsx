@@ -12,7 +12,7 @@ const socials = [
 /** The amber strip above every page: social links, cooperation, contact. */
 export function AmberBar() {
   return (
-    <div className="bg-brand text-on-brand">
+    <div role="region" aria-label="Контакт и социјални мрежи" className="bg-brand text-on-brand">
       <div className="mx-auto flex max-w-[80rem] flex-wrap items-center justify-between gap-x-4 px-2">
         <div className="flex items-center">
           {socials.map(({ href, label, Icon }) => (

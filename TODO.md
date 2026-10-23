@@ -164,7 +164,7 @@ Goal: one typed contract layer, Effect everywhere on the server, one client cach
 ## Testing (production gate)
 
 - [x] **TX-01** E2E (Playwright): public pages, product, search, manage, admin happy paths + auth. Blockers: none.
-- [ ] **TX-02** Accessibility tests (axe) on key pages. Blockers: T2-11.
+- [x] **TX-02** Accessibility tests (axe) on key pages. `e2e/a11y.spec.ts` runs axe clean on home, search, producers, product and producer pages, plus landmark/heading/image/keyboard assertions. Blockers: T2-11.
 - [ ] **TX-03** Visual regression (optional). Blockers: TX-01 baseline.
 - [ ] **TX-04** Load/perf smoke on search + catalogue. Blockers: none.
 

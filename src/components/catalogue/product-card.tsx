@@ -88,7 +88,7 @@ export function ProductCard({ product }: { product: ProductSummary }) {
           params={{ storeId: product.store.slug ?? product.store.id }}
           className="inline-flex items-center gap-2 text-sm text-ink-subtle hover:text-ink"
         >
-          <Avatar src={imageUrl(product.store.avatarKey)} alt={product.store.name} />
+          <Avatar src={imageUrl(product.store.avatarKey)} alt="" />
           {product.store.name}
         </Link>
       </div>

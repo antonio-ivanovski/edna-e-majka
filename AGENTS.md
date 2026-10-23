@@ -24,5 +24,9 @@ Layered, from bottom to top:
 - `src/routes/*` — TanStack Router routes whose loaders call
   `queryClient.ensureQueryData(...)` and whose components use `useSuspenseQuery`.
 
-Effect stays server-side. The client transports are TanStack Start server
-functions and TanStack Router; no `effect` code ships to the browser.
+Effect stays server-side, with one deliberate exception. The client transports are TanStack Start server
+functions and TanStack Router; `Context` services, layers and `Effect` programs never ship to the browser.
+What does ship is pure `Schema` (and `SchemaIssue` for formatting): the schemas in
+`src/api/schemas/*` validate route search params and drive `effectResolver` for react-hook-form,
+so the same definitions guard both sides of the wire. Keep it that way — schemas and the
+resolver are the only `effect` imports allowed outside `src/server`.

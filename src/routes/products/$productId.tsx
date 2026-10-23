@@ -209,7 +209,7 @@ function ProductPage() {
             className="inline-flex items-center gap-2 font-bold hover:underline"
           >
             {product.store.name}
-            <Avatar src={imageUrl(product.store.avatarKey)} alt={product.store.name} />
+            <Avatar src={imageUrl(product.store.avatarKey)} alt="" />
           </Link>
           <ReportButton productId={product.id} storeId={product.store.id} />
           {product.store.description ? (

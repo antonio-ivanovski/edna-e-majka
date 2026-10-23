@@ -44,7 +44,7 @@ export function ContactDialog({ trigger }: { trigger?: ReactNode }) {
       title="Контактирајте нѐ"
       trigger={
         trigger ?? (
-          <button type="button" className="cursor-pointer px-[5px] py-2.5 text-white">
+          <button type="button" className="cursor-pointer px-[5px] py-2.5 text-on-brand">
             Контакт
           </button>
         )
