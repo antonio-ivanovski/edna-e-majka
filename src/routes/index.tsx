@@ -5,7 +5,8 @@ import { useCallback } from 'react'
 import { CatalogueList } from '#/components/catalogue/catalogue-list'
 import { ProductCard } from '#/components/catalogue/product-card'
 import { ContactDialog } from '#/components/shell/contact-dialog'
-import { Message } from '#/components/ui/message'
+import { CooperationDialog } from '#/components/shell/cooperation-dialog'
+import { Button } from '#/components/ui/button'
 import { useRecentlyViewed } from '#/hooks/use-recently-viewed'
 import { CATEGORIES } from '#/lib/categories'
 import { imageUrl } from '#/lib/images'
@@ -18,8 +19,10 @@ export const Route = createFileRoute('/')({
   validateSearch: toValidator(ProductSearch),
   loaderDeps: ({ search }) => search,
   loader: async ({ context: { queryClient }, deps }) => {
+    // The pinned products have a row of their own above, so they are kept
+    // out of the list underneath rather than shown twice.
     await Promise.all([
-      queryClient.ensureQueryData(productQueries.list(deps)),
+      queryClient.ensureQueryData(productQueries.list({ ...deps, excludeFeatured: true })),
       queryClient.ensureQueryData(productQueries.featured()),
     ])
     return { params: deps }
@@ -32,7 +35,7 @@ export const Route = createFileRoute('/')({
 
 function HomePage() {
   const { params } = Route.useLoaderData()
-  const { data: page } = useSuspenseQuery(productQueries.list(params))
+  const { data: page } = useSuspenseQuery(productQueries.list({ ...params, excludeFeatured: true }))
   const { data: featured } = useSuspenseQuery(productQueries.featured())
   const navigate = Route.useNavigate()
   const recent = useRecentlyViewed()
@@ -52,51 +55,60 @@ function HomePage() {
 
   return (
     <div>
-      <Message className="m-2.5">
-        <h1 className="mb-4 font-display text-[1.6rem] leading-snug font-semibold">
-          Добредојдовте на ЕДНА Е МАЈКА
-        </h1>
-        <p>
-          „Една е мајка“ е онлајн платформа која служи како огласник за домашни производи. Тука
-          индивидуални произведувачи на домашни производи со висок квалитет ги објавуваат своите
-          производи, додека купувачите на лесен и прегледен начин имаат пристап на истите.
+      <section className="px-4 pt-8">
+        <h1 className="font-display text-3xl font-semibold">Една е мајка</h1>
+        <p className="mt-2 max-w-2xl text-ink-muted">
+          Онлајн огласник за домашни производи. Производителите ги објавуваат своите производи, а
+          купувачите ги наоѓаат без никаков провизија. Користењето е бесплатно и за двете страни.
         </p>
-        <p>
-          Користењето на платформата е бесплатно за сите, нема никакви трошоци ни за огласување на
-          производите, ниту за купување на истите.
-        </p>
-        <p>
-          Доколку сте производител и сакате да огласите вашите производи или сакате да видите
-          производите на вашиот омилен производител,{' '}
-          <ContactDialog
+        <div className="mt-4 flex flex-wrap items-center gap-2">
+          <Button asChild variant="primary">
+            <Link to="/producers">Види ги производителите</Link>
+          </Button>
+          <CooperationDialog
             trigger={
-              <button
-                type="button"
-                className="cursor-pointer font-bold underline underline-offset-2"
-              >
-                контактирајте нѐ.
-              </button>
+              <Button type="button" variant="outline">
+                Стани производител
+              </Button>
             }
           />
-        </p>
-      </Message>
+          <ContactDialog
+            trigger={
+              <Button type="button" variant="ghost">
+                Контакт
+              </Button>
+            }
+          />
+        </div>
+      </section>
 
-      <div className="flex flex-wrap items-stretch justify-around">
-        {CATEGORIES.map((category) => (
-          <Link
-            key={category.slug}
-            to="/categories/$slug"
-            params={{ slug: category.slug }}
-            className="flex-[1_1_100px] cursor-pointer p-[15px] text-center font-semibold transition-transform duration-200 ease-out hover:scale-105 hover:bg-[radial-gradient(closest-side,#ffc145,#ffc14500)]"
-          >
-            <img src={category.icon} alt="" width={80} height={80} className="mx-auto h-20 w-20" />
-            <span className="block pt-1.5">{category.title}</span>
-          </Link>
-        ))}
-      </div>
+      <section className="px-4 pt-10">
+        <h2 className="font-display text-xl font-semibold">Категории</h2>
+        <div className="mt-2 grid grid-cols-2 gap-x-2 gap-y-4 sm:grid-cols-4 lg:grid-cols-8">
+          {CATEGORIES.map((category) => (
+            <Link
+              key={category.slug}
+              to="/categories/$slug"
+              params={{ slug: category.slug }}
+              className="flex flex-col items-center gap-2 rounded-card px-2 py-3 text-center transition-transform duration-200 ease-out hover:-translate-y-0.5 hover:bg-[radial-gradient(closest-side,var(--color-brand),transparent)]"
+            >
+              <img
+                src={category.icon}
+                alt=""
+                width={72}
+                height={72}
+                className="h-16 w-16 shrink-0 sm:h-[72px] sm:w-[72px]"
+              />
+              <span className="min-h-[2.4em] text-sm leading-tight font-semibold">
+                {category.title}
+              </span>
+            </Link>
+          ))}
+        </div>
+      </section>
 
       {recent.length > 0 ? (
-        <section className="px-4 pt-4">
+        <section className="px-4 pt-10">
           <h2 className="font-display text-xl font-semibold">Неодамна прегледани</h2>
           <div className="mt-3 grid grid-cols-[repeat(auto-fill,minmax(140px,1fr))] gap-3">
             {recent.map((item) => (
@@ -104,12 +116,12 @@ function HomePage() {
                 key={item.id}
                 to="/products/$productId"
                 params={{ productId: item.slug ?? item.id }}
-                className="flex flex-col items-center gap-2 rounded-card border border-border bg-surface-raised p-3 text-center hover:shadow"
+                className="flex flex-col items-center gap-2 rounded-card border border-border bg-surface-raised p-3 text-center transition-shadow hover:shadow-lift"
               >
                 {item.imageKey ? (
                   <img
                     src={imageUrl(item.imageKey)}
-                    alt={item.title}
+                    alt=""
                     width={120}
                     height={90}
                     className="h-[90px] w-full rounded-card object-cover"
@@ -123,9 +135,9 @@ function HomePage() {
       ) : null}
 
       {featured.length > 0 ? (
-        <section className="px-4 pt-4">
-          <h2 className="font-display text-xl font-semibold">Издвоени производи</h2>
-          <div className="mt-3 grid grid-cols-[repeat(auto-fill,minmax(250px,1fr))] gap-4">
+        <section className="pt-10">
+          <h2 className="px-4 font-display text-xl font-semibold">Издвоени производи</h2>
+          <div className="mt-3 grid grid-cols-[repeat(auto-fill,minmax(250px,1fr))] gap-4 p-4">
             {featured.map((product) => (
               <ProductCard key={product.id} product={product} />
             ))}
@@ -133,23 +145,31 @@ function HomePage() {
         </section>
       ) : null}
 
-      <CatalogueList
-        products={page.items}
-        total={page.total}
-        sort={params.sort}
-        direction={params.direction}
-        page={params.page}
-        pageSize={PRODUCT_PAGE_SIZE}
-        emptyTitle="Сѐ уште нема објавени производи."
-        emptyDescription="Штом производителите ги објават своите производи, тие ќе се појават тука."
-        onParamsChange={onParamsChange}
-        filters={{
-          minPrice: params.minPrice,
-          maxPrice: params.maxPrice,
-          inStock: params.inStock,
-          categorySlugs: params.categorySlugs,
-        }}
-      />
+      <section className="pt-10">
+        <h2 className="px-4 font-display text-xl font-semibold">Повеќе производи</h2>
+        <CatalogueList
+          products={page.items}
+          total={page.total}
+          sort={params.sort}
+          direction={params.direction}
+          page={params.page}
+          pageSize={PRODUCT_PAGE_SIZE}
+          emptyTitle="Сѐ уште нема објавени производи."
+          emptyDescription="Штом производителите ги објават своите производи, тие ќе се појават тука."
+          emptyAction={
+            <Button asChild variant="primary">
+              <Link to="/producers">Види ги производителите</Link>
+            </Button>
+          }
+          onParamsChange={onParamsChange}
+          filters={{
+            minPrice: params.minPrice,
+            maxPrice: params.maxPrice,
+            inStock: params.inStock,
+            categorySlugs: params.categorySlugs,
+          }}
+        />
+      </section>
     </div>
   )
 }

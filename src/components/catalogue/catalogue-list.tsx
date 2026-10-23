@@ -1,5 +1,5 @@
 import { SortAsc, SortDesc } from 'lucide-react'
-import { useCallback } from 'react'
+import { useCallback, type ReactNode } from 'react'
 
 import { Button } from '#/components/ui/button'
 import { formatCount } from '#/lib/format'
@@ -31,6 +31,7 @@ export function CatalogueList({
   pageSize,
   emptyTitle,
   emptyDescription,
+  emptyAction,
   filters,
   showCategoryFilter = true,
   onParamsChange,
@@ -43,6 +44,8 @@ export function CatalogueList({
   pageSize: number
   emptyTitle: string
   emptyDescription?: string
+  /** What to offer when the list is empty. */
+  emptyAction?: ReactNode
   filters?: {
     minPrice?: number | undefined
     maxPrice?: number | undefined
@@ -200,6 +203,7 @@ export function CatalogueList({
         products={products}
         emptyTitle={emptyTitle}
         emptyDescription={emptyDescription}
+        emptyAction={emptyAction}
       />
 
       {hasMore ? <InfiniteScrollTrigger onVisible={loadMore} /> : null}

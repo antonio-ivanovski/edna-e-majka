@@ -14,6 +14,19 @@ test('the home page renders the catalogue', async ({ page, pageErrors }) => {
   expectNoPageErrors(pageErrors)
 })
 
+test('the home page shows a product once', async ({ page, pageErrors }) => {
+  await page.goto('/')
+
+  const titles = await page.locator('article h3').allInnerTexts()
+
+  expect(titles.length).toBeGreaterThan(0)
+  // The pinned products have a row of their own, so they must not also turn
+  // up in the list underneath.
+  expect(new Set(titles).size).toBe(titles.length)
+
+  expectNoPageErrors(pageErrors)
+})
+
 test('a category page renders its products', async ({ page, pageErrors }) => {
   await page.goto('/categories/honey')
 

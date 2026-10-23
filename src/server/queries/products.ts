@@ -99,6 +99,10 @@ function publicProductConditions(filters: Partial<ProductListFiltersType>) {
     conditions.push(eq(product.availability, 'in_stock'))
   }
 
+  if (filters.excludeFeatured) {
+    conditions.push(sql`${product.featured} = 0`)
+  }
+
   if (filters.query) {
     const matches = buildSearchVariants(filters.query).map(
       (v) => sql`instr(${product.searchText}, ${v}) > 0`,

@@ -15,6 +15,8 @@ export const ProductListFilters = Schema.Struct({
   minPrice: Schema.optional(Schema.NumberFromString),
   maxPrice: Schema.optional(Schema.NumberFromString),
   inStock: Schema.optional(Schema.String),
+  /** Keeps the pinned products out of the list, for the home page. */
+  excludeFeatured: Schema.optional(Schema.Boolean),
   page: Schema.NumberFromString.pipe(
     Schema.check(Schema.isInt(), Schema.isGreaterThanOrEqualTo(1), Schema.isLessThanOrEqualTo(500)),
     Schema.withDecodingDefault(Effect.succeed('1' as any)),

@@ -1,4 +1,4 @@
-import { lazy, Suspense, useState } from 'react'
+import { lazy, Suspense, useState, type ReactNode } from 'react'
 
 import { Dialog } from '#/components/ui/dialog'
 import { FormSkeleton } from '#/components/ui/skeleton'
@@ -15,8 +15,11 @@ const CooperationForm = lazy(async () => ({
   default: (await import('./cooperation-form')).CooperationForm,
 }))
 
-/** The cooperation form behind the amber bar's "Соработка". */
-export function CooperationDialog() {
+/**
+ * The cooperation form behind the amber bar's "Соработка". The trigger can be
+ * replaced, so the same form can be offered from the home page.
+ */
+export function CooperationDialog({ trigger }: { trigger?: ReactNode } = {}) {
   const [open, setOpen] = useState(false)
   const [sent, setSent] = useState(false)
 
@@ -32,9 +35,11 @@ export function CooperationDialog() {
         }
       }}
       trigger={
-        <button type="button" className="cursor-pointer px-[5px] py-2.5 text-white">
-          Соработка
-        </button>
+        trigger ?? (
+          <button type="button" className="cursor-pointer px-[5px] py-2.5 text-on-brand">
+            Соработка
+          </button>
+        )
       }
       footer={
         sent ? (

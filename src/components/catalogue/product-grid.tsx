@@ -1,3 +1,5 @@
+import type { ReactNode } from 'react'
+
 import { EmptyState } from '#/components/ui/empty-state'
 import type { ProductSummary } from '#/server/queries/products'
 
@@ -7,13 +9,16 @@ export function ProductGrid({
   products,
   emptyTitle,
   emptyDescription,
+  emptyAction,
 }: {
   products: ProductSummary[]
   emptyTitle: string
   emptyDescription?: string | undefined
+  /** What to offer when there is nothing to show. */
+  emptyAction?: ReactNode
 }) {
   if (products.length === 0) {
-    return <EmptyState title={emptyTitle} description={emptyDescription} />
+    return <EmptyState title={emptyTitle} description={emptyDescription} action={emptyAction} />
   }
 
   return (

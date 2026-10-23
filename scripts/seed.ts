@@ -70,6 +70,8 @@ type DemoProduct = {
   images: { source: ImageSource; alt: string }[]
   daysAgo: number
   status?: 'published' | 'archived'
+  /** Pinned to the top of the home page. */
+  featured?: boolean
 }
 
 const STORES: DemoStore[] = [
@@ -174,6 +176,7 @@ const PRODUCTS: DemoProduct[] = [
       { source: 'square', alt: 'Акациев мед, затворена тегла' },
     ],
     daysAgo: 2,
+    featured: true,
   },
   {
     id: 'demo-product-livadski-med',
@@ -450,11 +453,12 @@ async function main() {
       description: demoProduct.description,
       searchText: buildSearchText(demoProduct.title, demoProduct.description),
       status: demoProduct.status ?? 'published',
+      featured: demoProduct.featured ?? false,
       archivedAt: demoProduct.status === 'archived' ? daysAgoDate(demoProduct.daysAgo - 1) : null,
       createdAt: daysAgoDate(demoProduct.daysAgo),
       updatedAt: daysAgoDate(demoProduct.daysAgo),
     })),
-    10,
+    11,
     (chunk) => db.insert(product).values(chunk),
   )
 
