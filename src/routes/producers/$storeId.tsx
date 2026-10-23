@@ -79,7 +79,7 @@ function ProducerPage() {
       <Panel className={store.coverKey ? 'm-2.5 -mt-2.5 rounded-t-none' : 'm-2.5'}>
         <div className="flex flex-col gap-3">
           <div className="flex flex-wrap items-center gap-2.5">
-            <Avatar src={imageUrl(store.avatarKey)} alt={store.name} size={32} />
+            <Avatar src={imageUrl(store.avatarKey)} alt="" size={32} />
             <h1 className="min-w-0 flex-1 font-display text-3xl font-semibold">{store.name}</h1>
             <FollowButton storeId={store.id} />
           </div>

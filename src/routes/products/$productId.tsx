@@ -21,6 +21,27 @@ import { formatPrice, truncate } from '#/lib/format'
 import { imageUrl } from '#/lib/images'
 import { productQueries } from '#/lib/queries/products'
 
+/**
+ * Absolute site origin for canonical/OG/JSON-LD URLs. `head` runs on both the
+ * server and the browser with no request in hand, so prefer the live origin
+ * and fall back to production (same pattern as sitemap/robots, which read
+ * `APP_URL` on the server).
+ */
+const SITE_BASE_FALLBACK = 'https://ednaemajka.mk'
+
+function siteBase(): string {
+  if (typeof window !== 'undefined' && window.location?.origin) {
+    return window.location.origin.replace(/\/$/, '')
+  }
+  return SITE_BASE_FALLBACK
+}
+
+function absoluteUrl(value: string | undefined): string | undefined {
+  if (!value) return undefined
+  if (/^https?:\/\//i.test(value)) return value
+  return value.startsWith('/') ? `${siteBase()}${value}` : `${siteBase()}/${value}`
+}
+
 export const Route = createFileRoute('/products/$productId')({
   loader: async ({ context: { queryClient }, params }) => {
     const product = await queryClient.ensureQueryData(productQueries.detail(params.productId))
@@ -31,33 +52,42 @@ export const Route = createFileRoute('/products/$productId')({
       throw redirect({ to: '/products/$productId', params: { productId: product.slug } })
     }
 
-    const related = await queryClient.ensureQueryData(productQueries.related(params.productId))
+    const related = await queryClient.ensureQueryData(productQueries.related(product.id))
 
     return { product, related }
   },
   head: ({ loaderData }) => {
     const title = loaderData ? `${loaderData.product.title} | ЕДНА Е МАЈКА` : 'ЕДНА Е МАЈКА'
+    const description = loaderData ? truncate(loaderData.product.description, 160) : ''
+    const path = loaderData ? `/products/${loaderData.product.slug ?? loaderData.product.id}` : null
+    const canonical = path ? absoluteUrl(path) : undefined
+    const image = loaderData
+      ? (absoluteUrl(
+          loaderData.product.image
+            ? imageUrl(loaderData.product.image.key)
+            : '/edna-e-majka-og.jpg',
+        ) ?? '/edna-e-majka-og.jpg')
+      : undefined
+    const firstVariant = loaderData?.product.variants?.[0]
 
     return {
       meta: [
         { title },
         {
           name: 'description',
-          content: loaderData ? truncate(loaderData.product.description, 155) : '',
+          content: description,
         },
         { property: 'og:title', content: title },
-        {
-          property: 'og:image',
-          content: loaderData?.product.image
-            ? imageUrl(loaderData.product.image.key)
-            : '/edna-e-majka-og.jpg',
-        },
+        { property: 'og:description', content: description },
+        { property: 'og:type', content: 'product' },
+        ...(canonical ? [{ property: 'og:url', content: canonical }] : []),
+        ...(image ? [{ property: 'og:image', content: image }] : []),
       ],
-      links: loaderData
+      links: canonical
         ? [
             {
               rel: 'canonical',
-              href: '/products/' + (loaderData.product.slug ?? loaderData.product.id),
+              href: canonical,
             },
           ]
         : [],
@@ -70,18 +100,20 @@ export const Route = createFileRoute('/products/$productId')({
                 '@type': 'Product',
                 name: loaderData.product.title,
                 description: loaderData.product.description,
-                image: loaderData.product.image
-                  ? imageUrl(loaderData.product.image.key)
-                  : undefined,
-                offers: {
-                  '@type': 'Offer',
-                  priceCurrency: 'MKD',
-                  price: loaderData.product.variants?.[0]?.price,
-                  availability:
-                    loaderData.product.availability === 'in_stock'
-                      ? 'https://schema.org/InStock'
-                      : 'https://schema.org/OutOfStock',
-                },
+                ...(image ? { image } : {}),
+                ...(firstVariant
+                  ? {
+                      offers: {
+                        '@type': 'Offer',
+                        priceCurrency: 'MKD',
+                        price: firstVariant.price,
+                        availability:
+                          loaderData.product.availability === 'in_stock'
+                            ? 'https://schema.org/InStock'
+                            : 'https://schema.org/OutOfStock',
+                      },
+                    }
+                  : {}),
                 brand: { '@type': 'Brand', name: loaderData.product.store.name },
               }),
             },
@@ -258,7 +290,7 @@ function ProductPage() {
         <section className="mt-6">
           <h2 className="text-sm font-bold text-ink">Сподели</h2>
           <div className="mt-2">
-            <ShareButtons path={`/products/${product.id}`} title={product.title} />
+            <ShareButtons path={`/products/${product.slug ?? product.id}`} title={product.title} />
           </div>
         </section>
 

@@ -63,7 +63,7 @@ export function formatRelativeTime(value: Date, now: Date = new Date()): string 
   }
 
   if (dayDiff === 1) return 'вчера'
-  if (dayDiff < 7) return `пред ${dayDiff} ${dayDiff === 1 ? 'ден' : 'дена'}`
+  if (dayDiff < 7) return `пред ${dayDiff} дена`
 
   return formatDate(value)
 }

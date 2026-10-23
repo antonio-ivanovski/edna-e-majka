@@ -74,6 +74,10 @@ export function CatalogueList({
     Math.max(1, Math.ceil(MAX_CATALOGUE_ITEMS / pageSize)),
   )
 
+  // Paged: the server sends exactly one page slice, but never render more
+  // than a page even if a stale payload carries extra cards.
+  const visibleProducts = products.slice(0, pageSize)
+
   const activeCategories = (filters?.categorySlugs ?? '')
     .split(',')
     .map((slug) => slug.trim())
@@ -144,8 +148,8 @@ export function CatalogueList({
 
         {total > 0 ? (
           <p className="text-sm text-ink-subtle">
-            {products.length < total
-              ? `прикажани ${products.length} од ${formatCount(total, 'производ', 'производи')}`
+            {visibleProducts.length < total
+              ? `прикажани ${visibleProducts.length} од ${formatCount(total, 'производ', 'производи')}`
               : formatCount(total, 'производ', 'производи')}
           </p>
         ) : null}
@@ -253,7 +257,7 @@ export function CatalogueList({
       </div>
 
       <ProductGrid
-        products={products}
+        products={visibleProducts}
         emptyTitle={emptyTitle}
         emptyDescription={emptyDescription}
         emptyAction={emptyAction}

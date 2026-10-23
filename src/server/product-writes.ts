@@ -13,6 +13,19 @@ import {
 } from './db/schema'
 import { workerEnv } from './worker-env'
 
+/**
+ * D1 caps bound parameters per statement, so a store with hundreds of
+ * listings cannot delete everything in one `inArray`. Fifty ids per batch
+ * keeps every statement small; the batches run one after another.
+ */
+function chunks<const Id>(ids: readonly Id[], size: number): Id[][] {
+  const out: Id[][] = []
+  for (let index = 0; index < ids.length; index += size) {
+    out.push(ids.slice(index, index + size))
+  }
+  return out
+}
+
 export const deleteProductCascade = Effect.fn('deleteProductCascade')(function* (
   productId: string,
 ): Effect.fn.Return<void, DatabaseError | StorageError, Db> {
@@ -57,12 +70,12 @@ export const deleteStoreCascade = Effect.fn('deleteStoreCascade')(function* (
     d.select({ id: product.id }).from(product).where(eq(product.storeId, storeId)),
   )
   const productIds = rows.map((r) => r.id)
-  if (productIds.length > 0) {
+  for (const chunk of chunks(productIds, 50)) {
     const images = yield* db.run((d) =>
       d
         .select({ r2Key: productImage.r2Key })
         .from(productImage)
-        .where(inArray(productImage.productId, productIds)),
+        .where(inArray(productImage.productId, chunk)),
     )
     if (images.length > 0) {
       yield* Effect.tryPromise({
@@ -72,17 +85,15 @@ export const deleteStoreCascade = Effect.fn('deleteStoreCascade')(function* (
       })
     }
     yield* db
-      .run((d) => d.delete(productImage).where(inArray(productImage.productId, productIds)))
+      .run((d) => d.delete(productImage).where(inArray(productImage.productId, chunk)))
       .pipe(Effect.asVoid)
     yield* db
-      .run((d) => d.delete(productVariant).where(inArray(productVariant.productId, productIds)))
+      .run((d) => d.delete(productVariant).where(inArray(productVariant.productId, chunk)))
       .pipe(Effect.asVoid)
     yield* db
-      .run((d) => d.delete(productCategory).where(inArray(productCategory.productId, productIds)))
+      .run((d) => d.delete(productCategory).where(inArray(productCategory.productId, chunk)))
       .pipe(Effect.asVoid)
-    yield* db
-      .run((d) => d.delete(product).where(inArray(product.id, productIds)))
-      .pipe(Effect.asVoid)
+    yield* db.run((d) => d.delete(product).where(inArray(product.id, chunk))).pipe(Effect.asVoid)
   }
   const keys = [ownStore[0]?.avatarKey, ownStore[0]?.coverKey].filter(
     (k): k is string => typeof k === 'string' && k.length > 0,

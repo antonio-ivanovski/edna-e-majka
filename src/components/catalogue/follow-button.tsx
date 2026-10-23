@@ -1,11 +1,14 @@
 import { useEffect, useState } from 'react'
 import { toast } from 'sonner'
+import { useQueryClient } from '@tanstack/react-query'
 
 import { Button } from '#/components/ui/button'
 import { isFollowingStore, toggleFollowStore } from '#/server/functions/favorites'
 import { toResult } from '#/lib/server-result'
+import { favoriteKeys } from '#/lib/queries/favorites'
 
 export function FollowButton({ storeId }: { storeId: string }) {
+  const queryClient = useQueryClient()
   const [following, setFollowing] = useState(false)
   const [loaded, setLoaded] = useState(false)
 
@@ -33,6 +36,7 @@ export function FollowButton({ storeId }: { storeId: string }) {
     }
 
     setFollowing(result.success.following)
+    void queryClient.invalidateQueries({ queryKey: favoriteKeys.all })
     toast.success(
       result.success.following ? 'Го следите производителот.' : 'Престанавте да го следите.',
     )

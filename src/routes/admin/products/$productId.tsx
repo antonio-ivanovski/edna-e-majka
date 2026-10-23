@@ -1,7 +1,10 @@
 import { Link, createFileRoute, useRouter } from '@tanstack/react-router'
+import { toast } from 'sonner'
 
 import { ProductForm } from '#/components/manage/product-form'
+import { ModerationNotes } from '#/components/admin/moderation-notes'
 import { adminSaveProduct, adminToggleFeatured, getAdminProduct } from '#/server/functions/admin'
+import { toResult } from '#/lib/server-result'
 
 export const Route = createFileRoute('/admin/products/$productId')({
   loader: ({ params }) => getAdminProduct({ data: { productId: params.productId } }),
@@ -18,7 +21,7 @@ function AdminEditProductPage() {
       <Link to="/admin/products" className="text-sm font-semibold text-accent-ink hover:underline">
         ← Производи
       </Link>
-      <h1 className="mt-2 font-display text-3xl font-semibold">Уреди производ</h1>
+      <h2 className="mt-2 font-display text-3xl font-semibold">Уреди производ</h2>
       <p className="mt-2 mb-6 text-ink-muted">{product.title}</p>
 
       <div className="mb-6 flex items-center gap-3">
@@ -26,9 +29,17 @@ function AdminEditProductPage() {
           type="button"
           className="cursor-pointer rounded-card border border-border px-3 py-1.5 text-sm font-semibold hover:bg-hover"
           onClick={async () => {
-            await adminToggleFeatured({
-              data: { productId: product.id, featured: !product.featured },
-            })
+            const result = toResult(
+              await adminToggleFeatured({
+                data: { productId: product.id, featured: !product.featured },
+              }),
+            )
+
+            if (result._tag === 'Failure') {
+              toast.error(result.failure.message)
+              return
+            }
+
             await router.invalidate()
           }}
         >
@@ -49,6 +60,10 @@ function AdminEditProductPage() {
           })
         }
       />
+
+      <div className="mt-8">
+        <ModerationNotes productId={product.id} />
+      </div>
     </div>
   )
 }

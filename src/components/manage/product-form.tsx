@@ -4,7 +4,7 @@ import { useRef, useState } from 'react'
 import { useFieldArray, useForm, useWatch } from 'react-hook-form'
 import { toast } from 'sonner'
 
-import { Schema } from 'effect'
+import type { Schema } from 'effect'
 import { Button } from '#/components/ui/button'
 import { Checkbox, Field, Input, Select, Textarea } from '#/components/ui/field'
 import { Message } from '#/components/ui/message'
@@ -16,29 +16,7 @@ import { imageUrl } from '#/lib/images'
 import { effectResolver } from '#/lib/effect-resolver'
 import { deleteProductImage, reorderProductImages, uploadProductImage } from '#/lib/uploads'
 
-const productFormValuesSchema = Schema.Struct({
-  title: Schema.Trim.pipe(
-    Schema.check(Schema.isMinLength(3)),
-    Schema.check(Schema.isMaxLength(160)),
-  ),
-  description: Schema.Trim.pipe(
-    Schema.check(Schema.isMinLength(10)),
-    Schema.check(Schema.isMaxLength(4000)),
-  ),
-  categories: Schema.Array(Schema.String).pipe(Schema.check(Schema.isMinLength(1))),
-  availability: Schema.Literals(['in_stock', 'out_of_stock', 'on_order']),
-  variants: Schema.Array(
-    Schema.Struct({
-      title: Schema.Trim.pipe(
-        Schema.check(Schema.isMinLength(1)),
-        Schema.check(Schema.isMaxLength(60)),
-      ),
-      price: Schema.String.pipe(Schema.check(Schema.isPattern(/^\d{1,7}$/))),
-    }),
-  ).pipe(Schema.check(Schema.isMinLength(1))),
-})
-
-type ProductFormValues = Schema.Schema.Type<typeof productFormValuesSchema>
+import { ProductFormValues } from '#/api/schemas/products'
 type ProductFormData = {
   storeId: string
   title: string
@@ -90,8 +68,8 @@ export function ProductForm({
     control,
     handleSubmit,
     formState: { errors, isSubmitting },
-  } = useForm<ProductFormValues>({
-    resolver: effectResolver(productFormValuesSchema),
+  } = useForm<Schema.Schema.Type<typeof ProductFormValues>>({
+    resolver: effectResolver(ProductFormValues),
     defaultValues: {
       title: product?.title ?? '',
       description: product?.description ?? '',
@@ -238,23 +216,30 @@ export function ProductForm({
   const onSubmit = handleSubmit(async (values) => {
     setServerError('')
 
-    const result = toResult(
-      await save({
-        data: {
-          ...(product ? { productId: product.id } : {}),
-          storeId,
-          title: values.title,
-          description: values.description,
-          categories: [...values.categories],
-          availability: values.availability,
-          attributes: serializeAttributes(attributes),
-          variants: values.variants.map((variant) => ({
-            title: variant.title,
-            price: Number(variant.price),
-          })),
-        },
-      }),
-    )
+    let result: Result.Result<{ productId: string }, DomainError>
+
+    try {
+      result = toResult(
+        await save({
+          data: {
+            ...(product ? { productId: product.id } : {}),
+            storeId,
+            title: values.title,
+            description: values.description,
+            categories: [...values.categories],
+            availability: values.availability,
+            attributes: serializeAttributes(attributes),
+            variants: values.variants.map((variant) => ({
+              title: variant.title,
+              price: Number(variant.price),
+            })),
+          },
+        }),
+      )
+    } catch {
+      setServerError('Податоците не се исправни. Проверете ги полињата и обидете се повторно.')
+      return
+    }
 
     if (result._tag === 'Failure') {
       setServerError(result.failure.message)
@@ -462,7 +447,7 @@ export function ProductForm({
                 <button
                   type="button"
                   aria-label="Отстрани слика"
-                  className="absolute -top-2 -right-2 flex size-6 cursor-pointer items-center justify-center rounded-full bg-danger text-white hover:bg-[#c92121]"
+                  className="absolute -top-2 -right-2 flex size-6 cursor-pointer items-center justify-center rounded-full bg-danger text-white hover:bg-danger-strong"
                   disabled={busyImages}
                   onClick={() => void removeImage(image.id)}
                 >
@@ -534,7 +519,7 @@ export function ProductForm({
               <button
                 type="button"
                 aria-label="Отстрани слика"
-                className="absolute -top-2 -right-2 flex size-6 cursor-pointer items-center justify-center rounded-full bg-danger text-white hover:bg-[#c92121]"
+                className="absolute -top-2 -right-2 flex size-6 cursor-pointer items-center justify-center rounded-full bg-danger text-white hover:bg-danger-strong"
                 onClick={() => {
                   URL.revokeObjectURL(item.url)
                   setPending((current) => current.filter((entry) => entry.url !== item.url))

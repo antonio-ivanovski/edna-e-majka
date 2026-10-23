@@ -41,4 +41,5 @@ export const adminKeys = {
   product: (id: string) => [...adminKeys.all, 'product', id] as const,
   users: (filters: unknown) => [...adminKeys.all, 'users', filters] as const,
   messages: (filters: unknown) => [...adminKeys.all, 'messages', filters] as const,
+  audit: (filters: unknown) => [...adminKeys.all, 'audit', filters] as const,
 }

@@ -1,12 +1,15 @@
 import { Heart } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { toast } from 'sonner'
+import { useQueryClient } from '@tanstack/react-query'
 
 import { isFavoriteProduct, toggleFavoriteProduct } from '#/server/functions/favorites'
 import { toResult } from '#/lib/server-result'
+import { favoriteKeys } from '#/lib/queries/favorites'
 
 /** A heart that toggles a product in the signed-in user's favorites. */
 export function FavoriteButton({ productId }: { productId: string }) {
+  const queryClient = useQueryClient()
   const [favorited, setFavorited] = useState(false)
   const [loaded, setLoaded] = useState(false)
 
@@ -34,6 +37,7 @@ export function FavoriteButton({ productId }: { productId: string }) {
     }
 
     setFavorited(result.success.favorited)
+    void queryClient.invalidateQueries({ queryKey: favoriteKeys.all })
   }
 
   if (!loaded) {

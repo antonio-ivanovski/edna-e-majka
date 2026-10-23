@@ -300,7 +300,7 @@ export function StoreAvatarField({ store }: { store: OwnerStore }) {
             className="size-16 rounded-full object-cover"
           />
         ) : (
-          <span aria-hidden="true" className="size-16 rounded-full bg-black/[0.05]" />
+          <span aria-hidden="true" className="size-16 rounded-full bg-hover" />
         )}
 
         <div className="flex flex-wrap items-center gap-2">
@@ -395,7 +395,7 @@ export function StoreCoverField({ store }: { store: OwnerStore }) {
         ) : (
           <span
             aria-hidden="true"
-            className="flex h-[90px] w-[240px] items-center justify-center rounded-card border border-dashed border-border bg-black/[0.02] text-xs text-ink-faint"
+            className="flex h-[90px] w-[240px] items-center justify-center rounded-card border border-dashed border-border bg-hover text-xs text-ink-subtle"
           >
             Нема cover слика
           </span>

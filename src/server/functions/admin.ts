@@ -14,6 +14,7 @@ import type { DomainError } from '../errors'
 import { InvalidInputError, NotAllowedError, NotFoundError } from '../errors'
 import {
   toValidator,
+  AdminAuditList,
   AdminMessage,
   AdminMessageHandled,
   AdminMessageList,
@@ -63,6 +64,7 @@ import {
   selectAdminStore,
   selectAdminStores,
   selectAdminUsers,
+  selectAuditLogs,
 } from '../queries/admin'
 import { selectOwnerProduct, selectOwnerStore } from '../queries/manage'
 
@@ -101,6 +103,11 @@ export const getAdminMessages = createServerFn({ method: 'GET', strict: { output
   .middleware([withAdmin])
   .validator(toValidator(AdminMessageList))
   .handler(async ({ data }) => runEffect(selectAdminMessages(data)))
+
+export const getAdminAuditLogs = createServerFn({ method: 'GET', strict: { output: false } })
+  .middleware([withAdmin])
+  .validator(toValidator(AdminAuditList))
+  .handler(async ({ data }) => runEffect(selectAuditLogs(data)))
 
 /**
  * The moderation decision. The note is rewritten when it is sent and kept when
@@ -257,14 +264,34 @@ export const adminBulkSetStoreStatus = createServerFn({ method: 'POST', strict: 
   .middleware([withAdmin])
   .validator(toValidator(AdminBulkStoreStatus))
   .handler(async ({ context, data }): Promise<Result.Result<null, DomainError>> => {
+    const failed: string[] = []
+
     for (const storeId of data.storeIds) {
       try {
         await runEffect(
           setStoreStatusEffect(storeId, data.status, null, { kind: 'admin', id: context.admin.id }),
         )
+        await runEffect(
+          recordAudit({
+            actorId: context.admin.id,
+            actorKind: 'admin',
+            action: 'bulk_set_store_status',
+            targetType: 'store',
+            targetId: storeId,
+            details: data.status,
+          }),
+        )
       } catch {
-        // Skip missing stores.
+        failed.push(storeId)
       }
+    }
+
+    if (failed.length > 0) {
+      return Result.fail(
+        new NotFoundError({
+          message: `Не успеавме да ажурираме ${failed.length} продавници.`,
+        }),
+      )
     }
 
     return Result.succeed(null)
@@ -336,7 +363,7 @@ export const listModerationNotes = createServerFn({ method: 'GET', strict: { out
 export const transferStoreOwner = createServerFn({ method: 'POST', strict: { output: false } })
   .middleware([withAdmin])
   .validator(toValidator(AdminTransferStore))
-  .handler(async ({ data }): Promise<Result.Result<null, DomainError>> => {
+  .handler(async ({ context, data }): Promise<Result.Result<null, DomainError>> => {
     const db = getDb()
     const email = data.email.trim().toLowerCase()
 
@@ -374,6 +401,17 @@ export const transferStoreOwner = createServerFn({ method: 'POST', strict: { out
 
     await db.update(store).set({ ownerId: target.id }).where(eq(store.id, data.storeId))
 
+    await runEffect(
+      recordAudit({
+        actorId: context.admin.id,
+        actorKind: 'admin',
+        action: 'transfer_store',
+        targetType: 'store',
+        targetId: data.storeId,
+        details: target.id,
+      }),
+    )
+
     return Result.succeed(null)
   })
 
@@ -402,13 +440,23 @@ export const adminSetProductArchived = createServerFn({ method: 'POST', strict: 
       })
       .where(eq(product.id, data.productId))
 
+    await runEffect(
+      recordAudit({
+        actorId: context.admin.id,
+        actorKind: 'admin',
+        action: data.archived ? 'archive_product' : 'publish_product',
+        targetType: 'product',
+        targetId: data.productId,
+      }),
+    )
+
     return Result.succeed(null)
   })
 
 export const adminDeleteProduct = createServerFn({ method: 'POST', strict: { output: false } })
   .middleware([withAdmin])
   .validator(toValidator(ProductDelete))
-  .handler(async ({ data }): Promise<Result.Result<null, DomainError>> => {
+  .handler(async ({ context, data }): Promise<Result.Result<null, DomainError>> => {
     const rows = await getDb()
       .select({ id: product.id })
       .from(product)
@@ -419,6 +467,15 @@ export const adminDeleteProduct = createServerFn({ method: 'POST', strict: { out
       return Result.fail(new NotFoundError({ message: 'Производот не е најден.' }))
     }
 
+    await runEffect(
+      recordAudit({
+        actorId: context.admin.id,
+        actorKind: 'admin',
+        action: 'delete_product',
+        targetType: 'product',
+        targetId: data.productId,
+      }),
+    )
     await runEffect(deleteProductCascade(data.productId))
 
     return Result.succeed(null)
@@ -450,6 +507,17 @@ export const setUserRole = createServerFn({ method: 'POST', strict: { output: fa
     }
 
     await getDb().update(user).set({ role: data.role }).where(eq(user.id, data.userId))
+
+    await runEffect(
+      recordAudit({
+        actorId: context.admin.id,
+        actorKind: 'admin',
+        action: 'set_user_role',
+        targetType: 'user',
+        targetId: data.userId,
+        details: data.role,
+      }),
+    )
 
     return Result.succeed(null)
   })

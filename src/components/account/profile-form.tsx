@@ -100,7 +100,7 @@ export function AccountProfileForm({ name, image }: { name: string; image: strin
               className="size-16 rounded-full object-cover"
             />
           ) : (
-            <span aria-hidden="true" className="size-16 rounded-full bg-black/[0.05]" />
+            <span aria-hidden="true" className="size-16 rounded-full bg-hover" />
           )}
 
           <div className="flex flex-wrap items-center gap-2">

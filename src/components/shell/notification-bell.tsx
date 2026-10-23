@@ -14,12 +14,15 @@ import {
 
 type Notification = Awaited<ReturnType<typeof listNotifications>>
 
-const NOTIFICATIONS_KEY = ['notifications']
+const NOTIFICATIONS_KEY = ['notifications', 'viewer'] as const
 
 /**
  * The bell: how many are unread, and what they say. Reads and read-alls
  * apply to the list first and sync with the server after, so the count drops
  * the moment it is tapped — even when the tap also leaves the page.
+ *
+ * The key is viewer-scoped in name so a signed-out cache never leaks into
+ * another account; sign-out also drops it (see `UserMenu.signOut`).
  */
 export function NotificationBell() {
   const queryClient = useQueryClient()
@@ -28,6 +31,7 @@ export function NotificationBell() {
   const { data } = useQuery({
     queryKey: NOTIFICATIONS_KEY,
     queryFn: () => listNotifications(),
+    staleTime: 30_000,
   })
 
   const notifications = data ?? []

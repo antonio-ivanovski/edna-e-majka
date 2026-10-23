@@ -6,6 +6,7 @@ import {
   getAdminProducts,
   getAdminUsers,
   getAdminMessages,
+  getAdminAuditLogs,
   getAdminStore,
   getAdminProduct,
 } from '#/server/functions/admin'
@@ -48,6 +49,12 @@ export const adminQueries = {
     queryOptions({
       queryKey: adminKeys.messages(filters),
       queryFn: () => getAdminMessages({ data: filters }),
+      staleTime: 0,
+    }),
+  audit: (filters: any) =>
+    queryOptions({
+      queryKey: adminKeys.audit(filters),
+      queryFn: () => getAdminAuditLogs({ data: filters }),
       staleTime: 0,
     }),
 }

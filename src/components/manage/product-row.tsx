@@ -73,7 +73,7 @@ export function ProductRow({ storeId, product }: { storeId: string; product: Own
               className="h-9 w-12 rounded-card border border-border object-cover"
             />
           ) : (
-            <span aria-hidden="true" className="h-9 w-12 rounded-card bg-black/[0.05]" />
+            <span aria-hidden="true" className="h-9 w-12 rounded-card bg-hover" />
           )}
           <Link
             to="/manage/$storeId/products/$productId"

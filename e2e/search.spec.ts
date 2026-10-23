@@ -68,3 +68,21 @@ test('the search page honours the stock filter', async ({ page, pageErrors }) =>
 
   expectNoPageErrors(pageErrors)
 })
+
+test('the sort control reorders the catalogue', async ({ page, pageErrors }) => {
+  const term = encodeURIComponent('мед')
+  await page.goto(`/search?q=${term}`)
+  await waitForHydration(page)
+
+  const before = await productTitles(page)
+  expect(before.length).toBeGreaterThan(1)
+
+  await page.getByText('Филтри', { exact: true }).click()
+  await page.getByRole('button', { name: 'Цена', exact: true }).click()
+  await expect.poll(() => page.url(), { timeout: 10_000 }).toContain('sort=')
+
+  const after = await productTitles(page)
+  expect(after.slice().sort()).toEqual(before.slice().sort())
+
+  expectNoPageErrors(pageErrors)
+})

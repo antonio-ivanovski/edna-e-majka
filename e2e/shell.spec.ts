@@ -29,6 +29,12 @@ test('the dark-mode toggle changes the surface of the page', async ({ page, page
 
   expect(after, 'the page surface should change with the theme').not.toBe(before)
 
+  // The choice survives a reload.
+  await page.reload()
+  await waitForHydration(page)
+  await expect(page.locator('html')).toHaveClass(/dark/)
+  expect(await surfaceColour(page)).toBe(after)
+
   expectNoPageErrors(pageErrors)
 })
 

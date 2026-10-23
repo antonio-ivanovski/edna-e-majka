@@ -8,7 +8,14 @@ import { ADMIN_PAGE_SIZE } from '#/lib/pagination'
 import { buildSearchText, buildSearchVariants } from '#/lib/translit'
 
 import { user } from '../db/auth-schema'
-import { contactMessage, product, productImage, productVariant, store } from '../db/schema'
+import {
+  auditLog,
+  contactMessage,
+  product,
+  productImage,
+  productVariant,
+  store,
+} from '../db/schema'
 import type { ProductStatus, StoreStatus } from './manage'
 
 export type AdminPage<Row> = { items: Row[]; total: number }
@@ -168,22 +175,45 @@ export const selectAdminStores = Effect.fn('selectAdminStores')(function* (filte
   page: number
 }): Effect.fn.Return<AdminPage<AdminStore>, DatabaseError, Db> {
   const db = yield* Db
+  const where = filters.status ? eq(store.status, filters.status) : undefined
+
+  if (!filters.query) {
+    const offset = (filters.page - 1) * ADMIN_PAGE_SIZE
+    const [rows, totalRows] = yield* db.run(
+      (d) =>
+        d.batch([
+          d
+            .select(storeColumns)
+            .from(store)
+            .innerJoin(user, eq(user.id, store.ownerId))
+            .where(where)
+            .orderBy(reviewFirst, desc(store.createdAt))
+            .limit(ADMIN_PAGE_SIZE)
+            .offset(offset),
+          d
+            .select({ total: count() })
+            .from(store)
+            .innerJoin(user, eq(user.id, store.ownerId))
+            .where(where),
+        ]) as unknown as Promise<[StoreRow[], { total: number }[]]>,
+    )
+    return { items: rows.map(toAdminStore), total: totalRows[0]?.total ?? 0 }
+  }
+
   const rows = yield* db.run((d) =>
     d
       .select(storeColumns)
       .from(store)
       .innerJoin(user, eq(user.id, store.ownerId))
-      .where(filters.status ? eq(store.status, filters.status) : undefined)
+      .where(where)
       .orderBy(reviewFirst, desc(store.createdAt)),
   )
-  const matched = filters.query
-    ? rows.filter((row: any) =>
-        matchesQuery(
-          [row.name, row.email, row.ownerName, row.ownerEmail, row.description],
-          filters.query!,
-        ),
-      )
-    : rows
+  const matched = rows.filter((row: any) =>
+    matchesQuery(
+      [row.name, row.email, row.ownerName, row.ownerEmail, row.description],
+      filters.query!,
+    ),
+  )
   return paginate(matched.map(toAdminStore), filters.page)
 })
 
@@ -283,11 +313,71 @@ export const selectAdminProducts = Effect.fn('selectAdminProducts')(function* (f
   return { items: rows as AdminProduct[], total: totalRows[0]?.total ?? 0 }
 })
 
+function toAdminUser(row: any): AdminUser {
+  return {
+    id: row.id,
+    name: row.name ?? '',
+    email: row.email,
+    role: row.role === 'admin' ? 'admin' : 'user',
+    banned: Boolean(row.banned),
+    createdAt: row.createdAt,
+    emailVerified: row.emailVerified,
+    store: row.storeId
+      ? { id: row.storeId, name: row.storeName ?? '', status: row.storeStatus ?? 'pending' }
+      : null,
+    productCount: row.productCount,
+  }
+}
+
 export const selectAdminUsers = Effect.fn('selectAdminUsers')(function* (filters: {
   query?: string | undefined
   page: number
 }): Effect.fn.Return<AdminPage<AdminUser>, DatabaseError, Db> {
   const db = yield* Db
+
+  if (!filters.query) {
+    const offset = (filters.page - 1) * ADMIN_PAGE_SIZE
+    const [rows, totalRows] = yield* db.run(
+      (d) =>
+        d.batch([
+          d
+            .select({
+              id: user.id,
+              name: user.name,
+              email: user.email,
+              role: user.role,
+              banned: user.banned,
+              createdAt: user.createdAt,
+              emailVerified: user.emailVerified,
+              storeId: sql<
+                string | null
+              >`(select ${store.id} from ${store} where ${store.ownerId} = ${user.id} order by ${store.createdAt} limit 1)`.as(
+                'store_id',
+              ),
+              storeName: sql<
+                string | null
+              >`(select ${store.name} from ${store} where ${store.ownerId} = ${user.id} order by ${store.createdAt} limit 1)`.as(
+                'store_name',
+              ),
+              storeStatus:
+                sql<StoreStatus | null>`(select ${store.status} from ${store} where ${store.ownerId} = ${user.id} order by ${store.createdAt} limit 1)`.as(
+                  'store_status',
+                ),
+              productCount:
+                sql<number>`(select count(*) from ${product} where ${product.storeId} = (select ${store.id} from ${store} where ${store.ownerId} = ${user.id} order by ${store.createdAt} limit 1))`.as(
+                  'product_count',
+                ),
+            })
+            .from(user)
+            .orderBy(desc(user.createdAt))
+            .limit(ADMIN_PAGE_SIZE)
+            .offset(offset),
+          d.select({ total: count() }).from(user),
+        ]) as unknown as Promise<[any[], { total: number }[]]>,
+    )
+    return { items: rows.map(toAdminUser), total: totalRows[0]?.total ?? 0 }
+  }
+
   const rows = yield* db.run((d) =>
     d
       .select({
@@ -320,25 +410,10 @@ export const selectAdminUsers = Effect.fn('selectAdminUsers')(function* (filters
       .from(user)
       .orderBy(desc(user.createdAt)),
   )
-  const matched = filters.query
-    ? rows.filter((row: any) => matchesQuery([row.name, row.email, row.storeName], filters.query!))
-    : rows
-  return paginate(
-    matched.map((row: any) => ({
-      id: row.id,
-      name: row.name ?? '',
-      email: row.email,
-      role: row.role === 'admin' ? 'admin' : 'user',
-      banned: Boolean(row.banned),
-      createdAt: row.createdAt,
-      emailVerified: row.emailVerified,
-      store: row.storeId
-        ? { id: row.storeId, name: row.storeName ?? '', status: row.storeStatus ?? 'pending' }
-        : null,
-      productCount: row.productCount,
-    })),
-    filters.page,
+  const matched = rows.filter((row: any) =>
+    matchesQuery([row.name, row.email, row.storeName], filters.query!),
   )
+  return paginate(matched.map(toAdminUser), filters.page)
 })
 
 export const selectAdminMessages = Effect.fn('selectAdminMessages')(function* (filters: {
@@ -381,6 +456,49 @@ export const selectAdminMessages = Effect.fn('selectAdminMessages')(function* (f
           .offset(offset),
         d.select({ total: count() }).from(contactMessage).where(where),
       ]) as unknown as Promise<[any[], { total: number }[]]>,
+  )
+  return { items: rows, total: totalRows[0]?.total ?? 0 }
+})
+
+export type AdminAuditEntry = {
+  id: string
+  actorId: string
+  actorKind: 'admin' | 'owner' | 'system'
+  actorName: string
+  action: string
+  targetType: string
+  targetId: string
+  details: string | null
+  createdAt: Date
+}
+
+export const selectAuditLogs = Effect.fn('selectAuditLogs')(function* (filters: {
+  page: number
+}): Effect.fn.Return<AdminPage<AdminAuditEntry>, DatabaseError, Db> {
+  const db = yield* Db
+  const offset = (filters.page - 1) * ADMIN_PAGE_SIZE
+  const [rows, totalRows] = yield* db.run(
+    (d) =>
+      d.batch([
+        d
+          .select({
+            id: auditLog.id,
+            actorId: auditLog.actorId,
+            actorKind: auditLog.actorKind,
+            actorName: sql<string>`coalesce(${user.name}, '')`.as('actor_name'),
+            action: auditLog.action,
+            targetType: auditLog.targetType,
+            targetId: auditLog.targetId,
+            details: auditLog.details,
+            createdAt: auditLog.createdAt,
+          })
+          .from(auditLog)
+          .leftJoin(user, eq(user.id, auditLog.actorId))
+          .orderBy(desc(auditLog.createdAt))
+          .limit(ADMIN_PAGE_SIZE)
+          .offset(offset),
+        d.select({ total: count() }).from(auditLog),
+      ]) as unknown as Promise<[AdminAuditEntry[], { total: number }[]]>,
   )
   return { items: rows, total: totalRows[0]?.total ?? 0 }
 })

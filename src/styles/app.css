@@ -4,7 +4,7 @@
 @custom-variant dark (&:where(.dark, .dark *));
 
 /*
- * The palette the site has always used, kept as design tokens. Amber is the
+ * The palette the site has always used, kept as design tokens. Amber/cream is the
  * shop front, red is the action colour, and the muted colours are the contact
  * labels (phone, Facebook, Instagram).
  *
@@ -31,12 +31,13 @@
 
   /** Amber is light in both themes, so the text on it is always dark. */
   --color-on-brand: #1a1a1a;
+  --color-cream: #fdf6e3;
 
   /* The legacy look is nearly square: 0.2857rem, not a modern pill. */
   --radius-card: 0.2857rem;
 
   /* Category tiles glow amber on hover, as they did. */
-  --background-image-tile-hover: radial-gradient(circle, #ffc145 0%, #ffffff 70%);
+  --background-image-tile-hover: radial-gradient(circle, #ffc145 0%, #fdf6e3 70%);
 }
 
 /*
@@ -73,9 +74,9 @@
 :root {
   color-scheme: light;
 
-  --surface: #f4f4f5;
+  --surface: #faf6ec;
   --surface-raised: #ffffff;
-  --surface-sunken: #f8f8f9;
+  --surface-sunken: #f3ecdb;
   --hover: rgb(34 36 38 / 7%);
 
   --ink: rgb(0 0 0 / 88%);

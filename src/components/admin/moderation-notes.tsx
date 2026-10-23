@@ -7,17 +7,20 @@ import { Panel } from '#/components/ui/panel'
 import { addModerationNote, listModerationNotes } from '#/server/functions/admin'
 import { toResult } from '#/lib/server-result'
 
-export function ModerationNotes({ storeId }: { storeId: string }) {
+export function ModerationNotes({ storeId, productId }: { storeId?: string; productId?: string }) {
   const queryClient = useQueryClient()
+  const key = storeId
+    ? (['moderation-notes', storeId] as const)
+    : (['moderation-notes', productId] as const)
   const { data } = useQuery({
-    queryKey: ['moderation-notes', storeId],
-    queryFn: () => listModerationNotes({ data: { storeId } }),
+    queryKey: key,
+    queryFn: () => listModerationNotes({ data: { storeId, productId } }),
   })
   const [body, setBody] = useState('')
 
   const mutation = useMutation({
     mutationFn: async () => {
-      const result = toResult(await addModerationNote({ data: { storeId, body } }))
+      const result = toResult(await addModerationNote({ data: { storeId, productId, body } }))
 
       if (result._tag === 'Failure') {
         throw new Error(result.failure.message)
@@ -27,7 +30,7 @@ export function ModerationNotes({ storeId }: { storeId: string }) {
     },
     onSuccess: () => {
       setBody('')
-      void queryClient.invalidateQueries({ queryKey: ['moderation-notes', storeId] })
+      void queryClient.invalidateQueries({ queryKey: key })
     },
     onError: (error) => toast.error(error instanceof Error ? error.message : 'Грешка.'),
   })

@@ -9,6 +9,7 @@ const LINKS = [
   { to: '/admin/products', label: 'Производи' },
   { to: '/admin/users', label: 'Корисници' },
   { to: '/admin/messages', label: 'Пораки' },
+  { to: '/admin/audit', label: 'Евиденција' },
 ] as const
 
 export function AdminNav() {

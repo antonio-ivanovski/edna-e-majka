@@ -174,7 +174,7 @@ export function SearchForm() {
           onFocus={() => setOpen(true)}
           onKeyDown={onKeyDown}
           placeholder="Пребарај сите производи"
-          className="h-9 w-full min-w-0 rounded-l-card rounded-r-none border border-r-0 border-border bg-surface-raised px-3 text-sm placeholder:text-ink-subtle focus:z-10 focus:border-accent-strong focus:ring-1 focus:ring-accent-strong focus:outline-none"
+          className="h-9 w-full min-w-0 rounded-l-card rounded-r-none border border-r-0 border-border bg-surface-raised px-3 text-sm placeholder:text-ink-subtle focus:z-10 focus:border-accent-strong focus-visible:outline-2 focus-visible:outline-focus"
         />
         <Button type="submit" variant="primary" className="rounded-l-none" aria-label="Пребарај">
           <Search aria-hidden="true" className="size-4" />

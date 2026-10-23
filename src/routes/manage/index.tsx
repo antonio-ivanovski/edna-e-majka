@@ -110,7 +110,7 @@ function StoreOverview({ store, products }: { store: OwnerStore; products: Owner
             className="size-16 rounded-full object-cover"
           />
         ) : (
-          <span aria-hidden="true" className="size-16 rounded-full bg-black/[0.05]" />
+          <span aria-hidden="true" className="size-16 rounded-full bg-hover" />
         )}
 
         <div className="min-w-[14rem] flex-1">

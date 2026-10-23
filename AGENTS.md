@@ -28,5 +28,7 @@ Effect stays server-side, with one deliberate exception. The client transports a
 functions and TanStack Router; `Context` services, layers and `Effect` programs never ship to the browser.
 What does ship is pure `Schema` (and `SchemaIssue` for formatting): the schemas in
 `src/api/schemas/*` validate route search params and drive `effectResolver` for react-hook-form,
-so the same definitions guard both sides of the wire. Keep it that way — schemas and the
-resolver are the only `effect` imports allowed outside `src/server`.
+so the same definitions guard both sides of the wire. `src/lib/server-result.ts`
+rebuilding the `Result` tag from the wire is the third and last exception.
+Keep it that way — schemas, the resolver and the result check are the only
+`effect` imports allowed outside `src/server`.

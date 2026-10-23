@@ -1,4 +1,4 @@
-import { Link, createFileRoute } from '@tanstack/react-router'
+import { Link, createFileRoute, useRouter } from '@tanstack/react-router'
 import { useState } from 'react'
 import { ExternalLink } from 'lucide-react'
 import { toast } from 'sonner'
@@ -58,6 +58,7 @@ function AdminStoresPage() {
   const { items, total } = Route.useLoaderData()
   const search = Route.useSearch()
   const navigate = Route.useNavigate()
+  const router = useRouter()
   const [selected, setSelected] = useState<Set<string>>(new Set())
   const [bulkStatus, setBulkStatus] = useState<'active' | 'suspended' | 'archived'>('active')
   const [busy, setBusy] = useState(false)
@@ -95,7 +96,7 @@ function AdminStoresPage() {
     }
 
     setSelected(new Set())
-    await navigate({ search: (prev) => ({ ...prev }) })
+    await router.invalidate()
   }
 
   return (

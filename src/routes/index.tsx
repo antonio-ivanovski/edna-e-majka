@@ -9,6 +9,7 @@ import { CooperationDialog } from '#/components/shell/cooperation-dialog'
 import { Button } from '#/components/ui/button'
 import { useRecentlyViewed } from '#/hooks/use-recently-viewed'
 import { CATEGORIES } from '#/lib/categories'
+import { mk } from '#/lib/i18n/mk'
 import { imageUrl } from '#/lib/images'
 import { toValidator, ProductSearch } from '#/api/schemas'
 import type { ProductSort, SortDirection } from '#/api/schemas'
@@ -40,6 +41,20 @@ function HomePage() {
   const navigate = Route.useNavigate()
   const recent = useRecentlyViewed()
 
+  // The new arrivals are the four newest non-featured products, shown in a
+  // row of their own on the default view. They are sliced out of the list
+  // underneath so a product never appears twice on the page.
+  const isDefaultView =
+    (params.sort ?? 'newest') === 'newest' &&
+    (params.direction ?? 'desc') === 'desc' &&
+    (params.page ?? 1) === 1 &&
+    params.minPrice == null &&
+    params.maxPrice == null &&
+    params.inStock == null &&
+    (params.categorySlugs == null || params.categorySlugs === '')
+  const newArrivals = isDefaultView ? page.items.slice(0, 4) : []
+  const restItems = isDefaultView ? page.items.slice(4) : page.items
+
   const onParamsChange = useCallback(
     (next: {
       sort?: ProductSort
@@ -56,26 +71,23 @@ function HomePage() {
   return (
     <div>
       <section className="px-4 pt-8">
-        <h1 className="font-display text-3xl font-semibold">Една е мајка</h1>
-        <p className="mt-2 max-w-2xl text-ink-muted">
-          Онлајн огласник за домашни производи. Производителите ги објавуваат своите производи, а
-          купувачите ги наоѓаат без никаков провизија. Користењето е бесплатно и за двете страни.
-        </p>
+        <h1 className="font-display text-3xl font-semibold">{mk.home.title}</h1>
+        <p className="mt-2 max-w-2xl text-ink-muted">{mk.home.subtitle}</p>
         <div className="mt-4 flex flex-wrap items-center gap-2">
           <Button asChild variant="primary">
-            <Link to="/producers">Види ги производителите</Link>
+            <Link to="/producers">{mk.home.viewProducers}</Link>
           </Button>
           <CooperationDialog
             trigger={
               <Button type="button" variant="outline">
-                Стани производител
+                {mk.home.becomeProducer}
               </Button>
             }
           />
           <ContactDialog
             trigger={
               <Button type="button" variant="ghost">
-                Контакт
+                {mk.home.contact}
               </Button>
             }
           />
@@ -83,7 +95,7 @@ function HomePage() {
       </section>
 
       <section className="px-4 pt-10">
-        <h2 className="font-display text-xl font-semibold">Категории</h2>
+        <h2 className="font-display text-xl font-semibold">{mk.home.categories}</h2>
         <div className="mt-2 grid grid-cols-2 gap-x-2 gap-y-4 sm:grid-cols-4 lg:grid-cols-8">
           {CATEGORIES.map((category) => (
             <Link
@@ -109,7 +121,7 @@ function HomePage() {
 
       {recent.length > 0 ? (
         <section className="px-4 pt-10">
-          <h2 className="font-display text-xl font-semibold">Неодамна прегледани</h2>
+          <h2 className="font-display text-xl font-semibold">{mk.product.recentlyViewed}</h2>
           <div className="mt-3 grid grid-cols-[repeat(auto-fill,minmax(140px,1fr))] gap-3">
             {recent.map((item) => (
               <Link
@@ -136,7 +148,7 @@ function HomePage() {
 
       {featured.length > 0 ? (
         <section className="pt-10">
-          <h2 className="px-4 font-display text-xl font-semibold">Издвоени производи</h2>
+          <h2 className="px-4 font-display text-xl font-semibold">{mk.product.featured}</h2>
           <div className="mt-3 grid grid-cols-[repeat(auto-fill,minmax(250px,1fr))] gap-4 p-4">
             {featured.map((product) => (
               <ProductCard key={product.id} product={product} />
@@ -145,20 +157,31 @@ function HomePage() {
         </section>
       ) : null}
 
+      {newArrivals.length > 0 ? (
+        <section className="pt-10">
+          <h2 className="px-4 font-display text-xl font-semibold">{mk.product.newArrivals}</h2>
+          <div className="mt-3 grid grid-cols-[repeat(auto-fill,minmax(250px,1fr))] gap-4 p-4">
+            {newArrivals.map((product) => (
+              <ProductCard key={product.id} product={product} />
+            ))}
+          </div>
+        </section>
+      ) : null}
+
       <section className="pt-10">
-        <h2 className="px-4 font-display text-xl font-semibold">Повеќе производи</h2>
+        <h2 className="px-4 font-display text-xl font-semibold">{mk.product.moreProducts}</h2>
         <CatalogueList
-          products={page.items}
+          products={restItems}
           total={page.total}
           sort={params.sort}
           direction={params.direction}
           page={params.page}
           pageSize={PRODUCT_PAGE_SIZE}
-          emptyTitle="Сѐ уште нема објавени производи."
-          emptyDescription="Штом производителите ги објават своите производи, тие ќе се појават тука."
+          emptyTitle={mk.home.noProducts}
+          emptyDescription={mk.home.noProductsHint}
           emptyAction={
             <Button asChild variant="primary">
-              <Link to="/producers">Види ги производителите</Link>
+              <Link to="/producers">{mk.home.viewProducers}</Link>
             </Button>
           }
           onParamsChange={onParamsChange}

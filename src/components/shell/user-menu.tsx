@@ -1,3 +1,4 @@
+import { useQueryClient } from '@tanstack/react-query'
 import { Link, useRouter } from '@tanstack/react-router'
 import { ChevronDown, LogOut, ShieldCheck, Store, User } from 'lucide-react'
 
@@ -17,6 +18,7 @@ import { SignInDialog } from './sign-in-dialog'
  */
 export function UserMenu({ googleEnabled }: { googleEnabled: boolean }) {
   const router = useRouter()
+  const queryClient = useQueryClient()
   const { data: session, isPending } = authClient.useSession()
 
   if (isPending) {
@@ -36,6 +38,7 @@ export function UserMenu({ googleEnabled }: { googleEnabled: boolean }) {
 
   const signOut = async () => {
     await authClient.signOut()
+    queryClient.removeQueries({ queryKey: ['notifications'] })
     await router.invalidate()
   }
 

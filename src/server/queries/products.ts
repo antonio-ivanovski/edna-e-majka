@@ -128,7 +128,12 @@ export const selectProductPage = Effect.fn('selectProductPage')(function* (
 ): Effect.fn.Return<ProductPage, DatabaseError, Db> {
   const db = yield* Db
   const where = publicProductConditions(filters)
-  const limit = Math.min(filters.page * PRODUCT_PAGE_SIZE, MAX_CATALOGUE_ITEMS)
+  // Real offset paging: each page reads exactly one slice. The page is
+  // clamped so the offset never runs past the catalogue cap.
+  const maxPage = Math.max(1, Math.ceil(MAX_CATALOGUE_ITEMS / PRODUCT_PAGE_SIZE))
+  const safePage = Math.min(Math.max(filters.page, 1), maxPage)
+  const limit = PRODUCT_PAGE_SIZE
+  const offset = (safePage - 1) * PRODUCT_PAGE_SIZE
   const [idRows, totalRows] = yield* db.run(
     (d) =>
       d.batch([
@@ -138,7 +143,8 @@ export const selectProductPage = Effect.fn('selectProductPage')(function* (
           .innerJoin(store, eq(store.id, product.storeId))
           .where(where)
           .orderBy(...ordering(filters), asc(product.id))
-          .limit(limit),
+          .limit(limit)
+          .offset(offset),
         d
           .select({ total: count() })
           .from(product)
@@ -150,49 +156,66 @@ export const selectProductPage = Effect.fn('selectProductPage')(function* (
   return { items, total: totalRows[0]?.total ?? 0 }
 })
 
+/** D1 caps bound parameters at ~100, so large id lists go in small batches. */
+function chunk<T>(values: readonly T[], size: number): T[][] {
+  const chunks: T[][] = []
+  for (let i = 0; i < values.length; i += size) chunks.push(values.slice(i, i + size))
+  return chunks
+}
+
 export const selectProductSummaries = Effect.fn('selectProductSummaries')(function* (
   productIds: readonly string[],
 ): Effect.fn.Return<ProductSummary[], DatabaseError, Db> {
   if (productIds.length === 0) return []
   const db = yield* Db
-  const [productRows, imageRows, variantRows, categoryRows] = yield* db.run(
-    (d) =>
-      d.batch([
-        d
-          .select(productColumns)
-          .from(product)
-          .innerJoin(store, eq(store.id, product.storeId))
-          .where(inArray(product.id, [...productIds])),
-        d
-          .select({
-            productId: productImage.productId,
-            key: productImage.r2Key,
-            width: productImage.width,
-            height: productImage.height,
-            alt: productImage.alt,
-          })
-          .from(productImage)
-          .where(inArray(productImage.productId, [...productIds]))
-          .orderBy(asc(productImage.position)),
-        d
-          .select({
-            id: productVariant.id,
-            productId: productVariant.productId,
-            title: productVariant.title,
-            price: productVariant.price,
-          })
-          .from(productVariant)
-          .where(inArray(productVariant.productId, [...productIds]))
-          .orderBy(asc(productVariant.position)),
-        d
-          .select({
-            productId: productCategory.productId,
-            categorySlug: productCategory.categorySlug,
-          })
-          .from(productCategory)
-          .where(inArray(productCategory.productId, [...productIds])),
-      ]) as unknown as Promise<[any[], any[], any[], any[]]>,
-  )
+  const productRows: any[] = []
+  const imageRows: any[] = []
+  const variantRows: any[] = []
+  const categoryRows: any[] = []
+  for (const ids of chunk([...productIds], 50)) {
+    const [products, images, variants, categories] = yield* db.run(
+      (d) =>
+        d.batch([
+          d
+            .select(productColumns)
+            .from(product)
+            .innerJoin(store, eq(store.id, product.storeId))
+            .where(inArray(product.id, [...ids])),
+          d
+            .select({
+              productId: productImage.productId,
+              key: productImage.r2Key,
+              width: productImage.width,
+              height: productImage.height,
+              alt: productImage.alt,
+            })
+            .from(productImage)
+            .where(inArray(productImage.productId, [...ids]))
+            .orderBy(asc(productImage.position)),
+          d
+            .select({
+              id: productVariant.id,
+              productId: productVariant.productId,
+              title: productVariant.title,
+              price: productVariant.price,
+            })
+            .from(productVariant)
+            .where(inArray(productVariant.productId, [...ids]))
+            .orderBy(asc(productVariant.position)),
+          d
+            .select({
+              productId: productCategory.productId,
+              categorySlug: productCategory.categorySlug,
+            })
+            .from(productCategory)
+            .where(inArray(productCategory.productId, [...ids])),
+        ]) as unknown as Promise<[any[], any[], any[], any[]]>,
+    )
+    productRows.push(...products)
+    imageRows.push(...images)
+    variantRows.push(...variants)
+    categoryRows.push(...categories)
+  }
   const byId = new Map(productRows.map((row: any) => [row.id, row]))
   return productIds.flatMap((productId) => {
     const row = byId.get(productId)

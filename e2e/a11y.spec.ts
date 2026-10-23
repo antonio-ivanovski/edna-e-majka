@@ -21,6 +21,9 @@ test('landmarks, one heading and labelled images hold on every public page', asy
     await waitForHydration(page)
 
     // One banner, one main, one footer; the skip link points at the main.
+    await expect(page.locator('header')).toHaveCount(1)
+    await expect(page.locator('main#main-content')).toHaveCount(1)
+    await expect(page.locator('footer')).toHaveCount(1)
     await expect(page.locator('header').first()).toBeVisible()
     await expect(page.locator('main#main-content')).toBeVisible()
     await expect(page.locator('footer').first()).toBeVisible()

@@ -7,7 +7,11 @@ const THEME_EVENT = 'edna-theme-change'
 
 function subscribe(onChange: () => void) {
   window.addEventListener(THEME_EVENT, onChange)
-  return () => window.removeEventListener(THEME_EVENT, onChange)
+  window.addEventListener('storage', onChange)
+  return () => {
+    window.removeEventListener(THEME_EVENT, onChange)
+    window.removeEventListener('storage', onChange)
+  }
 }
 
 function isDark() {

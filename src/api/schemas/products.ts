@@ -93,7 +93,18 @@ export const ProductFormValues = Schema.Struct({
   variants: Schema.Array(
     Schema.Struct({
       title: Schema.Trim.pipe(Schema.check(Schema.isMinLength(1), Schema.isMaxLength(60))),
-      price: Schema.String.pipe(Schema.check(Schema.isPattern(/^\d{1,7}$/))),
+      price: Schema.String.pipe(
+        Schema.check(Schema.isPattern(/^\d{1,7}$/)),
+        Schema.refine(
+          (value): value is string => {
+            const amount = Number(value)
+            return Number.isInteger(amount) && amount >= 1 && amount <= 1_000_000
+          },
+          { message: 'Цената мора да е помеѓу 1 и 1000000.' },
+        ),
+      ),
     }),
   ).pipe(Schema.check(Schema.isMinLength(1))),
 })
+
+export type ProductFormValues = Schema.Schema.Type<typeof ProductFormValues>

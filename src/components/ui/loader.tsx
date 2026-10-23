@@ -11,7 +11,7 @@ export function Loader({ children, className }: { children?: ReactNode; classNam
     >
       <span
         aria-hidden="true"
-        className="size-5 animate-spin rounded-full border-2 border-black/15 border-t-black/50"
+        className="size-5 animate-spin rounded-full border-2 border-border-strong border-t-ink"
       />
       {children ? <span className="text-sm">{children}</span> : null}
     </div>

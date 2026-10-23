@@ -28,9 +28,11 @@ export const getRelatedProducts = createServerFn({ method: 'GET' })
   .handler(async ({ data }) => {
     const detail = await runEffect(selectProductDetail(data.productId))
     if (!detail) throw notFound()
+    // The address carries the slug, but exclusion is keyed by id: the raw
+    // param may be a slug, so always exclude the resolved row id.
     const [fromStore, similar] = await Promise.all([
-      runEffect(selectProductsByStore(detail.store.id, data.productId)),
-      runEffect(selectProductsByCategories(detail.categorySlugs, data.productId)),
+      runEffect(selectProductsByStore(detail.store.id, detail.id)),
+      runEffect(selectProductsByCategories(detail.categorySlugs, detail.id)),
     ])
     return { fromStore, similar }
   })

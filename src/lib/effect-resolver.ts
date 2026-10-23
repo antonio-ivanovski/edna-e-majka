@@ -13,11 +13,14 @@ const formatStandard = SchemaIssue.makeFormatterStandardSchemaV1()
  * and as a nested object, the way react-hook-form reads it. Every message is
  * the same Macedonian fallback: the schema's own messages are English, and
  * the site speaks Macedonian.
+ *
+ * `errors: "all"` collects every failure instead of stopping at the first,
+ * so one submit can light up all the fields that need fixing.
  */
 export function effectResolver<S extends Schema.Top>(schema: S): Resolver<any> {
   return async (values) => {
     try {
-      const decoded = Schema.decodeUnknownSync(schema as any)(values)
+      const decoded = Schema.decodeUnknownSync(schema as any, { errors: 'all' })(values)
       return { values: decoded as FieldValues, errors: {} }
     } catch (err: any) {
       const errors: Record<string, any> = {}

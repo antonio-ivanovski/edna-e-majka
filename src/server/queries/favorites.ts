@@ -1,9 +1,9 @@
 import { Effect } from 'effect'
-import { and, asc, eq } from 'drizzle-orm'
+import { and, desc, eq } from 'drizzle-orm'
 
 import { Db } from '../services/db'
 import { type DatabaseError } from '../errors'
-import { favoriteProduct, storeFollower } from '../db/schema'
+import { favoriteProduct, product, storeFollower } from '../db/schema'
 import { store } from '../db/schema'
 import { selectProductSummaries, type ProductSummary } from './products'
 import { storeSummaryColumns, type StoreSummary } from './stores'
@@ -17,7 +17,16 @@ export const selectFavoriteProducts = Effect.fn('selectFavoriteProducts')(functi
     d
       .select({ productId: favoriteProduct.productId })
       .from(favoriteProduct)
-      .where(eq(favoriteProduct.userId, userId)),
+      .innerJoin(product, eq(product.id, favoriteProduct.productId))
+      .innerJoin(store, eq(store.id, product.storeId))
+      .where(
+        and(
+          eq(favoriteProduct.userId, userId),
+          eq(product.status, 'published'),
+          eq(store.status, 'active'),
+        ),
+      )
+      .orderBy(desc(favoriteProduct.createdAt)),
   )
 
   if (rows.length === 0) return []
@@ -39,7 +48,7 @@ export const selectFollowedStores = Effect.fn('selectFollowedStores')(function* 
         and(eq(storeFollower.storeId, store.id), eq(storeFollower.userId, userId)),
       )
       .where(eq(store.status, 'active'))
-      .orderBy(asc(store.name)),
+      .orderBy(desc(storeFollower.createdAt)),
   )
 
   return rows

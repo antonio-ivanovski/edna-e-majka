@@ -70,6 +70,10 @@ export const AdminMessageList = Schema.Struct({
   page: pageField,
 })
 
+export const AdminAuditList = Schema.Struct({
+  page: pageField,
+})
+
 export const AdminProductList = Schema.Struct({
   status: Schema.optional(Schema.Literals(['published', 'archived'])),
   query: Schema.optional(

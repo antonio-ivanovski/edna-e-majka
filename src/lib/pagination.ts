@@ -7,9 +7,10 @@
 export const PRODUCT_PAGE_SIZE = 24
 
 /**
- * The endless list grows by a page at a time, but it never holds more than
- * this many cards: a catalogue with thousands of products would otherwise be
- * sent to the browser in one piece.
+ * Paged: each page renders PRODUCT_PAGE_SIZE cards and the pager navigates
+ * via `?page=`. The catalogue never spans more than this many cards across
+ * all pages: a catalogue with thousands of products would otherwise be sent
+ * to the browser in one piece.
  */
 export const MAX_CATALOGUE_ITEMS = 240
 
