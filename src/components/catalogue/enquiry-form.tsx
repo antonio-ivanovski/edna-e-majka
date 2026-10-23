@@ -9,16 +9,14 @@ import { submitEnquiry } from '#/server/functions/contact'
 import { Button } from '#/components/ui/button'
 import { Field, Input, Textarea } from '#/components/ui/field'
 import { Message } from '#/components/ui/message'
+import { Email } from '#/api/schemas/common'
 
 const formSchema = Schema.Struct({
   name: Schema.Trim.pipe(
     Schema.check(Schema.isMinLength(2)),
     Schema.check(Schema.isMaxLength(120)),
   ),
-  email: Schema.String.pipe(
-    Schema.check(Schema.isPattern(/^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/)),
-    Schema.check(Schema.isMaxLength(200)),
-  ),
+  email: Email,
   phone: Schema.optional(Schema.Trim.pipe(Schema.check(Schema.isMaxLength(60)))),
   message: Schema.Trim.pipe(
     Schema.check(Schema.isMinLength(10)),

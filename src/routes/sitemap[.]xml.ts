@@ -2,14 +2,14 @@ import { and, eq } from 'drizzle-orm'
 import { createFileRoute } from '@tanstack/react-router'
 import { Effect } from 'effect'
 
-import { env } from 'cloudflare:workers'
-
 import { runEffect } from '#/server/runtime'
 import { Db } from '#/server/services/db'
 import { product, store } from '#/server/db/schema'
 
+import { workerEnv } from '#/server/worker-env'
+
 function baseUrl(): string {
-  const configured = env.APP_URL?.trim()
+  const configured = workerEnv().APP_URL?.trim()
   return configured ? configured.replace(/\/$/, '') : 'https://ednaemajka.antonio.mk'
 }
 

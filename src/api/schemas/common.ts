@@ -4,8 +4,14 @@ import { Schema } from 'effect'
 export const TrimmedString = (min: number, max: number) =>
   Schema.Trim.pipe(Schema.check(Schema.isMinLength(min), Schema.isMaxLength(max)))
 
+/**
+ * One address shape for the whole app. The pattern is deliberately simple: a
+ * local part, an `@`, a domain and a dotted suffix. Anything stricter starts
+ * rejecting addresses that really do deliver.
+ */
 export const Email = Schema.String.pipe(
   Schema.check(Schema.isPattern(/^[^\s@]+@[^\s@]+\.[^\s@]+$/)),
+  Schema.check(Schema.isMaxLength(200)),
 )
 
 export const PageNumber = Schema.Number.pipe(

@@ -2,6 +2,8 @@ import { Context, Effect, Layer } from 'effect'
 
 import { DatabaseError } from '../errors'
 
+import { workerEnv } from '../worker-env'
+
 export interface RateLimitResult {
   readonly allowed: boolean
   readonly retryAfterSeconds: number
@@ -15,8 +17,6 @@ export interface RateLimiterService {
   }) => Effect.Effect<RateLimitResult, DatabaseError>
 }
 
-import { env } from 'cloudflare:workers'
-
 export class RateLimiter extends Context.Service<RateLimiter, RateLimiterService>()(
   'edna-e-majka/server/RateLimiter',
 ) {
@@ -26,13 +26,15 @@ export class RateLimiter extends Context.Service<RateLimiter, RateLimiterService
         try: async () => {
           const now = Date.now()
           const windowStart = now - input.windowSeconds * 1000
-          const stmt = env.DB.prepare(
-            `INSERT INTO rate_limit (key, count, last_request) VALUES (?, 1, ?)
+          const stmt = workerEnv()
+            .DB.prepare(
+              `INSERT INTO rate_limit (key, count, last_request) VALUES (?, 1, ?)
              ON CONFLICT(key) DO UPDATE SET
                count = CASE WHEN last_request < ? THEN 1 ELSE count + 1 END,
                last_request = ?
              RETURNING count, last_request`,
-          ).bind(input.key, now, windowStart, now)
+            )
+            .bind(input.key, now, windowStart, now)
           const result = await stmt.first<{ count: number; last_request: number }>()
           if (!result) throw new Error('Rate limit counter returned no row.')
           const allowed = result.count <= input.max

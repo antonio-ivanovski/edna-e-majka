@@ -1,6 +1,7 @@
 import { Context, Layer } from 'effect'
 
-import { env } from 'cloudflare:workers'
+import { workerEnv } from '../worker-env'
+import type { WorkerEnv } from '../worker-env'
 
 /**
  * Typed access to Cloudflare Worker bindings and vars. Centralising them here
@@ -8,9 +9,9 @@ import { env } from 'cloudflare:workers'
  * the layer can be swapped out in tests.
  */
 export interface AppEnv {
-  readonly DB: typeof env.DB
-  readonly BUCKET: typeof env.BUCKET
-  readonly EMAIL: typeof env.EMAIL
+  readonly DB: WorkerEnv['DB']
+  readonly BUCKET: WorkerEnv['BUCKET']
+  readonly EMAIL: WorkerEnv['EMAIL']
   readonly APP_URL: string
   readonly R2_PUBLIC_BASE_URL: string
   readonly EMAIL_FROM: string
@@ -23,8 +24,10 @@ export interface AppEnv {
 }
 
 export class Env extends Context.Service<Env, AppEnv>()('edna-e-majka/server/Env') {
-  static readonly layer = Layer.sync(Env, () =>
-    Env.of({
+  static readonly layer = Layer.sync(Env, () => {
+    const env = workerEnv()
+
+    return Env.of({
       DB: env.DB,
       BUCKET: env.BUCKET,
       EMAIL: env.EMAIL,
@@ -37,6 +40,6 @@ export class Env extends Context.Service<Env, AppEnv>()('edna-e-majka/server/Env
       ADMIN_EMAIL: env.ADMIN_EMAIL,
       GOOGLE_CLIENT_ID: env.GOOGLE_CLIENT_ID,
       GOOGLE_CLIENT_SECRET: env.GOOGLE_CLIENT_SECRET,
-    }),
-  )
+    })
+  })
 }

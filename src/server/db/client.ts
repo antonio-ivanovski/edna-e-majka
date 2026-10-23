@@ -1,8 +1,9 @@
-import { env } from 'cloudflare:workers'
 import { drizzle } from 'drizzle-orm/d1'
 
 import * as authSchema from './auth-schema'
 import * as schema from './schema'
+
+import { workerEnv } from '../worker-env'
 
 /** Tables keyed by Better Auth's model names, as its Drizzle adapter expects. */
 export const authTables = authSchema
@@ -12,5 +13,5 @@ export const authTables = authSchema
  * inside handlers and loaders rather than at module scope.
  */
 export function getDb() {
-  return drizzle(env.DB, { schema: { ...schema, ...authSchema } })
+  return drizzle(workerEnv().DB, { schema: { ...schema, ...authSchema } })
 }

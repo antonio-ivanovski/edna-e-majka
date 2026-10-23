@@ -21,6 +21,7 @@ import { SiteHeader } from '#/components/shell/site-header'
 import { Button } from '#/components/ui/button'
 import { getShellConfig } from '#/server/functions/config'
 import { listStores } from '#/server/functions/stores'
+import { setAssetsBaseUrl } from '#/lib/images'
 
 interface RouterContext {
   queryClient: QueryClient
@@ -100,7 +101,12 @@ export const Route = createRootRouteWithContext<RouterContext>()({
 })
 
 function RootComponent() {
-  const { stores, googleEnabled } = Route.useLoaderData()
+  const { stores, googleEnabled, assetsBaseUrl } = Route.useLoaderData()
+
+  // The image base URL is a deployment constant, so handing it over once here
+  // is enough for every image rendered below, on the server and in the
+  // browser alike.
+  setAssetsBaseUrl(assetsBaseUrl)
 
   return (
     <RootDocument>

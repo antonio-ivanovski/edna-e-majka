@@ -7,9 +7,10 @@ import { Field, Input } from '#/components/ui/field'
 import { Message } from '#/components/ui/message'
 import { effectResolver } from '#/lib/effect-resolver'
 import { authClient } from '#/lib/auth-client'
+import { Email } from '#/api/schemas/common'
 
 const emailSchema = Schema.Struct({
-  email: Schema.String.pipe(Schema.check(Schema.isPattern(/^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/))),
+  email: Email,
 })
 
 type EmailValues = Schema.Schema.Type<typeof emailSchema>

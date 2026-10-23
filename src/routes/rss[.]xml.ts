@@ -1,14 +1,15 @@
 import { createFileRoute } from '@tanstack/react-router'
-import { env } from 'cloudflare:workers'
 
 import { listProducts } from '#/server/functions/products'
+
+import { workerEnv } from '#/server/worker-env'
 
 export const Route = createFileRoute('/rss.xml')({
   server: {
     handlers: {
       GET: async () => {
         const page = await listProducts({ data: { page: '1' } })
-        const base = env.APP_URL.replace(/\/$/, '')
+        const base = workerEnv().APP_URL.replace(/\/$/, '')
         const items = page.items
           .map(
             (product) => `

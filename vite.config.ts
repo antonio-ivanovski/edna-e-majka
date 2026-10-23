@@ -9,8 +9,6 @@ export default defineConfig({
     port: 3000,
   },
   plugins: [
-    cloudflare({ viteEnvironment: { name: 'ssr' } }),
-    tailwindcss(),
     // Must come before the React plugin so route generation and server
     // function compilation run first.
     //
@@ -21,6 +19,11 @@ export default defineConfig({
     // only needed behind an interaction are loaded with `React.lazy` inside
     // the components that use them (see the cooperation and sign-in dialogs).
     tanstackStart(),
+    // After TanStack: the Cloudflare plugin contributes the worker
+    // environment (bindings, `resolve.builtins` for `cloudflare:*` modules).
+    // A later plugin's environment config wins, so it has to come last.
+    cloudflare({ viteEnvironment: { name: 'ssr' } }),
+    tailwindcss(),
     viteReact(),
   ],
 })

@@ -17,6 +17,7 @@ import {
 } from '#/lib/uploads'
 import { applyForStore, updateStore } from '#/server/functions/manage'
 import type { OwnerStore } from '#/server/queries/manage'
+import { Email } from '#/api/schemas/common'
 
 /**
  * The form always has a value for the two optional addresses: an empty string.
@@ -31,10 +32,7 @@ export const storeFormSchema = Schema.Struct({
     Schema.check(Schema.isMinLength(30)),
     Schema.check(Schema.isMaxLength(4000)),
   ),
-  email: Schema.String.pipe(
-    Schema.check(Schema.isPattern(/^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/)),
-    Schema.check(Schema.isMaxLength(200)),
-  ),
+  email: Email,
   phone: Schema.Trim.pipe(
     Schema.check(Schema.isMinLength(6)),
     Schema.check(Schema.isMaxLength(60)),

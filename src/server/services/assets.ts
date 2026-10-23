@@ -1,8 +1,8 @@
 import { Context, Effect, Layer } from 'effect'
 
-import { env } from 'cloudflare:workers'
-
 import { StorageError } from '../errors'
+
+import { workerEnv } from '../worker-env'
 
 export interface AssetsService {
   readonly put: (
@@ -16,7 +16,7 @@ export interface AssetsService {
 
 export class Assets extends Context.Service<Assets, AssetsService>()('edna-e-majka/server/Assets') {
   static readonly layer = Layer.sync(Assets, () => {
-    const bucket = env.BUCKET
+    const bucket = workerEnv().BUCKET
 
     const put: AssetsService['put'] = (key, body, httpMetadata) =>
       Effect.tryPromise({

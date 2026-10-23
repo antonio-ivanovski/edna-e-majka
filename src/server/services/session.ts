@@ -1,6 +1,6 @@
 import { Context, Effect, Layer } from 'effect'
 
-import { auth } from '../auth'
+import { getAuth } from '../auth'
 import { getRequestHeaders } from '@tanstack/react-start/server'
 import { NotSignedInError } from '../errors'
 
@@ -24,7 +24,7 @@ export class Session extends Context.Service<Session, SessionService>()(
     const getViewer = (): Effect.Effect<Viewer | null, never> =>
       Effect.tryPromise({
         try: async () => {
-          const session = await auth.api.getSession({ headers: getRequestHeaders() })
+          const session = await getAuth().api.getSession({ headers: getRequestHeaders() })
           if (!session) return null
           const role = (session.user as { role?: string }).role === 'admin' ? 'admin' : 'user'
           const banned = Boolean((session.user as { banned?: boolean }).banned)

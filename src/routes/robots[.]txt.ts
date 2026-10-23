@@ -1,8 +1,9 @@
 import { createFileRoute } from '@tanstack/react-router'
-import { env } from 'cloudflare:workers'
+
+import { workerEnv } from '#/server/worker-env'
 
 function baseUrl(): string {
-  const configured = env.APP_URL?.trim()
+  const configured = workerEnv().APP_URL?.trim()
 
   return configured ? configured.replace(/\/$/, '') : 'https://ednaemajka.antonio.mk'
 }

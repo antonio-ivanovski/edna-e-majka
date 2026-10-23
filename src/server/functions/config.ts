@@ -1,5 +1,6 @@
 import { createServerFn } from '@tanstack/react-start'
-import { env } from 'cloudflare:workers'
+
+import { workerEnv } from '../worker-env'
 
 /**
  * The little that the browser needs to know about the deployment. Google
@@ -7,6 +8,6 @@ import { env } from 'cloudflare:workers'
  * credentials are absent.
  */
 export const getShellConfig = createServerFn({ method: 'GET' }).handler(() => ({
-  googleEnabled: Boolean(env.GOOGLE_CLIENT_ID && env.GOOGLE_CLIENT_SECRET),
-  assetsBaseUrl: env.R2_PUBLIC_BASE_URL?.trim() || null,
+  googleEnabled: Boolean(workerEnv().GOOGLE_CLIENT_ID && workerEnv().GOOGLE_CLIENT_SECRET),
+  assetsBaseUrl: workerEnv().R2_PUBLIC_BASE_URL?.trim() || null,
 }))

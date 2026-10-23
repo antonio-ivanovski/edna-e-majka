@@ -4,8 +4,14 @@ import { createStart, createMiddleware } from '@tanstack/react-start'
  * Security headers on every response. CSP keeps `unsafe-inline` for scripts and
  * styles because the hydrated app and sonner's injected styles need it; the
  * framing and content-type protections are the parts that actually bite.
+ *
+ * The Workers bindings are handed over here, on the first request. The import
+ * is dynamic on purpose: this file is part of the client graph, and the
+ * module behind it may only ever be loaded by the server.
  */
 const securityHeaders = createMiddleware().server(async ({ next }) => {
+  await import('./server/worker-env-boot')
+
   const result = await next()
 
   const headers = result.response.headers

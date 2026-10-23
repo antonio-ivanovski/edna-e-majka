@@ -1,7 +1,6 @@
 import { Effect } from 'effect'
 import { eq, inArray } from 'drizzle-orm'
 
-import { env } from 'cloudflare:workers'
 import { Db } from './services/db'
 import { type DatabaseError, StorageError } from './errors'
 import {
@@ -12,6 +11,7 @@ import {
   contactMessage,
   store,
 } from './db/schema'
+import { workerEnv } from './worker-env'
 
 export const deleteProductCascade = Effect.fn('deleteProductCascade')(function* (
   productId: string,
@@ -25,7 +25,7 @@ export const deleteProductCascade = Effect.fn('deleteProductCascade')(function* 
   )
   if (images.length > 0) {
     yield* Effect.tryPromise({
-      try: () => env.BUCKET.delete(images.map((i) => i.r2Key)),
+      try: () => workerEnv().BUCKET.delete(images.map((i) => i.r2Key)),
       catch: (cause) =>
         new StorageError({ message: 'Не успеавме да ги избришеме сликите.', cause }),
     })
@@ -66,7 +66,7 @@ export const deleteStoreCascade = Effect.fn('deleteStoreCascade')(function* (
     )
     if (images.length > 0) {
       yield* Effect.tryPromise({
-        try: () => env.BUCKET.delete(images.map((i) => i.r2Key)),
+        try: () => workerEnv().BUCKET.delete(images.map((i) => i.r2Key)),
         catch: (cause) =>
           new StorageError({ message: 'Не успеавме да ги избришеме сликите.', cause }),
       })
@@ -89,7 +89,7 @@ export const deleteStoreCascade = Effect.fn('deleteStoreCascade')(function* (
   )
   if (keys.length > 0) {
     yield* Effect.tryPromise({
-      try: () => env.BUCKET.delete(keys),
+      try: () => workerEnv().BUCKET.delete(keys),
       catch: (cause) =>
         new StorageError({ message: 'Не успеавме да ги избришеме сликите.', cause }),
     })

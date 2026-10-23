@@ -2,8 +2,6 @@ import { createServerFn } from '@tanstack/react-start'
 import { eq } from 'drizzle-orm'
 import { Effect } from 'effect'
 
-import { env } from 'cloudflare:workers'
-
 import { getDb } from '../db/client'
 import { user } from '../db/auth-schema'
 import { productImage, store } from '../db/schema'
@@ -22,6 +20,8 @@ import { Result } from 'effect'
 import type { DomainError } from '../errors'
 import { NotAllowedError, NotFoundError, NotSignedInError } from '../errors'
 
+import { workerEnv } from '../worker-env'
+
 const EXTENSIONS: Record<string, string> = {
   'image/jpeg': 'jpg',
   'image/png': 'png',
@@ -34,7 +34,7 @@ const MAX_EDGE = 20_000
 function r2KeyOf(url: string | null | undefined): string | null {
   if (!url) return null
   if (url.startsWith('/images/')) return url.slice('/images/'.length)
-  const base = env.R2_PUBLIC_BASE_URL?.replace(/\/+$/, '')
+  const base = workerEnv().R2_PUBLIC_BASE_URL?.replace(/\/+$/, '')
   if (base && url.startsWith(`${base}/`)) return url.slice(base.length + 1)
   return null
 }
@@ -78,7 +78,7 @@ export const uploadUserAvatar = createServerFn({ method: 'POST', strict: { outpu
       contentType: file.type,
       cacheControl: 'public, max-age=31536000, immutable',
     }
-    await env.BUCKET.put(key, file.stream(), { httpMetadata })
+    await workerEnv().BUCKET.put(key, file.stream(), { httpMetadata })
 
     const db = getDb()
     const rows = await db
@@ -87,7 +87,7 @@ export const uploadUserAvatar = createServerFn({ method: 'POST', strict: { outpu
       .where(eq(user.id, viewer.id))
       .limit(1)
     const oldKey = r2KeyOf(rows[0]?.image)
-    if (oldKey) await env.BUCKET.delete(oldKey)
+    if (oldKey) await workerEnv().BUCKET.delete(oldKey)
     await db
       .update(user)
       .set({ image: imageUrl(key) ?? `/images/${key}` })
@@ -141,7 +141,7 @@ export const uploadProductImage = createServerFn({ method: 'POST', strict: { out
         contentType: file.type,
         cacheControl: 'public, max-age=31536000, immutable',
       }
-      await env.BUCKET.put(key, file.stream(), { httpMetadata })
+      await workerEnv().BUCKET.put(key, file.stream(), { httpMetadata })
 
       const altRaw = form.get('alt')
       const alt = typeof altRaw === 'string' && altRaw.trim() ? altRaw.trim().slice(0, 200) : null
@@ -196,9 +196,9 @@ export const uploadStoreAvatar = createServerFn({ method: 'POST', strict: { outp
       contentType: file.type,
       cacheControl: 'public, max-age=31536000, immutable',
     }
-    await env.BUCKET.put(key, file.stream(), { httpMetadata })
+    await workerEnv().BUCKET.put(key, file.stream(), { httpMetadata })
 
-    if (ownStore.avatarKey) await env.BUCKET.delete(ownStore.avatarKey)
+    if (ownStore.avatarKey) await workerEnv().BUCKET.delete(ownStore.avatarKey)
     await getDb().update(store).set({ avatarKey: key }).where(eq(store.id, storeId))
 
     return Result.succeed({ key })
@@ -237,9 +237,9 @@ export const uploadStoreCover = createServerFn({ method: 'POST', strict: { outpu
       contentType: file.type,
       cacheControl: 'public, max-age=31536000, immutable',
     }
-    await env.BUCKET.put(key, file.stream(), { httpMetadata })
+    await workerEnv().BUCKET.put(key, file.stream(), { httpMetadata })
 
-    if (ownStore.coverKey) await env.BUCKET.delete(ownStore.coverKey)
+    if (ownStore.coverKey) await workerEnv().BUCKET.delete(ownStore.coverKey)
     await getDb().update(store).set({ coverKey: key }).where(eq(store.id, storeId))
 
     return Result.succeed({ key })
@@ -265,7 +265,7 @@ export const deleteProductImage = createServerFn({ method: 'POST', strict: { out
         : await runEffect(selectOwnedProductRow(image.productId, viewer.id))
     if (!canManage)
       return Result.fail(new NotAllowedError({ message: 'Немате дозвола за овој производ.' }))
-    await env.BUCKET.delete(image.r2Key)
+    await workerEnv().BUCKET.delete(image.r2Key)
     await db.delete(productImage).where(eq(productImage.id, data.imageId))
     return Result.succeed(null)
   })
@@ -311,7 +311,7 @@ export const deleteStoreAvatar = createServerFn({ method: 'POST', strict: { outp
         : await runEffect(selectOwnerStoreById(data.storeId, viewer.id))
     if (!ownStore)
       return Result.fail(new NotAllowedError({ message: 'Немате дозвола за оваа продавница.' }))
-    if (ownStore.avatarKey) await env.BUCKET.delete(ownStore.avatarKey)
+    if (ownStore.avatarKey) await workerEnv().BUCKET.delete(ownStore.avatarKey)
     await getDb().update(store).set({ avatarKey: null }).where(eq(store.id, data.storeId))
     return Result.succeed(null)
   })
@@ -328,7 +328,7 @@ export const deleteStoreCover = createServerFn({ method: 'POST', strict: { outpu
         : await runEffect(selectOwnerStoreById(data.storeId, viewer.id))
     if (!ownStore)
       return Result.fail(new NotAllowedError({ message: 'Немате дозвола за оваа продавница.' }))
-    if (ownStore.coverKey) await env.BUCKET.delete(ownStore.coverKey)
+    if (ownStore.coverKey) await workerEnv().BUCKET.delete(ownStore.coverKey)
     await getDb().update(store).set({ coverKey: null }).where(eq(store.id, data.storeId))
     return Result.succeed(null)
   })
@@ -345,7 +345,7 @@ export const deleteUserAvatar = createServerFn({ method: 'POST', strict: { outpu
       .where(eq(user.id, viewer.id))
       .limit(1)
     const oldKey = r2KeyOf(rows[0]?.image)
-    if (oldKey) await env.BUCKET.delete(oldKey)
+    if (oldKey) await workerEnv().BUCKET.delete(oldKey)
     await db.update(user).set({ image: null }).where(eq(user.id, viewer.id))
     return Result.succeed(null)
   })

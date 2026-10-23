@@ -1,4 +1,4 @@
-import { env } from 'cloudflare:workers'
+import { workerEnv } from './worker-env'
 
 const SUBJECT = 'Влезете во Една е Мајка'
 
@@ -51,8 +51,8 @@ export async function sendMagicLinkEmail({ to, url, expiresInMinutes }: SendMagi
 </html>`
 
   try {
-    return await env.EMAIL.send({
-      from: { email: env.EMAIL_FROM, name: env.EMAIL_FROM_NAME },
+    return await workerEnv().EMAIL.send({
+      from: { email: workerEnv().EMAIL_FROM, name: workerEnv().EMAIL_FROM_NAME },
       to,
       subject: SUBJECT,
       text,

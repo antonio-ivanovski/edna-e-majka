@@ -1,8 +1,8 @@
 import { Context, Effect, Layer } from 'effect'
 
-import { env } from 'cloudflare:workers'
-
 import { EmailError } from '../errors'
+
+import { workerEnv } from '../worker-env'
 
 export interface MailMessage {
   readonly to: string
@@ -20,8 +20,8 @@ export class Mailer extends Context.Service<Mailer, MailerService>()('edna-e-maj
     const send: MailerService['send'] = (message) =>
       Effect.tryPromise({
         try: () =>
-          env.EMAIL.send({
-            from: { email: env.EMAIL_FROM, name: env.EMAIL_FROM_NAME },
+          workerEnv().EMAIL.send({
+            from: { email: workerEnv().EMAIL_FROM, name: workerEnv().EMAIL_FROM_NAME },
             to: message.to,
             subject: message.subject,
             text: message.text,
