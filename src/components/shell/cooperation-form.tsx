@@ -10,6 +10,7 @@ import { Button } from '#/components/ui/button'
 import { Field, Input, Textarea } from '#/components/ui/field'
 import { Message } from '#/components/ui/message'
 import { Email } from '#/api/schemas/common'
+import { toResult } from '#/lib/server-result'
 
 const formSchema = Schema.Struct({
   name: Schema.Trim.pipe(
@@ -46,7 +47,7 @@ export function CooperationForm({ onSent }: { onSent: () => void }) {
     setServerError('')
 
     try {
-      const result = await submitCooperationMessage({ data: { ...values, startedAt } })
+      const result = toResult(await submitCooperationMessage({ data: { ...values, startedAt } }))
 
       if (result._tag === 'Success') {
         onSent()

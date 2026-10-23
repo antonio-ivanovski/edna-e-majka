@@ -2,14 +2,17 @@ import { Link } from '@tanstack/react-router'
 import { ImageIcon } from 'lucide-react'
 
 import { Avatar } from '#/components/ui/avatar'
+import { Label } from '#/components/ui/label'
 import { Statistic } from '#/components/ui/statistic'
 import { formatDate, formatPrice } from '#/lib/format'
 import { imageUrl } from '#/lib/images'
 import type { ProductSummary } from '#/server/queries/products'
 
 /**
- * The yellow-topped card. The producer row is a sibling link rather than a
- * link inside the card's link, which the original got wrong.
+ * The yellow-topped card. The photo is never cropped: it letterboxes inside
+ * the ratio box, so a tall jar and a wide pie both show whole. The
+ * dimensions are known up front, so the box is reserved before the photo
+ * arrives and the grid does not jump.
  */
 export function ProductCard({ product }: { product: ProductSummary }) {
   return (
@@ -24,23 +27,39 @@ export function ProductCard({ product }: { product: ProductSummary }) {
             <img
               src={imageUrl(product.image.key)}
               alt={product.image.alt ?? product.title}
+              width={product.image.width}
+              height={product.image.height}
               loading="lazy"
-              className="absolute inset-0 size-full object-cover"
+              className="absolute inset-0 size-full object-contain"
             />
           ) : (
             <div className="absolute inset-0 flex items-center justify-center text-ink-faint">
               <ImageIcon aria-hidden="true" className="size-8" />
             </div>
           )}
-          {product.availability === 'out_of_stock' ? (
-            <span className="absolute top-2 right-2 rounded-card bg-black/70 px-2 py-1 text-xs font-bold text-white">
-              Нема на залиха
+          {product.availability === 'in_stock' ? (
+            <span className="absolute top-2 right-2">
+              <Label color="green" size="small">
+                Достапно
+              </Label>
             </span>
-          ) : null}
+          ) : product.availability === 'out_of_stock' ? (
+            <span className="absolute top-2 right-2">
+              <Label color="red" size="small">
+                Нема на залиха
+              </Label>
+            </span>
+          ) : (
+            <span className="absolute top-2 right-2">
+              <Label color="grey" size="small">
+                По нарачка
+              </Label>
+            </span>
+          )}
         </div>
 
         <div className="border-t border-border px-4 py-4">
-          <h3 className="text-[1.2857rem] leading-tight font-bold text-ink">{product.title}</h3>
+          <h3 className="text-lg leading-snug font-bold text-ink">{product.title}</h3>
           <p className="mt-1 text-ink-subtle">Додадено {formatDate(product.createdAt)}</p>
           <p className="mt-2 line-clamp-3 text-ink-muted">{product.description}</p>
         </div>
@@ -67,7 +86,7 @@ export function ProductCard({ product }: { product: ProductSummary }) {
         <Link
           to="/producers/$storeId"
           params={{ storeId: product.store.slug ?? product.store.id }}
-          className="inline-flex items-center gap-2 text-ink-subtle hover:text-ink"
+          className="inline-flex items-center gap-2 text-sm text-ink-subtle hover:text-ink"
         >
           <Avatar src={imageUrl(product.store.avatarKey)} alt={product.store.name} />
           {product.store.name}

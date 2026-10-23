@@ -9,6 +9,7 @@ import { formatDate } from '#/lib/format'
 import { cn } from '#/lib/utils'
 import { deleteMessage, setMessageHandled } from '#/server/functions/admin'
 import type { AdminMessage } from '#/server/queries/admin'
+import { toResult } from '#/lib/server-result'
 
 const KINDS: Record<AdminMessage['kind'], string> = {
   contact: 'Контакт',
@@ -25,9 +26,11 @@ export function AdminMessageCard({ message }: { message: AdminMessage }) {
   const toggle = async () => {
     setBusy(true)
 
-    const result = await setMessageHandled({
-      data: { messageId: message.id, handled: !handled },
-    })
+    const result = toResult(
+      await setMessageHandled({
+        data: { messageId: message.id, handled: !handled },
+      }),
+    )
 
     setBusy(false)
 
@@ -40,7 +43,7 @@ export function AdminMessageCard({ message }: { message: AdminMessage }) {
   }
 
   const remove = async () => {
-    const result = await deleteMessage({ data: { messageId: message.id } })
+    const result = toResult(await deleteMessage({ data: { messageId: message.id } }))
 
     if (result._tag === 'Failure') {
       toast.error(result.failure.message)

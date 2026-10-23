@@ -9,6 +9,7 @@ import { formatDate } from '#/lib/format'
 import { setStoreStatus } from '#/server/functions/admin'
 import type { AdminStore } from '#/server/queries/admin'
 import type { StoreStatus } from '#/server/queries/manage'
+import { toResult } from '#/lib/server-result'
 
 const STATUSES: { value: StoreStatus; label: string }[] = [
   { value: 'pending', label: 'Чека преглед' },
@@ -33,13 +34,15 @@ export function StoreStatusForm({ store }: { store: AdminStore }) {
     setBusy(true)
     setError('')
 
-    const result = await setStoreStatus({
-      data: {
-        storeId: store.id,
-        status,
-        note: note.trim() ? note.trim() : null,
-      },
-    })
+    const result = toResult(
+      await setStoreStatus({
+        data: {
+          storeId: store.id,
+          status,
+          note: note.trim() ? note.trim() : null,
+        },
+      }),
+    )
 
     setBusy(false)
 

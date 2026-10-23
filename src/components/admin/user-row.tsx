@@ -10,6 +10,7 @@ import { TableCell, TableRow } from '#/components/ui/table'
 import { formatCount, formatDate } from '#/lib/format'
 import { setUserRole, adminSetUserBanned } from '#/server/functions/admin'
 import type { AdminUser } from '#/server/queries/admin'
+import { toResult } from '#/lib/server-result'
 
 /**
  * One account. Roles are the only thing an admin sets here, and the change is
@@ -24,7 +25,9 @@ export function AdminUserRow({ user, isSelf }: { user: AdminUser; isSelf: boolea
   const changeRole = async () => {
     setBusy(true)
 
-    const result = await setUserRole({ data: { userId: user.id, role: admin ? 'user' : 'admin' } })
+    const result = toResult(
+      await setUserRole({ data: { userId: user.id, role: admin ? 'user' : 'admin' } }),
+    )
 
     setBusy(false)
 
@@ -115,9 +118,11 @@ export function AdminUserRow({ user, isSelf }: { user: AdminUser; isSelf: boolea
               confirmLabel={user.banned ? 'Одблокирај' : 'Блокирај'}
               onConfirm={async () => {
                 setBusy(true)
-                const result = await adminSetUserBanned({
-                  data: { userId: user.id, banned: !user.banned },
-                })
+                const result = toResult(
+                  await adminSetUserBanned({
+                    data: { userId: user.id, banned: !user.banned },
+                  }),
+                )
                 setBusy(false)
                 if (result._tag === 'Failure') {
                   toast.error(result.failure.message)

@@ -10,6 +10,7 @@ import { formatDate, formatPrice } from '#/lib/format'
 import { imageUrl } from '#/lib/images'
 import { deleteProduct, setProductArchived } from '#/server/functions/manage'
 import type { OwnerProduct } from '#/server/queries/manage'
+import { toResult } from '#/lib/server-result'
 
 /** One line of the product table, with the two actions that change it. */
 export function ProductRow({ storeId, product }: { storeId: string; product: OwnerProduct }) {
@@ -21,9 +22,11 @@ export function ProductRow({ storeId, product }: { storeId: string; product: Own
   const toggleArchived = async () => {
     setBusy(true)
 
-    const result = await setProductArchived({
-      data: { productId: product.id, archived: published },
-    })
+    const result = toResult(
+      await setProductArchived({
+        data: { productId: product.id, archived: published },
+      }),
+    )
 
     setBusy(false)
 
@@ -37,7 +40,7 @@ export function ProductRow({ storeId, product }: { storeId: string; product: Own
   }
 
   const remove = async () => {
-    const result = await deleteProduct({ data: { productId: product.id } })
+    const result = toResult(await deleteProduct({ data: { productId: product.id } }))
 
     if (result._tag === 'Failure') {
       toast.error(result.failure.message)

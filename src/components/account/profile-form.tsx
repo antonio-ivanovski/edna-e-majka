@@ -13,6 +13,7 @@ import { deleteUserAvatar, uploadUserAvatar } from '#/lib/uploads'
 
 type ProfileValues = Schema.Schema.Type<typeof Profile>
 import { updateAccount } from '#/server/functions/account'
+import { toResult } from '#/lib/server-result'
 
 /** The name and the picture on the account. */
 export function AccountProfileForm({ name, image }: { name: string; image: string | null }) {
@@ -33,7 +34,7 @@ export function AccountProfileForm({ name, image }: { name: string; image: strin
   const onSubmit = handleSubmit(async (values) => {
     setServerError('')
 
-    const result = await updateAccount({ data: { name: values.name } })
+    const result = toResult(await updateAccount({ data: { name: values.name } }))
 
     if (result._tag === 'Failure') {
       setServerError(result.failure.message)
@@ -53,7 +54,7 @@ export function AccountProfileForm({ name, image }: { name: string; image: strin
 
     setBusy(true)
 
-    const result = await uploadUserAvatar(file)
+    const result = toResult(await uploadUserAvatar(file))
 
     setBusy(false)
 
@@ -71,7 +72,7 @@ export function AccountProfileForm({ name, image }: { name: string; image: strin
   const onRemove = async () => {
     setBusy(true)
 
-    const result = await deleteUserAvatar()
+    const result = toResult(await deleteUserAvatar())
 
     setBusy(false)
 

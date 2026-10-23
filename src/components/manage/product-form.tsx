@@ -51,6 +51,7 @@ type ProductFormData = {
 }
 import { saveProduct, updateProductImageAlt } from '#/server/functions/manage'
 import type { OwnerProductDetail, OwnerProductImage } from '#/server/queries/manage'
+import { toResult } from '#/lib/server-result'
 
 /** A photo picked before the product exists, and its local preview. */
 type PendingImage = { file: File; url: string }
@@ -140,7 +141,7 @@ export function ProductForm({
     setBusyImages(true)
 
     for (const file of picked) {
-      const result = await uploadProductImage(product.id, file)
+      const result = toResult(await uploadProductImage(product.id, file))
 
       if (result._tag === 'Failure') {
         setImageError(result.failure.message)
@@ -162,7 +163,7 @@ export function ProductForm({
     setBusyImages(true)
     setImageError('')
 
-    const result = await deleteProductImage(imageId)
+    const result = toResult(await deleteProductImage(imageId))
 
     if (result._tag === 'Failure') {
       setImageError(result.failure.message)
@@ -235,21 +236,23 @@ export function ProductForm({
   const onSubmit = handleSubmit(async (values) => {
     setServerError('')
 
-    const result = await save({
-      data: {
-        ...(product ? { productId: product.id } : {}),
-        storeId,
-        title: values.title,
-        description: values.description,
-        categories: [...values.categories],
-        availability: values.availability,
-        attributes: serializeAttributes(attributes),
-        variants: values.variants.map((variant) => ({
-          title: variant.title,
-          price: Number(variant.price),
-        })),
-      },
-    })
+    const result = toResult(
+      await save({
+        data: {
+          ...(product ? { productId: product.id } : {}),
+          storeId,
+          title: values.title,
+          description: values.description,
+          categories: [...values.categories],
+          availability: values.availability,
+          attributes: serializeAttributes(attributes),
+          variants: values.variants.map((variant) => ({
+            title: variant.title,
+            price: Number(variant.price),
+          })),
+        },
+      }),
+    )
 
     if (result._tag === 'Failure') {
       setServerError(result.failure.message)
@@ -462,9 +465,11 @@ export function ProductForm({
                 className="h-7 w-[120px] rounded-card border border-border px-1 text-xs"
                 onBlur={async (event) => {
                   const value = event.target.value
-                  const result = await updateProductImageAlt({
-                    data: { imageId: image.id, alt: value },
-                  })
+                  const result = toResult(
+                    await updateProductImageAlt({
+                      data: { imageId: image.id, alt: value },
+                    }),
+                  )
                   if (result._tag === 'Success') {
                     setImages((current) =>
                       current.map((entry) =>

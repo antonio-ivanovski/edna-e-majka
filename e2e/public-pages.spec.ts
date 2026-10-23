@@ -55,3 +55,20 @@ test('a producer page renders', async ({ page, pageErrors }) => {
 
   expectNoPageErrors(pageErrors)
 })
+
+test('the follow control answers when signed out', async ({ page, pageErrors }) => {
+  await page.goto('/producers')
+  const link = page.locator('a[href^="/producers/"]').first()
+  await expect(link).toBeVisible()
+  await link.click()
+  await page.waitForURL(/\/producers\/.+/)
+
+  const follow = page.getByRole('button', { name: 'Следи', exact: true })
+  await expect(follow).toBeVisible()
+  await expect(follow).toHaveAttribute('aria-pressed', 'false')
+  await follow.click()
+
+  await expect(page.getByText('Треба да сте најавени')).toBeVisible()
+
+  expectNoPageErrors(pageErrors)
+})

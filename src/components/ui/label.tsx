@@ -10,7 +10,7 @@ const labelStyles = cva(
   {
     variants: {
       color: {
-        grey: 'bg-border text-ink-muted',
+        grey: 'bg-surface-sunken text-ink-muted',
         green: 'bg-success text-white',
         blue: 'bg-facebook text-white',
         purple: 'bg-instagram text-white',

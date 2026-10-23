@@ -7,6 +7,7 @@ import { Field, Input } from '#/components/ui/field'
 import { Panel } from '#/components/ui/panel'
 import { transferStoreOwner } from '#/server/functions/admin'
 import type { AdminStore } from '#/server/queries/admin'
+import { toResult } from '#/lib/server-result'
 
 /**
  * Moving a shop to another account. Used when the person who should run it
@@ -24,7 +25,7 @@ export function TransferOwnerForm({ store }: { store: AdminStore }) {
     setBusy(true)
     setError('')
 
-    const result = await transferStoreOwner({ data: { storeId: store.id, email } })
+    const result = toResult(await transferStoreOwner({ data: { storeId: store.id, email } }))
 
     setBusy(false)
 

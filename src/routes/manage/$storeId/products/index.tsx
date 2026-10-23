@@ -12,6 +12,7 @@ import { MANAGE_PAGE_SIZE } from '#/lib/pagination'
 import { toValidator, ProductSearch } from '#/api/schemas'
 import { manageQueries } from '#/lib/queries/manage'
 import { exportStoreProductsCSV, importStoreProductsCSV } from '#/server/functions/manage'
+import { toResult } from '#/lib/server-result'
 
 export const Route = createFileRoute('/manage/$storeId/products/')({
   validateSearch: toValidator(ProductSearch),
@@ -71,7 +72,7 @@ function ManageProductsPage() {
             variant="outline"
             size="sm"
             onClick={async () => {
-              const csv = await exportStoreProductsCSV({ data: { storeId: store.id } })
+              const csv = toResult(await exportStoreProductsCSV({ data: { storeId: store.id } }))
               if (csv._tag === 'Failure') return
               const blob = new Blob([csv.success], { type: 'text/csv' })
               const url = URL.createObjectURL(blob)
@@ -96,9 +97,11 @@ function ManageProductsPage() {
                 const file = input.files?.[0]
                 if (!file) return
                 const text = await file.text()
-                const result = await importStoreProductsCSV({
-                  data: { storeId: store.id, csv: text },
-                })
+                const result = toResult(
+                  await importStoreProductsCSV({
+                    data: { storeId: store.id, csv: text },
+                  }),
+                )
                 if (result._tag === 'Failure') {
                   alert(result.failure.message)
                   return

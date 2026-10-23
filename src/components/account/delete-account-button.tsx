@@ -5,6 +5,7 @@ import { toast } from 'sonner'
 import { Button } from '#/components/ui/button'
 import { ConfirmDialog } from '#/components/ui/confirm-dialog'
 import { deleteAccount } from '#/server/functions/account'
+import { toResult } from '#/lib/server-result'
 
 /**
  * Closing the account for good. The shop it holds, its listings and their
@@ -18,7 +19,7 @@ export function DeleteAccountButton({ storeName }: { storeName: string | null })
   const remove = async () => {
     setBusy(true)
 
-    const result = await deleteAccount()
+    const result = toResult(await deleteAccount())
 
     setBusy(false)
 

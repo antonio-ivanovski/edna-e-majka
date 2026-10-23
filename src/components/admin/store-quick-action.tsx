@@ -5,6 +5,7 @@ import { toast } from 'sonner'
 import { Button } from '#/components/ui/button'
 import { setStoreStatus } from '#/server/functions/admin'
 import type { AdminStore } from '#/server/queries/admin'
+import { toResult } from '#/lib/server-result'
 
 /**
  * The one decision that needs no reason: putting a shop back on the site. An
@@ -27,9 +28,11 @@ export function StoreQuickAction({ store }: { store: AdminStore }) {
   const run = async () => {
     setBusy(true)
 
-    const result = await setStoreStatus({
-      data: { storeId: store.id, status: 'active', note: null },
-    })
+    const result = toResult(
+      await setStoreStatus({
+        data: { storeId: store.id, status: 'active', note: null },
+      }),
+    )
 
     setBusy(false)
 

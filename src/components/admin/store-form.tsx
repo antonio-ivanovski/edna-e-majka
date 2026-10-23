@@ -9,6 +9,7 @@ import { Button } from '#/components/ui/button'
 import { Message } from '#/components/ui/message'
 import { adminUpdateStore } from '#/server/functions/admin'
 import type { AdminStore } from '#/server/queries/admin'
+import { toResult } from '#/lib/server-result'
 
 /**
  * An admin correcting a shop's details. The same fields the owner sees, saved
@@ -39,7 +40,7 @@ export function AdminStoreForm({ store }: { store: AdminStore }) {
   const onSubmit = handleSubmit(async (values) => {
     setServerError('')
 
-    const result = await adminUpdateStore({ data: { ...values, storeId: store.id } })
+    const result = toResult(await adminUpdateStore({ data: { ...values, storeId: store.id } }))
 
     if (result._tag === 'Failure') {
       setServerError(result.failure.message)

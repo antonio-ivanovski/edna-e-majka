@@ -3,6 +3,7 @@ import { toast } from 'sonner'
 
 import { Button } from '#/components/ui/button'
 import { isFollowingStore, toggleFollowStore } from '#/server/functions/favorites'
+import { toResult } from '#/lib/server-result'
 
 export function FollowButton({ storeId }: { storeId: string }) {
   const [following, setFollowing] = useState(false)
@@ -10,7 +11,9 @@ export function FollowButton({ storeId }: { storeId: string }) {
 
   useEffect(() => {
     const handle = setTimeout(() => {
-      void isFollowingStore({ data: { storeId } }).then((result) => {
+      void isFollowingStore({ data: { storeId } }).then((wire) => {
+        const result = toResult(wire)
+
         if (result._tag === 'Success') {
           setFollowing(result.success.following)
         }
@@ -22,7 +25,7 @@ export function FollowButton({ storeId }: { storeId: string }) {
   }, [storeId])
 
   const toggle = async () => {
-    const result = await toggleFollowStore({ data: { storeId } })
+    const result = toResult(await toggleFollowStore({ data: { storeId } }))
 
     if (result._tag === 'Failure') {
       toast.error('Треба да сте најавени.')
@@ -44,6 +47,7 @@ export function FollowButton({ storeId }: { storeId: string }) {
       type="button"
       variant={following ? 'outline' : 'positive'}
       size="sm"
+      aria-pressed={following}
       onClick={() => void toggle()}
     >
       {following ? 'Следите' : 'Следи'}

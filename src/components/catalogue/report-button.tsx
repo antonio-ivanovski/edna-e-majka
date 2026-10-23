@@ -5,6 +5,7 @@ import { Button } from '#/components/ui/button'
 import { Dialog } from '#/components/ui/dialog'
 import { Field, Textarea } from '#/components/ui/field'
 import { submitReport } from '#/server/functions/contact'
+import { toResult } from '#/lib/server-result'
 
 const MIN_REASON_LENGTH = 5
 
@@ -21,9 +22,11 @@ export function ReportButton({ storeId, productId }: { storeId?: string; product
     setBusy(true)
 
     try {
-      const result = await submitReport({
-        data: { storeId, productId, reason: trimmed, startedAt: Date.now() },
-      })
+      const result = toResult(
+        await submitReport({
+          data: { storeId, productId, reason: trimmed, startedAt: Date.now() },
+        }),
+      )
 
       if (result._tag === 'Failure') {
         toast.error(result.failure.message)

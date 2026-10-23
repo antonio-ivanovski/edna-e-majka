@@ -65,3 +65,18 @@ test('the report dialog needs a real reason', async ({ page, pageErrors }) => {
 
   expectNoPageErrors(pageErrors)
 })
+
+test('the favourite control answers when signed out', async ({ page, pageErrors }) => {
+  const path = await firstProductPath(page)
+  await page.goto(path)
+  await waitForHydration(page)
+
+  const heart = page.getByRole('button', { name: /омилени/ })
+  await expect(heart).toBeVisible()
+  await expect(heart).toHaveAttribute('aria-pressed', 'false')
+  await heart.click()
+
+  await expect(page.getByText('Треба да сте најавени')).toBeVisible()
+
+  expectNoPageErrors(pageErrors)
+})

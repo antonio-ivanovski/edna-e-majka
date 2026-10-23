@@ -5,6 +5,7 @@ import { toast } from 'sonner'
 import { Button } from '#/components/ui/button'
 import { ConfirmDialog } from '#/components/ui/confirm-dialog'
 import { deleteStore } from '#/server/functions/manage'
+import { toResult } from '#/lib/server-result'
 
 /**
  * The owner closes their own shop for good. Everything that belongs to the
@@ -18,7 +19,7 @@ export function DeleteStoreButton({ storeId, storeName }: { storeId: string; sto
   const remove = async () => {
     setBusy(true)
 
-    const result = await deleteStore({ data: { storeId } })
+    const result = toResult(await deleteStore({ data: { storeId } }))
 
     setBusy(false)
 

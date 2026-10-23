@@ -10,6 +10,7 @@ import { formatDate, formatPrice } from '#/lib/format'
 import { imageUrl } from '#/lib/images'
 import { adminDeleteProduct, adminSetProductArchived } from '#/server/functions/admin'
 import type { AdminProduct } from '#/server/queries/admin'
+import { toResult } from '#/lib/server-result'
 
 /** One listing in the admin table: archive, publish or remove any shop's work. */
 export function AdminProductRow({ product }: { product: AdminProduct }) {
@@ -21,9 +22,11 @@ export function AdminProductRow({ product }: { product: AdminProduct }) {
   const toggleArchived = async () => {
     setBusy(true)
 
-    const result = await adminSetProductArchived({
-      data: { productId: product.id, archived: published },
-    })
+    const result = toResult(
+      await adminSetProductArchived({
+        data: { productId: product.id, archived: published },
+      }),
+    )
 
     setBusy(false)
 
@@ -37,7 +40,7 @@ export function AdminProductRow({ product }: { product: AdminProduct }) {
   }
 
   const remove = async () => {
-    const result = await adminDeleteProduct({ data: { productId: product.id } })
+    const result = toResult(await adminDeleteProduct({ data: { productId: product.id } }))
 
     if (result._tag === 'Failure') {
       toast.error(result.failure.message)

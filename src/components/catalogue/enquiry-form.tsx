@@ -10,6 +10,7 @@ import { Button } from '#/components/ui/button'
 import { Field, Input, Textarea } from '#/components/ui/field'
 import { Message } from '#/components/ui/message'
 import { Email } from '#/api/schemas/common'
+import { toResult } from '#/lib/server-result'
 
 const formSchema = Schema.Struct({
   name: Schema.Trim.pipe(
@@ -44,18 +45,20 @@ export function EnquiryForm({ storeId, productId }: { storeId: string; productId
     let result: Awaited<ReturnType<typeof submitEnquiry>>
 
     try {
-      result = await submitEnquiry({
-        data: {
-          storeId,
-          productId,
-          name: values.name,
-          email: values.email,
-          phone: values.phone,
-          message: values.message,
-          honeypot: values.honeypot,
-          startedAt,
-        },
-      })
+      result = toResult(
+        await submitEnquiry({
+          data: {
+            storeId,
+            productId,
+            name: values.name,
+            email: values.email,
+            phone: values.phone,
+            message: values.message,
+            honeypot: values.honeypot,
+            startedAt,
+          },
+        }),
+      )
     } catch {
       setServerError(
         'Пораката не можеше да се испрати. Проверете ја врската и обидете се повторно.',

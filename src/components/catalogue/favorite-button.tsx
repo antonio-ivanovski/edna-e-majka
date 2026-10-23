@@ -3,6 +3,7 @@ import { useEffect, useState } from 'react'
 import { toast } from 'sonner'
 
 import { isFavoriteProduct, toggleFavoriteProduct } from '#/server/functions/favorites'
+import { toResult } from '#/lib/server-result'
 
 /** A heart that toggles a product in the signed-in user's favorites. */
 export function FavoriteButton({ productId }: { productId: string }) {
@@ -11,7 +12,9 @@ export function FavoriteButton({ productId }: { productId: string }) {
 
   useEffect(() => {
     const handle = setTimeout(() => {
-      void isFavoriteProduct({ data: { productId } }).then((result) => {
+      void isFavoriteProduct({ data: { productId } }).then((wire) => {
+        const result = toResult(wire)
+
         if (result._tag === 'Success') {
           setFavorited(result.success.favorited)
         }
@@ -23,7 +26,7 @@ export function FavoriteButton({ productId }: { productId: string }) {
   }, [productId])
 
   const toggle = async () => {
-    const result = await toggleFavoriteProduct({ data: { productId } })
+    const result = toResult(await toggleFavoriteProduct({ data: { productId } }))
 
     if (result._tag === 'Failure') {
       toast.error('Треба да сте најавени.')
@@ -41,10 +44,15 @@ export function FavoriteButton({ productId }: { productId: string }) {
     <button
       type="button"
       aria-label={favorited ? 'Отстрани од омилени' : 'Додај во омилени'}
-      className="cursor-pointer rounded-full p-1 text-ink-faint hover:text-danger"
+      aria-pressed={favorited}
+      title={favorited ? 'Отстрани од омилени' : 'Додај во омилени'}
+      className="cursor-pointer rounded-full p-2 text-ink-faint transition-colors hover:bg-hover hover:text-danger"
       onClick={() => void toggle()}
     >
-      <Heart className={favorited ? 'fill-danger text-danger' : ''} />
+      <Heart
+        aria-hidden="true"
+        className={`size-5 ${favorited ? 'fill-danger text-danger' : ''}`}
+      />
     </button>
   )
 }

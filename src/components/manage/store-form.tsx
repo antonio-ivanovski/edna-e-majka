@@ -18,6 +18,7 @@ import {
 import { applyForStore, updateStore } from '#/server/functions/manage'
 import type { OwnerStore } from '#/server/queries/manage'
 import { Email } from '#/api/schemas/common'
+import { toResult } from '#/lib/server-result'
 
 /**
  * The form always has a value for the two optional addresses: an empty string.
@@ -186,7 +187,7 @@ export function StoreForm({
     setServerError('')
 
     if (store) {
-      const result = await updateStore({ data: { ...values, storeId: store.id } })
+      const result = toResult(await updateStore({ data: { ...values, storeId: store.id } }))
 
       if (result._tag === 'Failure') {
         setServerError(result.failure.message)
@@ -253,7 +254,7 @@ export function StoreAvatarField({ store }: { store: OwnerStore }) {
     setBusy(true)
     setError('')
 
-    const result = await uploadStoreAvatar(store.id, file)
+    const result = toResult(await uploadStoreAvatar(store.id, file))
 
     if (result._tag === 'Failure') {
       setError(result.failure.message)
@@ -272,7 +273,7 @@ export function StoreAvatarField({ store }: { store: OwnerStore }) {
     setBusy(true)
     setError('')
 
-    const result = await deleteStoreAvatar(store.id)
+    const result = toResult(await deleteStoreAvatar(store.id))
 
     if (result._tag === 'Failure') {
       setError(result.failure.message)
@@ -346,7 +347,7 @@ export function StoreCoverField({ store }: { store: OwnerStore }) {
     setBusy(true)
     setError('')
 
-    const result = await uploadStoreCover(store.id, file)
+    const result = toResult(await uploadStoreCover(store.id, file))
 
     if (result._tag === 'Failure') {
       setError(result.failure.message)
@@ -365,7 +366,7 @@ export function StoreCoverField({ store }: { store: OwnerStore }) {
     setBusy(true)
     setError('')
 
-    const result = await deleteStoreCover(store.id)
+    const result = toResult(await deleteStoreCover(store.id))
 
     if (result._tag === 'Failure') {
       setError(result.failure.message)

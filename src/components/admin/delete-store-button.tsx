@@ -5,6 +5,7 @@ import { toast } from 'sonner'
 import { Button } from '#/components/ui/button'
 import { ConfirmDialog } from '#/components/ui/confirm-dialog'
 import { adminDeleteStore } from '#/server/functions/admin'
+import { toResult } from '#/lib/server-result'
 
 /** An admin removes a shop with everything that belonged to it. */
 export function AdminDeleteStoreButton({
@@ -21,7 +22,7 @@ export function AdminDeleteStoreButton({
   const remove = async () => {
     setBusy(true)
 
-    const result = await adminDeleteStore({ data: { storeId } })
+    const result = toResult(await adminDeleteStore({ data: { storeId } }))
 
     setBusy(false)
 

@@ -72,15 +72,15 @@ function ProducerPage() {
       {store.coverKey ? (
         <img
           src={imageUrl(store.coverKey)}
-          alt={`Cover на продавницата ${store.name}`}
-          className="h-[160px] w-full rounded-t-card object-cover sm:h-[220px]"
+          alt=""
+          className="aspect-[16/5] max-h-[220px] w-full rounded-t-card object-cover"
         />
       ) : null}
       <Panel className={store.coverKey ? 'm-2.5 -mt-2.5 rounded-t-none' : 'm-2.5'}>
         <div className="flex flex-col gap-3">
-          <div className="flex items-center gap-2.5">
+          <div className="flex flex-wrap items-center gap-2.5">
             <Avatar src={imageUrl(store.avatarKey)} alt={store.name} size={32} />
-            <h1 className="text-[1.2857rem] font-bold text-ink">{store.name}</h1>
+            <h1 className="min-w-0 flex-1 font-display text-3xl font-semibold">{store.name}</h1>
             <FollowButton storeId={store.id} />
           </div>
           <p className="whitespace-pre-wrap text-ink-muted">{store.description}</p>
