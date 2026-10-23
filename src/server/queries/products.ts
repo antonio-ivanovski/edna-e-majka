@@ -308,7 +308,7 @@ export const selectProductDetail = Effect.fn('selectProductDetail')(function* (
   productId: string,
 ): Effect.fn.Return<ProductDetail | null, DatabaseError, Db> {
   const db = yield* Db
-  const [rows, imageRows, variantRows, categoryRows] = yield* db.run(
+  const [rows] = yield* db.run(
     (d) =>
       d.batch([
         d
@@ -330,6 +330,15 @@ export const selectProductDetail = Effect.fn('selectProductDetail')(function* (
             ),
           )
           .limit(1),
+      ]) as unknown as Promise<[any[]]>,
+  )
+  const row = rows[0]
+  if (!row) return null
+
+  // The address carries the slug, but the related rows are keyed by id.
+  const [imageRows, variantRows, categoryRows] = yield* db.run(
+    (d) =>
+      d.batch([
         d
           .select({
             key: productImage.r2Key,
@@ -338,7 +347,7 @@ export const selectProductDetail = Effect.fn('selectProductDetail')(function* (
             alt: productImage.alt,
           })
           .from(productImage)
-          .where(eq(productImage.productId, productId))
+          .where(eq(productImage.productId, row.id))
           .orderBy(asc(productImage.position)),
         d
           .select({
@@ -347,16 +356,14 @@ export const selectProductDetail = Effect.fn('selectProductDetail')(function* (
             price: productVariant.price,
           })
           .from(productVariant)
-          .where(eq(productVariant.productId, productId))
+          .where(eq(productVariant.productId, row.id))
           .orderBy(asc(productVariant.position)),
         d
           .select({ categorySlug: productCategory.categorySlug })
           .from(productCategory)
-          .where(eq(productCategory.productId, productId)),
-      ]) as unknown as Promise<[any[], any[], any[], any[]]>,
+          .where(eq(productCategory.productId, row.id)),
+      ]) as unknown as Promise<[any[], any[], any[]]>,
   )
-  const row = rows[0]
-  if (!row) return null
   return {
     id: row.id,
     title: row.title,

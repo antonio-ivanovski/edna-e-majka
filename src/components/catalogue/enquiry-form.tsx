@@ -40,18 +40,28 @@ export function EnquiryForm({ storeId, productId }: { storeId: string; productId
 
   const onSubmit = handleSubmit(async (values) => {
     setServerError('')
-    const result = await submitEnquiry({
-      data: {
-        storeId,
-        productId,
-        name: values.name,
-        email: values.email,
-        phone: values.phone,
-        message: values.message,
-        honeypot: values.honeypot,
-        startedAt,
-      },
-    })
+
+    let result: Awaited<ReturnType<typeof submitEnquiry>>
+
+    try {
+      result = await submitEnquiry({
+        data: {
+          storeId,
+          productId,
+          name: values.name,
+          email: values.email,
+          phone: values.phone,
+          message: values.message,
+          honeypot: values.honeypot,
+          startedAt,
+        },
+      })
+    } catch {
+      setServerError(
+        'Пораката не можеше да се испрати. Проверете ја врската и обидете се повторно.',
+      )
+      return
+    }
 
     if (result._tag === 'Failure') {
       setServerError(result.failure.message)

@@ -1,6 +1,6 @@
 import { cva, type VariantProps } from 'class-variance-authority'
 import { Slot } from 'radix-ui'
-import type { ReactNode } from 'react'
+import { cloneElement, isValidElement, type ReactElement, type ReactNode } from 'react'
 
 import { cn } from '#/lib/utils'
 
@@ -71,10 +71,22 @@ export function Label({
     </>
   )
 
-  if (asChild) {
+  if (asChild && isValidElement<{ children?: ReactNode }>(children)) {
+    // A slot takes exactly one child, so the icon and the detail are
+    // composed into the link itself rather than wrapped around it.
+    const childElement = children as ReactElement<{ children?: ReactNode }>
+
     return (
       <Slot.Root className={styles} {...rest}>
-        {content}
+        {cloneElement(childElement, {
+          children: (
+            <>
+              {icon}
+              {childElement.props.children}
+              {detail ? <span className="ml-4 font-bold opacity-80">{detail}</span> : null}
+            </>
+          ),
+        })}
       </Slot.Root>
     )
   }

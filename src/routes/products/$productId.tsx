@@ -114,7 +114,15 @@ function ProductPage() {
       <Breadcrumbs
         items={[
           { label: 'Почетна', to: '/' },
-          { label: 'Производи', to: '/' },
+          ...(categories[0]
+            ? [
+                {
+                  label: categories[0].title,
+                  to: '/categories/$slug',
+                  params: { slug: categories[0].slug },
+                },
+              ]
+            : []),
           { label: product.title },
         ]}
       />
@@ -155,15 +163,25 @@ function ProductPage() {
           <h1 className="font-display text-3xl leading-tight font-semibold">{product.title}</h1>
           <FavoriteButton productId={product.id} />
         </div>
-        {product.availability === 'out_of_stock' ? (
-          <p className="mt-2 inline-block rounded-card bg-danger/10 px-2 py-1 text-sm font-semibold text-danger">
-            Нема на залиха
+        {product.availability === 'in_stock' ? (
+          <p className="mt-2">
+            <Label color="green" size="small">
+              Достапно
+            </Label>
           </p>
-        ) : product.availability === 'on_order' ? (
-          <p className="mt-2 inline-block rounded-card bg-black/5 px-2 py-1 text-sm font-semibold text-ink-muted">
-            По нарачка
+        ) : product.availability === 'out_of_stock' ? (
+          <p className="mt-2">
+            <Label color="red" size="small">
+              Нема на залиха
+            </Label>
           </p>
-        ) : null}
+        ) : (
+          <p className="mt-2">
+            <Label color="grey" size="small">
+              По нарачка
+            </Label>
+          </p>
+        )}
 
         {Object.keys(product.attributes).length > 0 ? (
           <dl className="mt-3 grid grid-cols-2 gap-x-4 gap-y-1 text-sm sm:grid-cols-3">

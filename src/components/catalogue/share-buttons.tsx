@@ -4,14 +4,14 @@ import { Button } from '#/components/ui/button'
 
 /**
  * Share actions that matter in the Macedonian market. The address is built
- * when the button is pressed: the page is in the browser by then, so the link
- * is always the one the visitor is looking at.
+ * inside the handlers: the page is in the browser by then, so the link is
+ * always the one the visitor is looking at. Nothing here may touch `window`
+ * during render, or the server render of the product page falls over.
  */
 export function ShareButtons({ path, title }: { path: string; title: string }) {
   const [copied, setCopied] = useState(false)
 
   const shareUrl = () => `${window.location.origin}${path}`
-  const shareText = `${title} ${shareUrl()}`
 
   const copy = async () => {
     try {
@@ -45,6 +45,7 @@ export function ShareButtons({ path, title }: { path: string; title: string }) {
         type="button"
         className="inline-flex cursor-pointer items-center rounded-card border border-border px-3 py-1.5 text-sm font-semibold hover:bg-hover"
         onClick={() => {
+          const shareText = `${title} ${shareUrl()}`
           window.location.href = `viber://forward?text=${encodeURIComponent(shareText)}`
         }}
       >
@@ -53,13 +54,14 @@ export function ShareButtons({ path, title }: { path: string; title: string }) {
       <button
         type="button"
         className="inline-flex cursor-pointer items-center rounded-card border border-border px-3 py-1.5 text-sm font-semibold hover:bg-hover"
-        onClick={() =>
+        onClick={() => {
+          const shareText = `${title} ${shareUrl()}`
           window.open(
             `https://wa.me/?text=${encodeURIComponent(shareText)}`,
             '_blank',
             'noopener,noreferrer',
           )
-        }
+        }}
       >
         WhatsApp
       </button>
