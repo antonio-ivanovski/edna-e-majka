@@ -48,7 +48,7 @@ test('the header fits a 390px phone without overflowing', async ({ page, pageErr
   ).toBeLessThanOrEqual(overflow.clientWidth + 1)
 
   // Every control of the header has to stay reachable.
-  await expect(page.getByRole('searchbox')).toBeVisible()
+  await expect(page.getByRole('combobox', { name: /Пребарај/ })).toBeVisible()
   await expect(page.getByRole('button', { name: /тема/i })).toBeVisible()
 
   expectNoPageErrors(pageErrors)

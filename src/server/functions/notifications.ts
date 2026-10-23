@@ -7,6 +7,7 @@ import { Schema } from 'effect'
 import { notification } from '../db/schema'
 import { getDb } from '../db/client'
 import { withViewer } from '../middleware'
+import type { DomainError } from '../errors'
 import { Result } from 'effect'
 
 const markReadSchema = Schema.Struct({
@@ -38,7 +39,7 @@ export const listNotifications = createServerFn({ method: 'GET', strict: { outpu
 export const markNotificationRead = createServerFn({ method: 'POST', strict: { output: false } })
   .middleware([withViewer])
   .validator(toValidator(markReadSchema))
-  .handler(async ({ context, data }) => {
+  .handler(async ({ context, data }): Promise<Result.Result<null, DomainError>> => {
     const viewer = context.viewer
     if (!viewer) return Result.succeed(null)
 
@@ -55,7 +56,7 @@ export const markAllNotificationsRead = createServerFn({
   strict: { output: false },
 })
   .middleware([withViewer])
-  .handler(async ({ context }) => {
+  .handler(async ({ context }): Promise<Result.Result<null, DomainError>> => {
     const viewer = context.viewer
     if (!viewer) return Result.succeed(null)
 

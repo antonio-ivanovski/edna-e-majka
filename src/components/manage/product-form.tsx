@@ -33,7 +33,7 @@ const productFormValuesSchema = Schema.Struct({
         Schema.check(Schema.isMinLength(1)),
         Schema.check(Schema.isMaxLength(60)),
       ),
-      price: Schema.String.pipe(Schema.check(Schema.isPattern(/^\\d{1,7}$/))),
+      price: Schema.String.pipe(Schema.check(Schema.isPattern(/^\d{1,7}$/))),
     }),
   ).pipe(Schema.check(Schema.isMinLength(1))),
 })

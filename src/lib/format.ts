@@ -34,3 +34,42 @@ export function truncate(text: string, maxLength: number): string {
     ? `${collapsed.slice(0, maxLength - 1).trimEnd()}…`
     : collapsed
 }
+
+const MINUTE = 60 * 1000
+const HOUR = 60 * MINUTE
+const DAY = 24 * HOUR
+
+/**
+ * How long ago, in Macedonian: "тукушто", "пред 5 минути", "пред 2 часа",
+ * "вчера", "пред 3 дена", and the plain date before that. Future dates read
+ * as now.
+ */
+export function formatRelativeTime(value: Date, now: Date = new Date()): string {
+  const diff = Math.max(0, now.getTime() - value.getTime())
+
+  if (diff < MINUTE) return 'тукушто'
+
+  const dayDiff = calendarDays(value, now)
+
+  if (dayDiff <= 0) {
+    const minutes = Math.floor(diff / MINUTE)
+
+    if (minutes < 60) {
+      return `пред ${minutes} ${minutes === 1 ? 'минута' : 'минути'}`
+    }
+
+    const hours = Math.floor(diff / HOUR)
+    return `пред ${hours} ${hours === 1 ? 'час' : 'часа'}`
+  }
+
+  if (dayDiff === 1) return 'вчера'
+  if (dayDiff < 7) return `пред ${dayDiff} ${dayDiff === 1 ? 'ден' : 'дена'}`
+
+  return formatDate(value)
+}
+
+function calendarDays(from: Date, to: Date): number {
+  const startOf = (date: Date) => new Date(date.getFullYear(), date.getMonth(), date.getDate())
+
+  return Math.round((startOf(to).getTime() - startOf(from).getTime()) / DAY)
+}

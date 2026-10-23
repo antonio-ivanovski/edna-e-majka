@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 
-import { formatCount, formatDate, formatPrice, truncate } from './format'
+import { formatCount, formatDate, formatPrice, formatRelativeTime, truncate } from './format'
 
 describe('formatPrice', () => {
   it('groups thousands with a dot and appends the currency', () => {
@@ -39,5 +39,27 @@ describe('truncate', () => {
 
   it('cuts long text on a single line and marks the cut', () => {
     expect(truncate('една две три четири пет', 12)).toBe('една две тр…')
+  })
+})
+
+describe('formatRelativeTime', () => {
+  const now = new Date(2026, 9, 23, 12, 0, 0)
+
+  it('reads moments ago as just now', () => {
+    expect(formatRelativeTime(new Date(2026, 9, 23, 11, 59, 30), now)).toBe('тукушто')
+    expect(formatRelativeTime(new Date(2026, 9, 23, 12, 0, 30), now)).toBe('тукушто')
+  })
+
+  it('counts minutes and hours within the day', () => {
+    expect(formatRelativeTime(new Date(2026, 9, 23, 11, 59, 0), now)).toBe('пред 1 минута')
+    expect(formatRelativeTime(new Date(2026, 9, 23, 11, 55, 0), now)).toBe('пред 5 минути')
+    expect(formatRelativeTime(new Date(2026, 9, 23, 11, 0, 0), now)).toBe('пред 1 час')
+    expect(formatRelativeTime(new Date(2026, 9, 23, 10, 0, 0), now)).toBe('пред 2 часа')
+  })
+
+  it('names yesterday and the last few days', () => {
+    expect(formatRelativeTime(new Date(2026, 9, 22, 18, 0, 0), now)).toBe('вчера')
+    expect(formatRelativeTime(new Date(2026, 9, 21, 12, 0, 0), now)).toBe('пред 2 дена')
+    expect(formatRelativeTime(new Date(2026, 9, 16, 12, 0, 0), now)).toBe('16.10.2026')
   })
 })

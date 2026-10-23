@@ -92,3 +92,75 @@ export async function signInAs(
 
   return { email, name, userId }
 }
+
+/**
+ * Drops a notification straight into the local D1 for the given user, the
+ * way the server would have written it.
+ */
+export async function addNotification(input: {
+  userId: string
+  kind: string
+  title: string
+  body?: string
+  link?: string
+}): Promise<void> {
+  const id = `e2e-notification-${randomUUID()}`
+  const body = input.body ? `'${sqlEscape(input.body)}'` : 'NULL'
+  const link = input.link ? `'${sqlEscape(input.link)}'` : 'NULL'
+  const sql = `INSERT INTO "notification" (id, user_id, kind, title, body, link) VALUES ('${id}', '${input.userId}', '${sqlEscape(input.kind)}', '${sqlEscape(input.title)}', ${body}, ${link});`
+  const file = join(
+    tmpdir(),
+    `e2e-notification-${Date.now()}${Math.floor(Math.random() * 1_000_000)}.sql`,
+  )
+  await writeFile(file, sql)
+
+  try {
+    await execFileAsync('pnpm', [
+      'exec',
+      'wrangler',
+      'd1',
+      'execute',
+      'DB',
+      '--local',
+      '--file',
+      file,
+    ])
+  } finally {
+    await import('node:fs/promises').then((fs) => fs.unlink(file).catch(() => undefined))
+  }
+}
+
+/**
+ * Creates a shop owned by a freshly minted user and signs that owner in on
+ * the given page.
+ */
+export async function signInAsOwner(
+  page: Page,
+  input?: { email?: string; name?: string; storeName?: string },
+): Promise<{ email: string; name: string; userId: string; storeId: string; storeSlug: string }> {
+  const stamp = `${Date.now()}${Math.floor(Math.random() * 1_000_000)}`
+  const account = await signInAs(page, input)
+  const storeId = `e2e-store-${randomUUID()}`
+  const storeSlug = `e2e-store-${stamp}`
+  const storeName = input?.storeName ?? 'E2E Продавница'
+  const sql = `INSERT INTO "store" (id, owner_id, name, slug, description, email, phone, status) VALUES ('${storeId}', '${account.userId}', '${sqlEscape(storeName)}', '${storeSlug}', 'Продавница создадена за end-to-end тестови. Има доволно долг опис.', '${sqlEscape(account.email)}', '+389 70 000 000', 'active');`
+  const file = join(tmpdir(), `e2e-store-${stamp}.sql`)
+  await writeFile(file, sql)
+
+  try {
+    await execFileAsync('pnpm', [
+      'exec',
+      'wrangler',
+      'd1',
+      'execute',
+      'DB',
+      '--local',
+      '--file',
+      file,
+    ])
+  } finally {
+    await import('node:fs/promises').then((fs) => fs.unlink(file).catch(() => undefined))
+  }
+
+  return { ...account, storeId, storeSlug }
+}
