@@ -6,8 +6,11 @@ import type { Page } from '@playwright/test'
 /** Where miniflare writes the messages the app sends. */
 const EMAIL_ROOT = join(process.cwd(), '.wrangler', 'tmp', 'email')
 
-/** The address the suite signs in with. */
-export const TEST_EMAIL = 'e2e@example.com'
+/**
+ * The address the suite signs in with. Unique per run, so a magic link from
+ * an earlier run can never be picked up: the links are single-use.
+ */
+export const TEST_EMAIL = `e2e+${Date.now()}@example.com`
 
 async function findEmailFiles(): Promise<string[]> {
   let directories: string[]
@@ -42,6 +45,12 @@ async function findEmailFiles(): Promise<string[]> {
  * exactly as a visitor would.
  */
 export async function signIn(page: Page, email = TEST_EMAIL): Promise<void> {
+  if (page.url() === 'about:blank') {
+    await page.goto('/')
+  }
+
+  const known = new Set(await findEmailFiles())
+
   const response = await page.request.post('/api/auth/sign-in/magic-link', {
     data: { email, callbackURL: '/' },
     headers: { origin: new URL(page.url()).origin },
@@ -51,23 +60,30 @@ export async function signIn(page: Page, email = TEST_EMAIL): Promise<void> {
     throw new Error(`The sign-in request failed with ${response.status()}.`)
   }
 
-  const link = await waitForMagicLink(email)
+  const link = await waitForMagicLink(known)
   await page.goto(link)
   await page.waitForLoadState('domcontentloaded')
 }
 
-async function waitForMagicLink(email: string): Promise<string> {
+async function waitForMagicLink(known: Set<string>): Promise<string> {
   for (let attempt = 0; attempt < 40; attempt += 1) {
     const files = await findEmailFiles()
+    const fresh = files.filter((file) => !known.has(file))
 
-    for (const file of files) {
-      const info = await stat(file).catch(() => undefined)
-      if (!info) continue
+    // The message the suite just triggered is the only fresh one; the
+    // newest of several wins.
+    const withTime = await Promise.all(
+      fresh.map(async (file) => ({
+        file,
+        mtime: (await stat(file).catch(() => undefined))?.mtimeMs ?? 0,
+      })),
+    )
+    withTime.sort((a, b) => b.mtime - a.mtime)
 
+    for (const { file } of withTime) {
       const content = await readFile(file, 'utf8').catch(() => '')
-      if (!content.includes(email)) continue
-
       const match = content.match(/https?:\/\/\S+\/api\/auth\/magic-link\/verify\?\S+/)
+
       if (match) return match[0]
     }
 

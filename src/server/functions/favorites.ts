@@ -1,3 +1,4 @@
+import { notFound } from '@tanstack/react-router'
 import { createServerFn } from '@tanstack/react-start'
 import { and, eq } from 'drizzle-orm'
 
@@ -9,7 +10,9 @@ import { getDb } from '../db/client'
 import { withViewer } from '../middleware'
 import { NotSignedInError } from '../errors'
 import type { DomainError } from '../errors'
+import { runEffect } from '../runtime'
 import { Result } from 'effect'
+import { selectFavoriteProducts, selectFollowedStores } from '../queries/favorites'
 
 const productIdSchema = Schema.Struct({
   productId: Schema.String.pipe(Schema.check(Schema.isMinLength(1))),
@@ -164,3 +167,29 @@ export const isFollowingStore = createServerFn({ method: 'GET', strict: { output
       return Result.succeed({ following: existing.length > 0 })
     },
   )
+
+/** The signed-in person's saved products. */
+export const listFavoriteProducts = createServerFn({ method: 'GET', strict: { output: false } })
+  .middleware([withViewer])
+  .handler(async ({ context }) => {
+    const viewer = context.viewer
+
+    if (!viewer) {
+      throw notFound()
+    }
+
+    return runEffect(selectFavoriteProducts(viewer.id))
+  })
+
+/** The shops the signed-in person follows. */
+export const listFollowedStores = createServerFn({ method: 'GET', strict: { output: false } })
+  .middleware([withViewer])
+  .handler(async ({ context }) => {
+    const viewer = context.viewer
+
+    if (!viewer) {
+      throw notFound()
+    }
+
+    return runEffect(selectFollowedStores(viewer.id))
+  })

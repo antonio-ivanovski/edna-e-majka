@@ -30,6 +30,19 @@ const publishedProductCount = sql<number>`(
   where ${product.storeId} = ${store.id} and ${product.status} = 'published'
 )`
 
+/** The columns behind every store list, in one place. */
+export const storeSummaryColumns = {
+  id: store.id,
+  name: store.name,
+  description: store.description,
+  avatarKey: store.avatarKey,
+  coverKey: store.coverKey,
+  city: store.city,
+  slug: store.slug,
+  createdAt: store.createdAt,
+  productCount: publishedProductCount,
+}
+
 export const selectStores = Effect.fn('selectStores')(function* (): Effect.fn.Return<
   StoreSummary[],
   DatabaseError,
@@ -38,17 +51,7 @@ export const selectStores = Effect.fn('selectStores')(function* (): Effect.fn.Re
   const db = yield* Db
   const rows = yield* db.run((d) =>
     d
-      .select({
-        id: store.id,
-        name: store.name,
-        description: store.description,
-        avatarKey: store.avatarKey,
-        coverKey: store.coverKey,
-        city: store.city,
-        slug: store.slug,
-        createdAt: store.createdAt,
-        productCount: publishedProductCount,
-      })
+      .select(storeSummaryColumns)
       .from(store)
       .where(eq(store.status, 'active'))
       .orderBy(asc(store.name)),

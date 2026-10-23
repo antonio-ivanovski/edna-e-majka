@@ -17,6 +17,12 @@ export const storeKeys = {
   detail: (id: string) => [...storeKeys.details(), id] as const,
 }
 
+export const favoriteKeys = {
+  all: ['favorites'] as const,
+  products: () => [...favoriteKeys.all, 'products'] as const,
+  stores: () => [...favoriteKeys.all, 'stores'] as const,
+}
+
 export const manageKeys = {
   all: ['manage'] as const,
   home: () => [...manageKeys.all, 'home'] as const,

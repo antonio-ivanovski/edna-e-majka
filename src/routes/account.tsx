@@ -1,69 +1,50 @@
-import { createFileRoute } from '@tanstack/react-router'
+import { Link, Outlet, createFileRoute } from '@tanstack/react-router'
 
-import { DeleteAccountButton } from '#/components/account/delete-account-button'
-import { AccountProfileForm } from '#/components/account/profile-form'
-import { Button } from '#/components/ui/button'
-import { Panel } from '#/components/ui/panel'
-import { exportUserData, getAccount, getAccountStore } from '#/server/functions/account'
+import { cn } from '#/lib/utils'
 import { requireViewer } from '#/server/functions/session'
 
+const TABS: {
+  to: '/account' | '/account/favourites' | '/account/following'
+  label: string
+  exact?: boolean
+}[] = [
+  { to: '/account', label: 'Сметка', exact: true },
+  { to: '/account/favourites', label: 'Омилени производи' },
+  { to: '/account/following', label: 'Продавници што ги следам' },
+]
+
+/**
+ * The account area: the settings, the saved products and the followed shops
+ * share one roof and one tab row, so each is one tap away from the others.
+ */
 export const Route = createFileRoute('/account')({
   beforeLoad: () => requireViewer(),
-  loader: async () => {
-    const [account, store] = await Promise.all([getAccount(), getAccountStore()])
-
-    return { account, store }
-  },
   head: () => ({
-    meta: [{ title: 'Мојата сметка | ЕДНА Е МАЈКА' }, { name: 'robots', content: 'noindex' }],
+    meta: [{ name: 'robots', content: 'noindex' }],
   }),
-  component: AccountPage,
+  component: AccountLayout,
 })
 
-function AccountPage() {
-  const { account, store } = Route.useLoaderData()
-
+function AccountLayout() {
   return (
-    <div className="mx-auto w-full max-w-2xl px-4 py-10">
-      <h1 className="font-display text-3xl font-semibold">Мојата сметка</h1>
-      <p className="mt-1 text-ink-muted">{account.email}</p>
-
-      <Panel className="mt-6 p-6">
-        <h2 className="mb-4 font-display text-xl font-semibold">Податоци</h2>
-        <AccountProfileForm name={account.name} image={account.image} />
-      </Panel>
-
-      <Panel className="mt-6 p-6">
-        <h2 className="font-display text-xl font-semibold">Извези податоци</h2>
-        <p className="mt-2 mb-4 text-ink-muted">
-          Преземете ги вашите податоци (сметка, продавница, производи) во JSON формат.
-        </p>
-        <Button
-          type="button"
-          variant="outline"
-          onClick={async () => {
-            const data = await exportUserData()
-            const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' })
-            const url = URL.createObjectURL(blob)
-            const link = document.createElement('a')
-            link.href = url
-            link.download = 'edna-e-majka-data.json'
-            link.click()
-            URL.revokeObjectURL(url)
-          }}
-        >
-          Извези JSON
-        </Button>
-      </Panel>
-
-      <Panel className="mt-6 p-6">
-        <h2 className="font-display text-xl font-semibold">Избриши сметката</h2>
-        <p className="mt-2 mb-4 text-ink-muted">
-          Со избришување на сметката остануваат без простор за враќање. Производите, сликите и
-          продавницата ги бришеме заедно со сметката.
-        </p>
-        <DeleteAccountButton storeName={store?.name ?? null} />
-      </Panel>
+    <div className="mx-auto w-full max-w-[80rem] px-4 py-6">
+      <nav aria-label="Сметка" className="mb-2 flex flex-wrap gap-1 border-b border-border pb-3">
+        {TABS.map((tab) => (
+          <Link
+            key={tab.to}
+            to={tab.to}
+            {...(tab.exact ? { activeOptions: { exact: true as const } } : {})}
+            activeProps={{ className: 'bg-border text-ink', 'aria-current': 'page' }}
+            className={cn(
+              'rounded-card px-3 py-1.5 text-sm font-semibold text-ink-muted transition-colors',
+              'hover:bg-hover hover:text-ink',
+            )}
+          >
+            {tab.label}
+          </Link>
+        ))}
+      </nav>
+      <Outlet />
     </div>
   )
 }

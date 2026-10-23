@@ -21,6 +21,9 @@ import { Route as SearchRouteImport } from './routes/search'
 import { Route as SignInRouteImport } from './routes/sign-in'
 import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
 import { Route as TermsRouteImport } from './routes/terms'
+import { Route as AccountIndexRouteImport } from './routes/account/index'
+import { Route as AccountFavouritesRouteImport } from './routes/account/favourites'
+import { Route as AccountFollowingRouteImport } from './routes/account/following'
 import { Route as AdminIndexRouteImport } from './routes/admin/index'
 import { Route as AdminMessagesRouteImport } from './routes/admin/messages'
 import { Route as AdminProductsRouteImport } from './routes/admin/products'
@@ -103,6 +106,21 @@ const TermsRoute = TermsRouteImport.update({
   id: '/terms',
   path: '/terms',
   getParentRoute: () => rootRouteImport,
+} as any)
+const AccountIndexRoute = AccountIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => AccountRoute,
+} as any)
+const AccountFavouritesRoute = AccountFavouritesRouteImport.update({
+  id: '/favourites',
+  path: '/favourites',
+  getParentRoute: () => AccountRoute,
+} as any)
+const AccountFollowingRoute = AccountFollowingRouteImport.update({
+  id: '/following',
+  path: '/following',
+  getParentRoute: () => AccountRoute,
 } as any)
 const AdminIndexRoute = AdminIndexRouteImport.update({
   id: '/',
@@ -220,7 +238,7 @@ const ManageStoreIdProductsNewRoute =
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
-  '/account': typeof AccountRoute
+  '/account': typeof AccountRouteWithChildren
   '/admin': typeof AdminRouteWithChildren
   '/cookies': typeof CookiesRoute
   '/guidelines': typeof GuidelinesRoute
@@ -231,6 +249,8 @@ export interface FileRoutesByFullPath {
   '/sign-in': typeof SignInRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/terms': typeof TermsRoute
+  '/account/favourites': typeof AccountFavouritesRoute
+  '/account/following': typeof AccountFollowingRoute
   '/admin/messages': typeof AdminMessagesRoute
   '/admin/products': typeof AdminProductsRouteWithChildren
   '/admin/stores': typeof AdminStoresRouteWithChildren
@@ -241,6 +261,7 @@ export interface FileRoutesByFullPath {
   '/manage/new': typeof ManageNewRoute
   '/producers/$storeId': typeof ProducersStoreIdRoute
   '/products/$productId': typeof ProductsProductIdRoute
+  '/account/': typeof AccountIndexRoute
   '/admin/': typeof AdminIndexRoute
   '/manage/': typeof ManageIndexRoute
   '/producers/': typeof ProducersIndexRoute
@@ -256,7 +277,6 @@ export interface FileRoutesByFullPath {
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
-  '/account': typeof AccountRoute
   '/cookies': typeof CookiesRoute
   '/guidelines': typeof GuidelinesRoute
   '/privacy': typeof PrivacyRoute
@@ -266,6 +286,8 @@ export interface FileRoutesByTo {
   '/sign-in': typeof SignInRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/terms': typeof TermsRoute
+  '/account/favourites': typeof AccountFavouritesRoute
+  '/account/following': typeof AccountFollowingRoute
   '/admin/messages': typeof AdminMessagesRoute
   '/admin/users': typeof AdminUsersRoute
   '/categories/$slug': typeof CategoriesSlugRoute
@@ -273,6 +295,7 @@ export interface FileRoutesByTo {
   '/manage/new': typeof ManageNewRoute
   '/producers/$storeId': typeof ProducersStoreIdRoute
   '/products/$productId': typeof ProductsProductIdRoute
+  '/account': typeof AccountIndexRoute
   '/admin': typeof AdminIndexRoute
   '/manage': typeof ManageIndexRoute
   '/producers': typeof ProducersIndexRoute
@@ -289,7 +312,7 @@ export interface FileRoutesByTo {
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
-  '/account': typeof AccountRoute
+  '/account': typeof AccountRouteWithChildren
   '/admin': typeof AdminRouteWithChildren
   '/cookies': typeof CookiesRoute
   '/guidelines': typeof GuidelinesRoute
@@ -300,6 +323,8 @@ export interface FileRoutesById {
   '/sign-in': typeof SignInRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/terms': typeof TermsRoute
+  '/account/favourites': typeof AccountFavouritesRoute
+  '/account/following': typeof AccountFollowingRoute
   '/admin/messages': typeof AdminMessagesRoute
   '/admin/products': typeof AdminProductsRouteWithChildren
   '/admin/stores': typeof AdminStoresRouteWithChildren
@@ -310,6 +335,7 @@ export interface FileRoutesById {
   '/manage/new': typeof ManageNewRoute
   '/producers/$storeId': typeof ProducersStoreIdRoute
   '/products/$productId': typeof ProductsProductIdRoute
+  '/account/': typeof AccountIndexRoute
   '/admin/': typeof AdminIndexRoute
   '/manage/': typeof ManageIndexRoute
   '/producers/': typeof ProducersIndexRoute
@@ -338,6 +364,8 @@ export interface FileRouteTypes {
     | '/sign-in'
     | '/sitemap.xml'
     | '/terms'
+    | '/account/favourites'
+    | '/account/following'
     | '/admin/messages'
     | '/admin/products'
     | '/admin/stores'
@@ -348,6 +376,7 @@ export interface FileRouteTypes {
     | '/manage/new'
     | '/producers/$storeId'
     | '/products/$productId'
+    | '/account/'
     | '/admin/'
     | '/manage/'
     | '/producers/'
@@ -363,7 +392,6 @@ export interface FileRouteTypes {
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
-    | '/account'
     | '/cookies'
     | '/guidelines'
     | '/privacy'
@@ -373,6 +401,8 @@ export interface FileRouteTypes {
     | '/sign-in'
     | '/sitemap.xml'
     | '/terms'
+    | '/account/favourites'
+    | '/account/following'
     | '/admin/messages'
     | '/admin/users'
     | '/categories/$slug'
@@ -380,6 +410,7 @@ export interface FileRouteTypes {
     | '/manage/new'
     | '/producers/$storeId'
     | '/products/$productId'
+    | '/account'
     | '/admin'
     | '/manage'
     | '/producers'
@@ -406,6 +437,8 @@ export interface FileRouteTypes {
     | '/sign-in'
     | '/sitemap.xml'
     | '/terms'
+    | '/account/favourites'
+    | '/account/following'
     | '/admin/messages'
     | '/admin/products'
     | '/admin/stores'
@@ -416,6 +449,7 @@ export interface FileRouteTypes {
     | '/manage/new'
     | '/producers/$storeId'
     | '/products/$productId'
+    | '/account/'
     | '/admin/'
     | '/manage/'
     | '/producers/'
@@ -432,7 +466,7 @@ export interface FileRouteTypes {
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
-  AccountRoute: typeof AccountRoute
+  AccountRoute: typeof AccountRouteWithChildren
   AdminRoute: typeof AdminRouteWithChildren
   CookiesRoute: typeof CookiesRoute
   GuidelinesRoute: typeof GuidelinesRoute
@@ -539,6 +573,27 @@ declare module '@tanstack/react-router' {
       fullPath: '/terms'
       preLoaderRoute: typeof TermsRouteImport
       parentRoute: typeof rootRouteImport
+    }
+    '/account/': {
+      id: '/account/'
+      path: '/'
+      fullPath: '/account/'
+      preLoaderRoute: typeof AccountIndexRouteImport
+      parentRoute: typeof AccountRoute
+    }
+    '/account/favourites': {
+      id: '/account/favourites'
+      path: '/favourites'
+      fullPath: '/account/favourites'
+      preLoaderRoute: typeof AccountFavouritesRouteImport
+      parentRoute: typeof AccountRoute
+    }
+    '/account/following': {
+      id: '/account/following'
+      path: '/following'
+      fullPath: '/account/following'
+      preLoaderRoute: typeof AccountFollowingRouteImport
+      parentRoute: typeof AccountRoute
     }
     '/admin/': {
       id: '/admin/'
@@ -697,6 +752,21 @@ declare module '@tanstack/react-router' {
   }
 }
 
+interface AccountRouteChildren {
+  AccountFavouritesRoute: typeof AccountFavouritesRoute
+  AccountFollowingRoute: typeof AccountFollowingRoute
+  AccountIndexRoute: typeof AccountIndexRoute
+}
+
+const AccountRouteChildren: AccountRouteChildren = {
+  AccountFavouritesRoute: AccountFavouritesRoute,
+  AccountFollowingRoute: AccountFollowingRoute,
+  AccountIndexRoute: AccountIndexRoute,
+}
+
+const AccountRouteWithChildren =
+  AccountRoute._addFileChildren(AccountRouteChildren)
+
 interface AdminProductsRouteChildren {
   AdminProductsProductIdRoute: typeof AdminProductsProductIdRoute
   AdminProductsIndexRoute: typeof AdminProductsIndexRoute
@@ -763,7 +833,7 @@ const ManageStoreIdRouteWithChildren = ManageStoreIdRoute._addFileChildren(
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
-  AccountRoute: AccountRoute,
+  AccountRoute: AccountRouteWithChildren,
   AdminRoute: AdminRouteWithChildren,
   CookiesRoute: CookiesRoute,
   GuidelinesRoute: GuidelinesRoute,
